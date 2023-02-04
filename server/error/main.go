@@ -32,8 +32,6 @@ func Fatal(err Error) {
 	err.Line = line
 	err.Created = time.Now()
 
-	// rapi_log.Error(err.Description)
-
 	panic(err)
 }
 
@@ -45,14 +43,8 @@ func FatalIfError(err error) {
 	}
 }
 
-func FatalIfTrue(ok bool, err Error) {
+func FatalIf(ok bool, err Error) {
 	if ok {
-		Fatal(err)
-	}
-}
-
-func FatalIfFalse(ok bool, err Error) {
-	if !ok {
 		Fatal(err)
 	}
 }

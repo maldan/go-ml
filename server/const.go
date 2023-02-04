@@ -25,6 +25,4 @@ type Config struct {
 
 	Debug DebugConfig
 	Panel PanelConfig
-
-	EnableJsonWrapper bool
 }

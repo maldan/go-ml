@@ -26,5 +26,6 @@ func main() {
 				Handler: handler.VFS{},
 			},
 		},
+		Panel: ms.PanelConfig{},
 	})
 }
