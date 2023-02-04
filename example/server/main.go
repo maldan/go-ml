@@ -2,14 +2,13 @@ package main
 
 import (
 	ms "github.com/maldan/go-ml/server"
-	ms_config "github.com/maldan/go-ml/server/config"
 	"github.com/maldan/go-ml/server/core/handler"
 )
 
 func main() {
-	ms.Start(ms_config.Config{
+	ms.Start(ms.Config{
 		Host: "127.0.0.1:16000",
-		Router: []ms_config.RouteHandler{
+		Router: []ms.RouteHandler{
 			{
 				Path: "/api",
 				Handler: handler.API{

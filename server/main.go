@@ -3,9 +3,6 @@ package ms
 import (
 	"encoding/json"
 	"fmt"
-	ms_config "github.com/maldan/go-ml/server/config"
-	ms_core "github.com/maldan/go-ml/server/core"
-	"github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
 	"log"
 	"net/http"
@@ -14,7 +11,7 @@ import (
 	"time"
 )
 
-func HandleError(args *ms_config.HandlerArgs) {
+func HandleError(args *HandlerArgs) {
 	err := recover()
 	if err == nil {
 		return
@@ -62,25 +59,25 @@ func HandleError(args *ms_config.HandlerArgs) {
 	}
 }
 
-func getHandler(url string, routers []ms_config.RouteHandler) (string, ms_config.Handler) {
+func getHandler(url string, routers []RouteHandler) (string, Handler) {
 	for i := 0; i < len(routers); i++ {
 		if strings.HasPrefix(url, routers[i].Path) {
 			return routers[i].Path, routers[i].Handler
 		}
 	}
 
-	return "", handler.Undefined{}
+	return "", Undefined{}
 }
 
-func Start(config ms_config.Config) {
+func Start(config Config) {
 	// Entry point
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
 		// Prepare args
-		args := ms_config.HandlerArgs{Response: response, Request: request}
+		args := HandlerArgs{Response: response, Request: request}
 		defer HandleError(&args)
 
 		// Disable cors for all queries
-		ms_core.DisableCors(response)
+		DisableCors(response)
 
 		// Fuck options
 		if request.Method == "OPTIONS" {

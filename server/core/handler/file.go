@@ -1,7 +1,7 @@
 package handler
 
 import (
-	ms_config "github.com/maldan/go-ml/server/config"
+	ms "github.com/maldan/go-ml/server"
 	ms_error "github.com/maldan/go-ml/server/error"
 	"net/http"
 	"os"
@@ -12,7 +12,7 @@ type FS struct {
 	ContentPath string
 }
 
-func (f FS) Handle(args ms_config.HandlerArgs) {
+func (f FS) Handle(args ms.HandlerArgs) {
 	// Get current path
 	cwd, err := os.Getwd()
 	ms_error.FatalIfError(err)

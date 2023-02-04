@@ -1,7 +1,7 @@
 package main
 
 import (
-	ms_config "github.com/maldan/go-ml/server/config"
+	ms "github.com/maldan/go-ml/server"
 )
 
 type User struct{}
@@ -13,6 +13,6 @@ type ArgsX struct {
 	X string `json:"x"`
 }
 
-func (u User) GetIndex(ctx *ms_config.Context, x ArgsX) int {
+func (u User) GetIndex(ctx *ms.Context, x ArgsX) int {
 	return x.A + x.B
 }

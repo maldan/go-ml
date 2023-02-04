@@ -2,8 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
-	ms_config "github.com/maldan/go-ml/server/config"
+	ms "github.com/maldan/go-ml/server"
 	ms_error "github.com/maldan/go-ml/server/error"
 	ml_string "github.com/maldan/go-ml/util/string"
 	"reflect"
@@ -48,21 +47,20 @@ func callMethod(method reflect.Method, controller any, params map[string]any) re
 
 		// Create new value
 		argValue := reflect.New(argType)
-		// value := argValue.Interface()
 
 		b, _ := json.Marshal(params)
 		json.Unmarshal(b, argValue.Elem().Addr().Interface())
 
 		// Is struct
 		if argType.Kind() == reflect.Struct {
-			return virtualCall(method, controller, &ms_config.Context{}, argValue.Elem().Interface())
+			return virtualCall(method, controller, &ms.Context{}, argValue.Elem().Interface())
 		}
 	}
 
 	return reflect.ValueOf("")
 }
 
-func (a API) Handle(args ms_config.HandlerArgs) {
+func (a API) Handle(args ms.HandlerArgs) {
 	// Get authorization
 	authorization := args.Request.Header.Get("Authorization")
 	authorization = strings.Replace(authorization, "Token ", "", 1)
@@ -94,10 +92,6 @@ func (a API) Handle(args ms_config.HandlerArgs) {
 	for key, element := range jsonMap {
 		params[key] = element
 	}
-
-	// Compress all params again
-	//b, err := json.Marshal(params)
-	// ms_error.FatalIfError(err)
 
 	// Get controller
 	path := strings.Split(strings.Replace(args.Request.URL.Path, args.Route, "", 1), "/")
@@ -133,8 +127,6 @@ func (a API) Handle(args ms_config.HandlerArgs) {
 			break
 		}
 	}
-
-	fmt.Printf("%v\n", method)
 
 	// Call method
 	value := callMethod(method.(reflect.Method), controller, params)

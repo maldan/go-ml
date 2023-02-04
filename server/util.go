@@ -1,4 +1,4 @@
-package ms_core
+package ms
 
 import "net/http"
 

@@ -1,4 +1,4 @@
-package ms_config
+package ms
 
 import "net/http"
 
@@ -13,11 +13,9 @@ type PanelConfig struct {
 
 type Context struct {
 	AccessToken string
-	//IsSkipProcessing bool
-	//IsServeFile      bool
-	Headers  map[string]string
-	Response http.ResponseWriter
-	Request  *http.Request
+	Headers     map[string]string
+	Response    http.ResponseWriter
+	Request     *http.Request
 }
 
 type Config struct {

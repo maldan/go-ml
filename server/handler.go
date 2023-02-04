@@ -1,4 +1,4 @@
-package ms_config
+package ms
 
 import "net/http"
 
