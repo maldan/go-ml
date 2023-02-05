@@ -1,12 +1,12 @@
 package ms
 
 import (
+	"embed"
 	_ "embed"
 	"encoding/json"
 	"fmt"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
-	ms_panel "github.com/maldan/go-ml/server/panel"
 	ml_slice "github.com/maldan/go-ml/slice"
 	"log"
 	"net/http"
@@ -15,14 +15,8 @@ import (
 	"time"
 )
 
-//go:embed panel_frontend/dist/index.html
-var PanelHtml []byte
-
-//go:embed panel_frontend/dist/assets/index.css
-var PanelCss []byte
-
-//go:embed panel_frontend/dist/assets/index.js
-var PanelJs []byte
+//go:embed panel_frontend/dist/*
+var panelFs embed.FS
 
 func HandleError(args *ms_handler.Args) {
 	err := recover()
@@ -87,16 +81,20 @@ func injectDebug(config *Config) {
 	// Add debug controller
 	config.Router = ml_slice.Prepend(config.Router, []ms_handler.RouteHandler{
 		{
-			Path: "/debug",
-			Handler: ms_handler.API{
-				ControllerList: []any{ms_panel.Panel{}},
+			Path: "/debug/panel",
+			Handler: ms_handler.EmbedFS{
+				Root: "panel_frontend/dist",
+				Fs:   panelFs,
 			},
+			/*Handler: ms_handler.API{
+				ControllerList: []any{ms_panel.Panel{}},
+			},*/
 		},
 	})
 
-	ms_panel.Html = PanelHtml
+	/*ms_panel.Html = PanelHtml
 	ms_panel.Css = PanelCss
-	ms_panel.Js = PanelJs
+	ms_panel.Js = PanelJs*/
 }
 
 func Start(config Config) {

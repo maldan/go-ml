@@ -23,7 +23,7 @@ func main() {
 			},
 			{
 				Path:    "/",
-				Handler: ms_handler.VFS{},
+				Handler: ms_handler.EmbedFS{},
 			},
 		},
 		Panel: ms.PanelConfig{},
