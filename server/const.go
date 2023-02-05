@@ -7,8 +7,11 @@ type DebugConfig struct {
 }
 
 type PanelConfig struct {
-	Login    string
-	Password string
+	Login         string
+	Password      string
+	HasRequestTab bool
+	HasDbTab      bool
+	HasControlTab bool
 }
 
 type Context struct {
