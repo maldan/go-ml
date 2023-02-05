@@ -1,31 +1,22 @@
 package ms
 
-import "net/http"
-
-type DebugConfig struct {
-	IsEnabled bool
-}
+import (
+	ms_handler "github.com/maldan/go-ml/server/core/handler"
+)
 
 type PanelConfig struct {
-	Login         string
-	Password      string
+	Login    string
+	Password string
+
 	HasRequestTab bool
+	HasMethodTab  bool
+	HasTestTab    bool
 	HasDbTab      bool
 	HasControlTab bool
 }
 
-type Context struct {
-	AccessToken string
-	Headers     map[string]string
-	Response    http.ResponseWriter
-	Request     *http.Request
-}
-
 type Config struct {
-	Host string
-
-	Router []RouteHandler
-
-	Debug DebugConfig
-	Panel PanelConfig
+	Host   string
+	Router []ms_handler.RouteHandler
+	Panel  PanelConfig
 }

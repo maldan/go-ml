@@ -1,9 +1,9 @@
-package handler
+package ms_handler
 
 import (
 	"encoding/json"
-	ms "github.com/maldan/go-ml/server"
 	ms_error "github.com/maldan/go-ml/server/error"
+	ms_response "github.com/maldan/go-ml/server/response"
 	ml_string "github.com/maldan/go-ml/util/string"
 	"reflect"
 	"strconv"
@@ -37,6 +37,11 @@ func virtualCall(fn reflect.Method, args ...any) reflect.Value {
 func callMethod(method reflect.Method, controller any, params map[string]any) reflect.Value {
 	functionType := reflect.TypeOf(method.Func.Interface())
 
+	// Has 0 arg
+	if functionType.NumIn() == 1 {
+		return virtualCall(method, controller)
+	}
+
 	// Has 2 arg
 	if functionType.NumIn() == 3 {
 		// Get last arg
@@ -53,14 +58,14 @@ func callMethod(method reflect.Method, controller any, params map[string]any) re
 
 		// Is struct
 		if argType.Kind() == reflect.Struct {
-			return virtualCall(method, controller, &ms.Context{}, argValue.Elem().Interface())
+			return virtualCall(method, controller, &Context{}, argValue.Elem().Interface())
 		}
 	}
 
 	return reflect.ValueOf("")
 }
 
-func (a API) Handle(args ms.HandlerArgs) {
+func (a API) Handle(args Args) {
 	// Get authorization
 	authorization := args.Request.Header.Get("Authorization")
 	authorization = strings.Replace(authorization, "Token ", "", 1)
@@ -82,15 +87,16 @@ func (a API) Handle(args ms.HandlerArgs) {
 
 	// Read body
 	bodyBytes, _ := ioutil.ReadAll(args.Request.Body)
+	if len(bodyBytes) > 0 {
+		// Parse json body and
+		jsonMap := map[string]any{}
+		err := json.Unmarshal(bodyBytes, &jsonMap)
+		ms_error.FatalIfError(err)
 
-	// Parse json body and
-	jsonMap := map[string]any{}
-	err := json.Unmarshal(bodyBytes, &jsonMap)
-	ms_error.FatalIfError(err)
-
-	// Collect params
-	for key, element := range jsonMap {
-		params[key] = element
+		// Collect params
+		for key, element := range jsonMap {
+			params[key] = element
+		}
 	}
 
 	// Get controller
@@ -129,13 +135,29 @@ func (a API) Handle(args ms.HandlerArgs) {
 	}
 
 	// Call method
-	value := callMethod(method.(reflect.Method), controller, params)
+	value := callMethod(method.(reflect.Method), controller, params).Interface()
 
-	// Convert to json
-	out := value.Interface()
-	data, err := json.Marshal(&out)
+	switch value.(type) {
+	case ms_response.Custom:
+		v := value.(ms_response.Custom)
 
-	// Write response
-	args.Response.Header().Add("Content-Type", "application/json")
-	args.Response.Write(data)
+		// Copy headers
+		for k, v := range v.Headers {
+			args.Response.Header().Add(k, v)
+		}
+
+		_, err := args.Response.Write(v.Body)
+		ms_error.FatalIfError(err)
+		break
+	default:
+		// Convert to json
+		data, err := json.Marshal(&value)
+		ms_error.FatalIfError(err)
+
+		// Write response
+		args.Response.Header().Add("Content-Type", "application/json")
+		_, err = args.Response.Write(data)
+		ms_error.FatalIfError(err)
+		break
+	}
 }

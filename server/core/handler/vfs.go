@@ -1,8 +1,7 @@
-package handler
+package ms_handler
 
 import (
 	"embed"
-	ms "github.com/maldan/go-ml/server"
 )
 
 type VFS struct {
@@ -10,7 +9,7 @@ type VFS struct {
 	Fs   embed.FS
 }
 
-func (V VFS) Handle(args ms.HandlerArgs) {
+func (V VFS) Handle(args Args) {
 	//TODO implement me
 	panic("implement me")
 }

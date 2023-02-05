@@ -1,7 +1,6 @@
-package handler
+package ms_handler
 
 import (
-	ms "github.com/maldan/go-ml/server"
 	ms_error "github.com/maldan/go-ml/server/error"
 	"net/http"
 	"os"
@@ -12,7 +11,7 @@ type FS struct {
 	ContentPath string
 }
 
-func (f FS) Handle(args ms.HandlerArgs) {
+func (f FS) Handle(args Args) {
 	// Get current path
 	cwd, err := os.Getwd()
 	ms_error.FatalIfError(err)
@@ -23,6 +22,5 @@ func (f FS) Handle(args ms.HandlerArgs) {
 	path := strings.ReplaceAll(f.ContentPath, "@", cwd) + routePath
 	path = strings.ReplaceAll(path, "\\", "/")
 
-	// rapi_core.DisableCors(args.RW)
 	http.ServeFile(args.Response, args.Request, path)
 }

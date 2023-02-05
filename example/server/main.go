@@ -8,22 +8,22 @@ import (
 func main() {
 	ms.Start(ms.Config{
 		Host: "127.0.0.1:16000",
-		Router: []ms.RouteHandler{
+		Router: []ms_handler.RouteHandler{
 			{
 				Path: "/api",
-				Handler: handler.API{
+				Handler: ms_handler.API{
 					ControllerList: []any{User{}, Template{}},
 				},
 			},
 			{
 				Path: "/data",
-				Handler: handler.FS{
+				Handler: ms_handler.FS{
 					ContentPath: "example",
 				},
 			},
 			{
 				Path:    "/",
-				Handler: handler.VFS{},
+				Handler: ms_handler.VFS{},
 			},
 		},
 		Panel: ms.PanelConfig{},

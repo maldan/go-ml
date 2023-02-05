@@ -149,3 +149,7 @@ func Combine[T any](slices ...[]T) []T {
 
 	return finalSlice
 }
+
+func Prepend[T any](slice []T, value []T) []T {
+	return append(value, slice...)
+}

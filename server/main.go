@@ -1,9 +1,13 @@
 package ms
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
+	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
+	ms_panel "github.com/maldan/go-ml/server/panel"
+	ml_slice "github.com/maldan/go-ml/slice"
 	"log"
 	"net/http"
 	"runtime"
@@ -11,7 +15,16 @@ import (
 	"time"
 )
 
-func HandleError(args *HandlerArgs) {
+//go:embed panel_frontend/dist/index.html
+var PanelHtml []byte
+
+//go:embed panel_frontend/dist/assets/index.css
+var PanelCss []byte
+
+//go:embed panel_frontend/dist/assets/index.js
+var PanelJs []byte
+
+func HandleError(args *ms_handler.Args) {
 	err := recover()
 	if err == nil {
 		return
@@ -32,12 +45,13 @@ func HandleError(args *HandlerArgs) {
 	default:
 		_, file, line, _ := runtime.Caller(3)
 
-		for i := 0; i < 10; i++ {
+		/*for i := 0; i < 10; i++ {
 			p, f, l, ok := runtime.Caller(i)
 			if ok {
 				fmt.Printf("%v %v:%v\n", p, f, l)
 			}
 		}
+		*/
 
 		args.Response.WriteHeader(500)
 		// fmt.Println(string(debug.Stack()))
@@ -59,21 +73,39 @@ func HandleError(args *HandlerArgs) {
 	}
 }
 
-func getHandler(url string, routers []RouteHandler) (string, Handler) {
+func getHandler(url string, routers []ms_handler.RouteHandler) (string, ms_handler.Handler) {
 	for i := 0; i < len(routers); i++ {
 		if strings.HasPrefix(url, routers[i].Path) {
 			return routers[i].Path, routers[i].Handler
 		}
 	}
 
-	return "", Undefined{}
+	return "", ms_handler.Undefined{}
+}
+
+func injectDebug(config *Config) {
+	// Add debug controller
+	config.Router = ml_slice.Prepend(config.Router, []ms_handler.RouteHandler{
+		{
+			Path: "/debug",
+			Handler: ms_handler.API{
+				ControllerList: []any{ms_panel.Panel{}},
+			},
+		},
+	})
+
+	ms_panel.Html = PanelHtml
+	ms_panel.Css = PanelCss
+	ms_panel.Js = PanelJs
 }
 
 func Start(config Config) {
+	injectDebug(&config)
+
 	// Entry point
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
 		// Prepare args
-		args := HandlerArgs{Response: response, Request: request}
+		args := ms_handler.Args{Response: response, Request: request}
 		defer HandleError(&args)
 
 		// Disable cors for all queries
