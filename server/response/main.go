@@ -6,5 +6,6 @@ type Custom struct {
 }
 
 type File struct {
-	Path string
+	Headers map[string]string
+	Path    string
 }

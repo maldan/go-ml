@@ -2,9 +2,11 @@ package ms_handler
 
 import (
 	"encoding/json"
+	"fmt"
 	ms_error "github.com/maldan/go-ml/server/error"
 	ms_response "github.com/maldan/go-ml/server/response"
 	ml_string "github.com/maldan/go-ml/util/string"
+	"net/http"
 	"reflect"
 	"strconv"
 
@@ -127,6 +129,9 @@ func (a API) Handle(args Args) {
 
 	// Get controller
 	path := strings.Split(strings.Replace(args.Request.URL.Path, args.Route, "", 1), "/")
+	if len(path) <= 1 {
+		panic("controller not specified")
+	}
 	controllerName := path[1]
 
 	// Get method
@@ -149,6 +154,9 @@ func (a API) Handle(args Args) {
 			break
 		}
 	}
+	if controller == nil {
+		panic(fmt.Sprintf("controller %v not found", controllerName))
+	}
 
 	// Find method
 	var method any = nil
@@ -159,11 +167,25 @@ func (a API) Handle(args Args) {
 			break
 		}
 	}
+	if method == nil {
+		panic(fmt.Sprintf("method %v not found", methodName))
+	}
 
 	// Call method
-	value := callMethod(method.(reflect.Method), controller, params).Interface()
+	reflectValue := callMethod(method.(reflect.Method), controller, params)
+	value := reflectValue.Interface()
 
 	switch value.(type) {
+	case ms_response.File:
+		v := value.(ms_response.File)
+
+		// Copy headers
+		for k, v := range v.Headers {
+			args.Response.Header().Add(k, v)
+		}
+
+		http.ServeFile(args.Response, args.Request, v.Path)
+		break
 	case ms_response.Custom:
 		v := value.(ms_response.Custom)
 
@@ -176,6 +198,16 @@ func (a API) Handle(args Args) {
 		ms_error.FatalIfError(err)
 		break
 	default:
+		// Check to response method
+		tr, ok := reflect.TypeOf(value).MethodByName("ToResponse")
+		if ok {
+			// Call
+			ret := tr.Func.Call([]reflect.Value{reflect.ValueOf(value)})
+			if len(ret) > 0 {
+				value = ret[0].Interface()
+			}
+		}
+
 		// Convert to json
 		data, err := json.Marshal(&value)
 		ms_error.FatalIfError(err)

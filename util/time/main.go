@@ -9,7 +9,7 @@ import (
 type Time time.Time
 
 var timeParseTemplateList = []string{
-	"2006-01-02 15:04:05", "2006-01-02", "2006-01-02 15:04", "2006-01-02 15:04:05.999",
+	"2006-01-02 15:04:05.999", "2006-01-02 15:04:05", "2006-01-02 15:04", "2006-01-02", "2006-01", "2006",
 }
 
 func (t *Time) UnmarshalJSON(b []byte) error {
@@ -30,6 +30,10 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 	}
 
 	return nil
+}
+
+func (t Time) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + time.Time(t).Format("2006-01-02 15:04:05"+"\"")), nil
 }
 
 func (t Time) String() string {

@@ -135,6 +135,9 @@ func Map[T any, R any](slice []T, m func(T) R) []R {
 var r = rand.New(rand.NewSource(time.Now().Unix()))
 
 func PickRandom[T any](slice []T) T {
+	if len(slice) == 0 {
+		return *new(T)
+	}
 	return slice[r.Intn(len(slice))]
 }
 
