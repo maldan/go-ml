@@ -42,6 +42,29 @@ func callMethod(method reflect.Method, controller any, params map[string]any) re
 		return virtualCall(method, controller)
 	}
 
+	// Has 1 arg
+	if functionType.NumIn() == 2 {
+		// Get last arg
+		arg := reflect.New(functionType.In(1)).Interface()
+
+		// Get type
+		argType := reflect.TypeOf(arg).Elem()
+
+		// Create new value
+		argValue := reflect.New(argType)
+
+		// Copy json to that value
+		b, _ := json.Marshal(params)
+		json.Unmarshal(b, argValue.Elem().Addr().Interface())
+
+		// Is struct
+		if argType.Kind() == reflect.Struct {
+			return virtualCall(method, controller, argValue.Elem().Interface())
+		} else {
+			panic("Argument must be struct type")
+		}
+	}
+
 	// Has 2 arg
 	if functionType.NumIn() == 3 {
 		// Get last arg
@@ -53,16 +76,19 @@ func callMethod(method reflect.Method, controller any, params map[string]any) re
 		// Create new value
 		argValue := reflect.New(argType)
 
+		// Copy json to that value
 		b, _ := json.Marshal(params)
 		json.Unmarshal(b, argValue.Elem().Addr().Interface())
 
 		// Is struct
 		if argType.Kind() == reflect.Struct {
 			return virtualCall(method, controller, &Context{}, argValue.Elem().Interface())
+		} else {
+			panic("Argument must be struct type")
 		}
 	}
 
-	return reflect.ValueOf("")
+	panic("Method not found")
 }
 
 func (a API) Handle(args Args) {
