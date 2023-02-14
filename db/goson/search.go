@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-func (d *DataTable[T]) ForEach(fn func(offset int, size int) bool) {
-	offset := core.HeaderSize
+func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
+	offset := uint64(core.HeaderSize)
 
 	for {
 		// Read size and flags
-		size := int(binary.LittleEndian.Uint32(d.mem[offset+core.RecordStart:]))
+		size := binary.LittleEndian.Uint32(d.mem[offset+core.RecordStart:])
 		flags := int(d.mem[offset+core.RecordStart+core.RecordSize])
 
 		// If field not deleted
@@ -24,8 +24,8 @@ func (d *DataTable[T]) ForEach(fn func(offset int, size int) bool) {
 		}
 
 		// Go to next value
-		offset += size
-		if offset >= len(d.mem) {
+		offset += uint64(size)
+		if offset >= uint64(len(d.mem)) {
 			break
 		}
 	}
@@ -54,7 +54,7 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 	}
 
 	// Go through each record
-	d.ForEach(func(offset int, size int) bool {
+	d.ForEach(func(offset uint64, size uint32) bool {
 		mapper.Map(d.mem[offset+core.RecordStart+core.RecordSize+core.RecordFlags:], fieldIdList)
 
 		// Collect values

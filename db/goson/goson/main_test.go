@@ -1,12 +1,10 @@
 package goson_test
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/maldan/go-ml/db/goson/core"
 	"github.com/maldan/go-ml/db/goson/goson"
 	"testing"
 	"time"
-	"unsafe"
 )
 
 type Record struct {
@@ -52,6 +50,50 @@ type Test struct {
 	RecordList []Sperm
 }
 
+type TestUser struct {
+	Id               int    `json:"id"`
+	Password         string `json:"password"`
+	Username         string `json:"username"`
+	Phone            string `json:"phone"`
+	PromoCode        string `json:"promo_code"`
+	SmsCode          int    `json:"sms_code"`
+	Email            string `json:"email"`
+	IsPhoneActivated bool   `json:"phone_activated"`
+
+	SalonName    string `json:"salon_name"`
+	SalonAddress string `json:"address"`
+	SalonLogo    string `json:"salon_logo"`
+
+	SubscriptionName string `json:"subscription_name"`
+	// SubscriptionType    string    `json:"subscription_type"`
+	SubscriptionExpires time.Time `json:"subscription_expires"`
+
+	AvailablePhoto     int `json:"available_photo"`
+	AvailableDocuments int `json:"available_documents"`
+
+	OverridePermission uint64 `json:"override_permission"`
+
+	LastLogin  time.Time `json:"last_login"`
+	DateJoined time.Time `json:"date_joined"`
+}
+
+func TestVisualize(t *testing.T) {
+	tt := TestUser{
+		Email:            "lox",
+		SalonLogo:        "xax",
+		SubscriptionName: "xxax-11",
+		LastLogin:        time.Now(),
+		DateJoined:       time.Now(),
+	}
+
+	nid := core.NameToId{}
+	nid.Add(core.GetNameList(tt)...)
+
+	packed := goson.Marshal(tt, nid)
+	goson.Visualize(packed, 0)
+}
+
+/*
 func TestNameToId(t *testing.T) {
 	mp := goson.NameToId(Test{})
 	fmt.Printf("%+v\n", mp)
@@ -162,31 +204,6 @@ func TestUnpack(t *testing.T) {
 	cmhp_print.Print(out)
 }
 
-/*func TestA(t *testing.T) {
-	x := 0
-	for i := 0; i < 1024; i++ {
-		bytes := goson.Marshal(Test{
-			Email:   "sasageo",
-			Balance: 1,
-			Role:    "123",
-			Record: Record{
-				Name: "X", Type: "Y",
-				Gavno: Gavno{Name: 1, Type: 1},
-			},
-			//Created: time.Now(),
-			RecordList: []Sperm{
-				{Lox: 1, Urod: 2, Peedar: 3},
-				{Lox: 1, Urod: 2, Peedar: 3},
-				{Lox: 1, Urod: 2, Peedar: 3},
-			},
-		})
-
-		tt := goson.Unmarshall[Test](bytes)
-		x += len(tt.Role)
-	}
-	fmt.Printf("'%v'\n", x)
-}*/
-
 func BenchmarkPack(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		bytes := dson.Pack(Test{
@@ -279,3 +296,4 @@ func BenchmarkX(b *testing.B) {
 	}
 	fmt.Printf("Time: %v\n", x)
 }
+*/

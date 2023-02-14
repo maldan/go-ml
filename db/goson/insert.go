@@ -15,7 +15,8 @@ func (d *DataTable[T]) GenerateId() uint64 {
 	return id
 }
 
-func (d *DataTable[T]) Insert(v T) uint64 {
+func (d *DataTable[T]) Insert(v T) Record[T] {
+	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
 	defer d.remap()
@@ -39,6 +40,10 @@ func (d *DataTable[T]) Insert(v T) uint64 {
 		panic(errors.New("incomplete writing"))
 	}
 
-	// Return new offset to file
-	return uint64(stat.Size())
+	// Return record info
+	return Record[T]{
+		offset: uint64(stat.Size()),
+		size:   uint32(len(bytes)),
+		table:  d,
+	}
 }

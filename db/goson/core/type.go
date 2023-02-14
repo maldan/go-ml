@@ -17,3 +17,28 @@ const TypeStruct = 10
 
 const TypeSlice = 11
 const TypeMap = 12
+
+func TypeToString(tp uint8) string {
+	switch tp {
+	case TypeBool:
+		return "bool"
+	case Type8:
+		return "i8"
+	case Type16:
+		return "i16"
+	case Type32:
+		return "i32"
+	case Type64:
+		return "i64"
+	case TypeString:
+		return "string"
+	case TypeSlice:
+		return "slice"
+	case TypeTime:
+		return "time"
+	case TypeStruct:
+		return "struct"
+	default:
+		return "unknown"
+	}
+}

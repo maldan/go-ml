@@ -34,8 +34,10 @@ func IdToName(nameToId NameToId) IdToName {
 type NameToId map[string]uint8
 type IdToName map[uint8]string
 
-func (n *NameToId) Add(name string) {
-	(*n)[name] = uint8(len(*n)) + 1
+func (n *NameToId) Add(names ...string) {
+	for _, nm := range names {
+		(*n)[nm] = uint8(len(*n)) + 1
+	}
 }
 
 func GetNameList(v any) []string {

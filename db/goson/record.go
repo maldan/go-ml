@@ -41,6 +41,11 @@ func (s *Record[T]) Unpack() T {
 }
 
 func (s *Record[T]) Delete() bool {
+	// Lock table
+	s.table.rwLock.Lock()
+	defer s.table.rwLock.Unlock()
+
+	// Incorrect record
 	if s.table.mem[s.offset] != core.RecordStartMark {
 		return false
 	}
@@ -59,6 +64,10 @@ func (s *Record[T]) Delete() bool {
 }
 
 func (s *Record[T]) Update(fields map[string]any) bool {
+	// Lock table
+	s.table.rwLock.Lock()
+	defer s.table.rwLock.Unlock()
+
 	// Unpack current
 	unpack := s.Unpack()
 
@@ -85,9 +94,7 @@ func (s *Record[T]) Update(fields map[string]any) bool {
 	}
 
 	// Create new
-	s.offset = s.table.Insert(unpack)
-
-	// TODO Just in case must set new offset
+	s.offset = s.table.Insert(unpack).offset
 
 	return true
 }

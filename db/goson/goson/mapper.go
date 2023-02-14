@@ -2,6 +2,7 @@ package goson
 
 import (
 	"encoding/binary"
+	"fmt"
 	"github.com/maldan/go-ml/db/goson/core"
 	"log"
 	"reflect"
@@ -37,13 +38,20 @@ func NewMapper[T any](nameToId core.NameToId) *ValueMapper[T] {
 
 func typeSize(bytes []byte) int {
 	switch bytes[0] {
+	case core.TypeBool, core.Type8:
+		return 1
+	case core.Type16:
+		return 2
+	case core.Type32:
+		return 4
+	case core.Type64:
+		return 8
 	case core.TypeString:
 		// Field size
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[1:]))
 		return 1 + 2 + fieldSize
-	case core.Type32:
-		return 4
 	default:
+		panic(fmt.Sprintf("unknown type %v", bytes[0]))
 		return 0
 	}
 }
@@ -60,7 +68,7 @@ func applyType[T any](v *ValueMapper[T], bytes []byte, offset int, fieldName uin
 		hh.Data = bts.Data + uintptr(offset) + 2 + 1
 		hh.Len = fieldSize
 	default:
-		break
+		panic(fmt.Sprintf("can't apply type %v", bytes[offset]))
 	}
 }
 
@@ -103,6 +111,8 @@ func (v *ValueMapper[T]) Map(bytes []byte, fieldList []uint8) {
 
 		if bytes[0] == core.TypeStruct {
 			offset += handleStruct[T](v, bytes, offset, searchField)
+		} else {
+			panic(fmt.Sprintf("unmapped type %v", bytes[0]))
 		}
 	}
 }

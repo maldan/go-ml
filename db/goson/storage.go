@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/edsrzf/mmap-go"
 	"github.com/maldan/go-ml/db/goson/core"
+	"math"
 
 	"io/fs"
 	"io/ioutil"
@@ -117,6 +118,14 @@ func unwrap(bytes []byte) []byte {
 
 func wrap(bytes []byte) []byte {
 	fullSize := len(bytes) + core.RecordStart + core.RecordSize + core.RecordFlags + core.RecordEnd
+
+	// Calculate aligned size
+	alignBy := 1
+	alignedSize := math.Ceil(float64(fullSize)/float64(alignBy)) * float64(alignBy)
+	zeroPadding := int(alignedSize) - fullSize
+	fullSize = int(alignedSize)
+
+	// Create array
 	fullPackage := make([]byte, 0, fullSize)
 
 	// Start
@@ -133,6 +142,10 @@ func wrap(bytes []byte) []byte {
 
 	// Body
 	fullPackage = append(fullPackage, bytes...)
+
+	// Zero padding
+	zero := make([]byte, zeroPadding)
+	fullPackage = append(fullPackage, zero...)
 
 	// End
 	fullPackage = append(fullPackage, 0x34)
