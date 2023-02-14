@@ -1,4 +1,4 @@
-package cdb_goson_test
+package mdb_goson_test
 
 import (
 	"fmt"

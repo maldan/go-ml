@@ -3,7 +3,7 @@ package ms_handler
 import (
 	"embed"
 	"fmt"
-	ml_fs "github.com/maldan/go-ml/io/fs"
+	ml_file "github.com/maldan/go-ml/io/fs/file"
 	ms_error "github.com/maldan/go-ml/server/error"
 	"net/http"
 	"os"
@@ -41,7 +41,7 @@ func (e EmbedFS) Handle(args Args) {
 	p2 := os.TempDir() + "/rapi_vfs/" + fmt.Sprintf("%v", os.Getpid()) + "/" + pathInsideVfs
 	err = os.MkdirAll(filepath.Dir(p2), 0777)
 	ms_error.FatalIfError(err)
-	err = ml_fs.WriteFile(p2, data)
+	err = ml_file.New(p2).Write(data)
 	ms_error.FatalIfError(err)
 
 	// Serve file

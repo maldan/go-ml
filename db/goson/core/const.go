@@ -8,7 +8,7 @@ const RecordStart = 1
 // RecordSize is size of each record
 const RecordSize = 4
 
-// RecordFlags amount of fields, is deleted
+// RecordFlags is deleted
 const RecordFlags = 1
 
 // RecordEnd is 1 bytes 0x34 of header for each record

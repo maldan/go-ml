@@ -1,26 +1,29 @@
 package ms_error
 
-import (
-	"runtime"
-	"strings"
-	"time"
-)
+const ErrorTypeUnknown = "unknown"
+const ErrorTypeRequired = "required"
+
+type ErrorDebugInfo struct {
+	File string `json:"file"`
+}
 
 type Error struct {
-	Status      bool   `json:"-"`
-	Code        int    `json:"-"`
-	Type        string `json:"type"`
-	Field       string `json:"field,omitempty"`
-	Description string `json:"description"`
-	File        string `json:"-"`
-	Line        int    `json:"-"`
+	//Status      bool   `json:"-"`
+	Code        int      `json:"-"`
+	Type        string   `json:"type"`
+	Field       string   `json:"field,omitempty"`
+	Description string   `json:"description"`
+	Debug       []string `json:"debug,omitempty"`
+
+	//File        string `json:"-"`
+	//Line        int    `json:"-"`
 	// Stack       string    `json:"stack,omitempty"`
-	Created time.Time `json:"-"`
+	//Created time.Time `json:"-"`
 }
 
 func Fatal(err Error) {
-	_, file, line, _ := runtime.Caller(1)
-	ff := strings.Split(file, "/")
+	/*_, file, line, _ := runtime.Caller(1)
+	ff := strings.Split(file, "/")*/
 
 	if err.Code == 0 {
 		err.Code = 500
@@ -28,9 +31,9 @@ func Fatal(err Error) {
 	if err.Type == "" {
 		err.Type = "unknown"
 	}
-	err.File = strings.Join(ff[len(ff)-2:], "/")
+	/*err.File = strings.Join(ff[len(ff)-2:], "/")
 	err.Line = line
-	err.Created = time.Now()
+	err.Created = time.Now()*/
 
 	panic(err)
 }

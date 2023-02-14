@@ -3,14 +3,15 @@ package ms_handler
 import (
 	"encoding/json"
 	"fmt"
+	ml_file "github.com/maldan/go-ml/io/fs/file"
 	ms_error "github.com/maldan/go-ml/server/error"
 	ms_response "github.com/maldan/go-ml/server/response"
 	ml_string "github.com/maldan/go-ml/util/string"
+	"io"
 	"net/http"
 	"reflect"
 	"strconv"
 
-	"io/ioutil"
 	"strings"
 )
 
@@ -113,17 +114,42 @@ func (a API) Handle(args Args) {
 		}
 	}
 
-	// Read body
-	bodyBytes, _ := ioutil.ReadAll(args.Request.Body)
-	if len(bodyBytes) > 0 {
-		// Parse json body and
-		jsonMap := map[string]any{}
-		err := json.Unmarshal(bodyBytes, &jsonMap)
+	// Parse multipart body
+	if strings.Contains(args.Request.Header.Get("Content-Type"), "multipart/form-data") {
+		// Parse multipart body and collect params
+		err := args.Request.ParseMultipartForm(0)
+		ms_error.FatalIfError(err)
+		for key, element := range args.Request.MultipartForm.Value {
+			params[key] = element[0]
+		}
+
+		// Collect files
+		if len(args.Request.MultipartForm.File) > 0 {
+			for kk, fileHeaders := range args.Request.MultipartForm.File {
+				for _, header := range fileHeaders {
+					params[kk] = ml_file.NewWithMime(
+						reflect.ValueOf(header).Elem().FieldByName("tmpfile").String(),
+						header.Header.Get("Content-Type"),
+					)
+				}
+			}
+		}
+	} else {
+		// Read body as json
+		bodyBytes, _ := io.ReadAll(args.Request.Body)
+		err := args.Request.Body.Close()
 		ms_error.FatalIfError(err)
 
-		// Collect params
-		for key, element := range jsonMap {
-			params[key] = element
+		if len(bodyBytes) > 0 {
+			// Parse json body and
+			jsonMap := map[string]any{}
+			err2 := json.Unmarshal(bodyBytes, &jsonMap)
+			ms_error.FatalIfError(err2)
+
+			// Collect params
+			for key, element := range jsonMap {
+				params[key] = element
+			}
 		}
 	}
 

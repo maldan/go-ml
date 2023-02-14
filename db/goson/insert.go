@@ -1,4 +1,4 @@
-package cdb_goson
+package mdb_goson
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ func (d *DataTable[T]) GenerateId() uint64 {
 	return id
 }
 
-func (d *DataTable[T]) Insert(v T) {
+func (d *DataTable[T]) Insert(v T) uint64 {
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
 	defer d.remap()
@@ -38,4 +38,7 @@ func (d *DataTable[T]) Insert(v T) {
 	if n != len(bytes) {
 		panic(errors.New("incomplete writing"))
 	}
+
+	// Return new offset to file
+	return uint64(stat.Size())
 }

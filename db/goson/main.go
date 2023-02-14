@@ -1,4 +1,4 @@
-package cdb_goson
+package mdb_goson
 
 import (
 	"github.com/edsrzf/mmap-go"

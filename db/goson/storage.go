@@ -1,4 +1,4 @@
-package cdb_goson
+package mdb_goson
 
 import (
 	"encoding/binary"

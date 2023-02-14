@@ -1,8 +1,9 @@
-package cdb_goson_test
+package mdb_goson_test
 
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/maldan/go-cdb/cdb_proto/pack"
 	"github.com/maldan/go-ml/db/goson/core"
 	"reflect"
 	"testing"
@@ -64,7 +65,7 @@ func TestHeader(t *testing.T) {
 
 		// Check types
 		if f.Type.Kind() == reflect.String {
-			if fieldType != core.TString {
+			if fieldType != core.TypeString {
 				t.Fatalf("incorrect type")
 			}
 		}

@@ -1,4 +1,4 @@
-package cdb_goson
+package mdb_goson
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 )
 
 type Record[T any] struct {
-	offset int
-	size   int
+	offset uint64
+	size   uint32
 	table  *DataTable[T]
 }
 
@@ -36,7 +36,7 @@ func (s *SearchResult[T]) Unpack() []T {
 }
 
 func (s *Record[T]) Unpack() T {
-	realData := unwrap(s.table.mem[s.offset : s.offset+s.size])
+	realData := unwrap(s.table.mem[s.offset : s.offset+uint64(s.size)])
 	return goson.Unmarshall[T](realData, s.table.Header.IdToName)
 }
 
@@ -85,7 +85,7 @@ func (s *Record[T]) Update(fields map[string]any) bool {
 	}
 
 	// Create new
-	s.table.Insert(unpack)
+	s.offset = s.table.Insert(unpack)
 
 	// TODO Just in case must set new offset
 

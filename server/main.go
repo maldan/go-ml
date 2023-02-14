@@ -12,13 +12,12 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
-	"time"
 )
 
 //go:embed panel_frontend/dist/*
 var panelFs embed.FS
 
-func HandleError(args *ms_handler.Args) {
+func endOfRequest(args *ms_handler.Args) {
 	err := recover()
 	if err == nil {
 		return
@@ -37,26 +36,26 @@ func HandleError(args *ms_handler.Args) {
 			rapi_debug.Log(args.Id).SetArgs(args.MethodArgs)
 		}*/
 	default:
-		_, file, line, _ := runtime.Caller(3)
-
-		/*for i := 0; i < 10; i++ {
-			p, f, l, ok := runtime.Caller(i)
+		// _, file, line, _ := runtime.Caller(3)
+		debugInfo := make([]string, 0, 10)
+		for i := 0; i < 10; i++ {
+			_, f, l, ok := runtime.Caller(i)
 			if ok {
-				fmt.Printf("%v %v:%v\n", p, f, l)
+				debugInfo = append(debugInfo, fmt.Sprintf("%v:%v", f, l))
 			}
 		}
-		*/
 
 		args.Response.WriteHeader(500)
 		// fmt.Println(string(debug.Stack()))
 		ee := ms_error.Error{
-			Code:        500,
+			//Code:        500,
 			Type:        "unknown",
 			Description: fmt.Sprintf("%v", e),
-			Line:        line,
-			File:        file,
+			Debug:       debugInfo,
+			//Line:        line,
+			//File:        file,
 			// Stack:       string(debug.Stack()),
-			Created: time.Now(),
+			//Created: time.Now(),
 		}
 		message, _ := json.Marshal(ee)
 		args.Response.Write(message)
@@ -86,15 +85,8 @@ func injectDebug(config *Config) {
 				Root: "panel_frontend/dist",
 				Fs:   panelFs,
 			},
-			/*Handler: ms_handler.API{
-				ControllerList: []any{ms_panel.Panel{}},
-			},*/
 		},
 	})
-
-	/*ms_panel.Html = PanelHtml
-	ms_panel.Css = PanelCss
-	ms_panel.Js = PanelJs*/
 }
 
 func Start(config Config) {
@@ -104,7 +96,7 @@ func Start(config Config) {
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
 		// Prepare args
 		args := ms_handler.Args{Response: response, Request: request}
-		defer HandleError(&args)
+		defer endOfRequest(&args)
 
 		// Disable cors for all queries
 		DisableCors(response)
@@ -122,13 +114,15 @@ func Start(config Config) {
 
 		// Handle
 		h.Handle(args)
-
-		// Done
-		fmt.Printf("%+v\n", args)
 	})
 
 	log.Printf("Mega Server Starts at host %v\n", config.Host)
 
-	err := http.ListenAndServe(config.Host, nil)
-	ms_error.FatalIfError(err)
+	if config.TLS.Enabled {
+		err := http.ListenAndServeTLS(config.Host, config.TLS.CertFile, config.TLS.KeyFile, nil)
+		ms_error.FatalIfError(err)
+	} else {
+		err := http.ListenAndServe(config.Host, nil)
+		ms_error.FatalIfError(err)
+	}
 }

@@ -2,14 +2,14 @@ package ml_json
 
 import (
 	"encoding/json"
-	ml_fs "github.com/maldan/go-ml/io/fs"
+	ml_file "github.com/maldan/go-ml/io/fs/file"
 )
 
 func FromFile[T any](path string) (T, error) {
 	outStruct := new(T)
 
 	// Read content
-	content, err := ml_fs.ReadFile(path)
+	content, err := ml_file.New(path).ReadAll()
 	if err != nil {
 		return *outStruct, err
 	}
@@ -27,7 +27,7 @@ func ToFile[T any](path string, v T) error {
 	}
 
 	// Write
-	err = ml_fs.WriteFile(path, bytes)
+	err = ml_file.New(path).Write(bytes)
 	return err
 }
 

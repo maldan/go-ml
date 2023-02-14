@@ -40,13 +40,11 @@ func CheckPassword(password1 string, password2 string) {
 	}
 }
 
-func Required[T any](args T, fields []string) {
-	for _, v := range fields {
+func Required[T any](args T, fields ...string) {
+	for _, fieldName := range fields {
 		f := reflect.ValueOf(args)
-		if f.FieldByName(v).IsZero() {
-			ms_error.Fatal(ms_error.Error{
-				Description: fmt.Sprintf("Field '%v' is required", v),
-			})
+		if f.FieldByName(fieldName).IsZero() {
+			failField(args, fieldName, ms_error.ErrorTypeRequired, "is required")
 		}
 	}
 }
@@ -74,4 +72,30 @@ func Trim[T any](args *T, fields []string) {
 			}
 		}
 	}
+}
+
+func MatchRegExp(args any, r string, fields ...string) {
+	var rr = regexp.MustCompile(r)
+
+	for _, fieldName := range fields {
+		f := reflect.ValueOf(args)
+		if !rr.MatchString(f.FieldByName(fieldName).String()) {
+			failField(args, fieldName, ms_error.ErrorTypeUnknown, "must pass regex "+r)
+		}
+	}
+}
+
+func failField(args any, fieldName string, errorType string, text string) {
+	tf, _ := reflect.TypeOf(args).FieldByName(fieldName)
+
+	// Get field name
+	if tf.Tag.Get("json") != "" {
+		fieldName = tf.Tag.Get("json")
+	}
+
+	ms_error.Fatal(ms_error.Error{
+		Type:        errorType,
+		Field:       fieldName,
+		Description: fmt.Sprintf("Field '%v' %v", fieldName, text),
+	})
 }

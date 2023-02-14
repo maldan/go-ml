@@ -15,8 +15,15 @@ type PanelConfig struct {
 	HasControlTab bool
 }
 
+type SecureConfig struct {
+	Enabled  bool
+	CertFile string
+	KeyFile  string
+}
+
 type Config struct {
 	Host   string
 	Router []ms_handler.RouteHandler
+	TLS    SecureConfig
 	Panel  PanelConfig
 }
