@@ -140,7 +140,35 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 	tp := bytes[offset]
 	offset += 1
 
-	if tp == core.TypeStruct {
+	switch tp {
+	case core.TypeBool:
+		*(*bool)(ptr) = bytes[offset] != 0
+		offset += 1
+		break
+	case core.Type8:
+		*(*uint8)(ptr) = bytes[offset]
+		offset += 1
+		break
+	case core.Type16:
+		*(*uint16)(ptr) = binary.LittleEndian.Uint16(bytes[offset:])
+		offset += 2
+		break
+	case core.Type32:
+		*(*uint32)(ptr) = binary.LittleEndian.Uint32(bytes[offset:])
+		offset += 4
+		break
+	case core.Type64:
+		*(*uint64)(ptr) = binary.LittleEndian.Uint64(bytes[offset:])
+		offset += 8
+		break
+	case core.TypeString:
+		size := int(binary.LittleEndian.Uint16(bytes[offset:]))
+		offset += 2
+		blob := bytes[offset : offset+size]
+		offset += size
+		*(*string)(ptr) = string(blob)
+		break
+	case core.TypeStruct:
 		// Size
 		offset += 2
 
@@ -178,9 +206,8 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 				offset += unpack(bytes[offset:], unsafe.Add(ptr, field.Offset), typeHint, idToName)
 			}
 		}
-	}
-
-	if tp == core.TypeSlice {
+		break
+	case core.TypeSlice:
 		// Size
 		offset += 2
 
@@ -211,17 +238,8 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 			Len:  amount,
 			Cap:  amount,
 		}
-	}
-
-	if tp == core.TypeString {
-		size := int(binary.LittleEndian.Uint16(bytes[offset:]))
-		offset += 2
-		blob := bytes[offset : offset+size]
-		offset += size
-		*(*string)(ptr) = string(blob)
-	}
-
-	if tp == core.TypeTime {
+		break
+	case core.TypeTime:
 		size := int(bytes[offset])
 		offset += 1
 		blob := bytes[offset : offset+size]
@@ -233,11 +251,9 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 		}
 
 		offset += size
-	}
-
-	if tp == core.Type32 {
-		*(*int)(ptr) = int(binary.LittleEndian.Uint32(bytes[offset:]))
-		offset += 4
+		break
+	default:
+		panic(fmt.Sprintf("uknown type %v", tp))
 	}
 
 	return offset

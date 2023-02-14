@@ -32,7 +32,8 @@ func (d *DataTable[T]) Insert(v T) Record[T] {
 	}
 
 	// Write at end of file
-	n, err := d.file.WriteAt(bytes, stat.Size())
+	endOfFile := stat.Size()
+	n, err := d.file.WriteAt(bytes, endOfFile)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +43,7 @@ func (d *DataTable[T]) Insert(v T) Record[T] {
 
 	// Return record info
 	return Record[T]{
-		offset: uint64(stat.Size()),
+		offset: uint64(endOfFile),
 		size:   uint32(len(bytes)),
 		table:  d,
 	}

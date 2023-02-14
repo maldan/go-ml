@@ -64,15 +64,8 @@ func (s *Record[T]) Delete() bool {
 }
 
 func (s *Record[T]) Update(fields map[string]any) bool {
-	// Lock table
-	s.table.rwLock.Lock()
-	defer s.table.rwLock.Unlock()
-
 	// Unpack current
 	unpack := s.Unpack()
-
-	// Delete old
-	s.Delete()
 
 	// Fill fields
 	valueOf := reflect.ValueOf(&unpack).Elem()
@@ -89,9 +82,12 @@ func (s *Record[T]) Update(fields map[string]any) bool {
 			field.SetString(value.(string))
 			break
 		default:
-			break
+			panic(fmt.Sprintf("can't set field for type %T", value))
 		}
 	}
+
+	// Delete old
+	s.Delete()
 
 	// Create new
 	s.offset = s.table.Insert(unpack).offset

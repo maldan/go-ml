@@ -1,7 +1,6 @@
 package mdb_goson_test
 
 import (
-	"fmt"
 	mdb_goson "github.com/maldan/go-ml/db/goson"
 	ml_console "github.com/maldan/go-ml/io/console"
 	"testing"
@@ -22,8 +21,8 @@ type TestUser struct {
 	SalonAddress string `json:"address"`
 	SalonLogo    string `json:"salon_logo"`
 
-	SubscriptionName string `json:"subscription_name"`
-	// SubscriptionType    string    `json:"subscription_type"`
+	SubscriptionName    string    `json:"subscription_name"`
+	SubscriptionType    string    `json:"subscription_type"`
 	SubscriptionExpires time.Time `json:"subscription_expires"`
 
 	AvailablePhoto     int `json:"available_photo"`
@@ -37,13 +36,19 @@ type TestUser struct {
 
 func TestXXX3(t *testing.T) {
 	userDb := mdb_goson.New[TestUser]("../../trash/db")
-	userDb.Insert(TestUser{Username: "lox", Password: "oglox"})
+	// userDb.Insert(TestUser{Id: int(userDb.GenerateId()), Username: "lox", Password: "oglox"})
 	sr := userDb.FindBy(mdb_goson.ArgsFind[TestUser]{
-		FieldList: "Username",
+		FieldList: "Id",
 		Where: func(u *TestUser) bool {
-			fmt.Printf("%v\n", u)
-			return u.Username == "lox"
+			return u.Id == 3
 		},
 	})
+	sr.Result[0].Update(map[string]any{
+		"Phone": "5454545",
+	})
+	sr.Result[0].Update(map[string]any{
+		"Phone": "xx",
+	})
+
 	ml_console.PrettyPrint(sr.Unpack())
 }

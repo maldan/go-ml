@@ -46,10 +46,14 @@ func typeSize(bytes []byte) int {
 		return 4
 	case core.Type64:
 		return 8
+	case core.TypeTime:
+		// Field size
+		fieldSize := int(binary.LittleEndian.Uint16(bytes[1:]))
+		return 1 + fieldSize
 	case core.TypeString:
 		// Field size
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[1:]))
-		return 1 + 2 + fieldSize
+		return 2 + fieldSize
 	default:
 		panic(fmt.Sprintf("unknown type %v", bytes[0]))
 		return 0
@@ -60,6 +64,9 @@ func applyType[T any](v *ValueMapper[T], bytes []byte, offset int, fieldName uin
 	off := v.MapOffset[fieldName]
 
 	switch bytes[offset] {
+	case core.Type32:
+		*(*uint32)(off) = binary.LittleEndian.Uint32(bytes[offset+1:])
+		break
 	case core.TypeString:
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[offset+1:]))
 		bts := *(*reflect.SliceHeader)(unsafe.Pointer(&bytes))
@@ -67,6 +74,7 @@ func applyType[T any](v *ValueMapper[T], bytes []byte, offset int, fieldName uin
 		hh := (*reflect.StringHeader)(off)
 		hh.Data = bts.Data + uintptr(offset) + 2 + 1
 		hh.Len = fieldSize
+		break
 	default:
 		panic(fmt.Sprintf("can't apply type %v", bytes[offset]))
 	}
@@ -96,7 +104,9 @@ func handleStruct[T any](v *ValueMapper[T], bytes []byte, offset int, searchFiel
 		}
 
 		// Go next
+		// fmt.Printf("T: %v\n", core.TypeToString(bytes[offset]))
 		fieldSize := typeSize(bytes[offset:])
+		offset += 1 // field type
 		offset += fieldSize
 	}
 
