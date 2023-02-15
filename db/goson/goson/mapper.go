@@ -38,22 +38,22 @@ func NewMapper[T any](nameToId core.NameToId) *ValueMapper[T] {
 
 func typeSize(bytes []byte) int {
 	switch bytes[0] {
-	case core.TypeBool, core.Type8:
+	case core.T_BOOL, core.Type8:
 		return 1
 	case core.Type16:
 		return 2
-	case core.Type32:
+	case core.Type32, core.TypeF32:
 		return 4
-	case core.Type64:
+	case core.Type64, core.TypeF64:
 		return 8
 	case core.TypeTime:
 		// Field size
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[1:]))
-		return 1 + fieldSize
+		return 1 + fieldSize // 1 - is length size info
 	case core.TypeString:
 		// Field size
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[1:]))
-		return 2 + fieldSize
+		return 2 + fieldSize // 2 - is length size info
 	default:
 		panic(fmt.Sprintf("unknown type %v", bytes[0]))
 		return 0

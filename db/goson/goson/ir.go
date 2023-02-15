@@ -28,7 +28,7 @@ func (r *IR) Len() int {
 	outSize += 1
 
 	switch r.Type {
-	case core.Type8, core.TypeBool:
+	case core.Type8, core.T_BOOL:
 		outSize += 1
 		break
 	case core.Type16:
@@ -91,7 +91,7 @@ func (r *IR) Build() []byte {
 	s = append(s, uint8(r.Type))
 
 	switch r.Type {
-	case core.TypeBool, core.Type8, core.Type16, core.Type32, core.Type64, core.TypeF32, core.TypeF64:
+	case core.T_BOOL, core.Type8, core.Type16, core.Type32, core.Type64, core.TypeF32, core.TypeF64:
 		// Content
 		s = append(s, r.Content...)
 		break
@@ -161,7 +161,7 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 		if valueOf.Bool() {
 			ir.Content[0] = 1
 		}
-		ir.Type = core.TypeBool
+		ir.Type = core.T_BOOL
 		break
 
 	// Int 8

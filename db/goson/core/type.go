@@ -1,6 +1,6 @@
 package core
 
-const TypeBool = 1
+const T_BOOL = 1
 
 const Type8 = 2
 const Type16 = 3
@@ -20,7 +20,7 @@ const TypeMap = 12
 
 func TypeToString(tp uint8) string {
 	switch tp {
-	case TypeBool:
+	case T_BOOL:
 		return "bool"
 	case Type8:
 		return "i8"
@@ -32,12 +32,14 @@ func TypeToString(tp uint8) string {
 		return "i64"
 	case TypeString:
 		return "string"
-	case TypeSlice:
-		return "slice"
 	case TypeTime:
 		return "time"
 	case TypeStruct:
 		return "struct"
+	case TypeSlice:
+		return "slice"
+	case TypeMap:
+		return "map"
 	default:
 		return "unknown"
 	}

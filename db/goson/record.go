@@ -1,12 +1,19 @@
 package mdb_goson
 
 import (
-	"fmt"
 	"github.com/maldan/go-ml/db/goson/core"
 	"github.com/maldan/go-ml/db/goson/goson"
-
-	"reflect"
+	"math"
 )
+
+/**
+Record struct
+
+[12 34] - record start
+[0 0 0 0] - size of full record, include start + end
+[0] - record flags, is deleted for example
+[56 78] - record end
+*/
 
 type Record[T any] struct {
 	offset uint64
@@ -26,9 +33,6 @@ func (s *SearchResult[T]) Unpack() []T {
 
 	for i := 0; i < len(s.Result); i++ {
 		r := s.Result[i]
-
-		//realData := unwrap(s.table.mem[r.offset : r.offset+r.size])
-		//v := goson.Unmarshall[T](realData, s.table.Header.IdToName)
 		out = append(out, r.Unpack())
 	}
 
@@ -40,7 +44,54 @@ func (s *Record[T]) Unpack() T {
 	return goson.Unmarshall[T](realData, s.table.Header.IdToName)
 }
 
-func (s *Record[T]) Delete() bool {
+func unwrap(bytes []byte) []byte {
+	if bytes[0] != 0x12 {
+		panic("non package")
+	}
+	hh := core.SIZE_OF_RECORD_START + core.RecordSize + core.RecordFlags
+	return bytes[hh : len(bytes)-1]
+}
+
+func wrap(bytes []byte) []byte {
+	fullSize := len(bytes) + core.SIZE_OF_RECORD_START + core.RecordSize + core.RecordFlags + core.SIZE_OF_RECORD_END
+
+	// Calculate aligned size
+	alignBy := 1
+	alignedSize := math.Ceil(float64(fullSize)/float64(alignBy)) * float64(alignBy)
+	zeroPadding := int(alignedSize) - fullSize
+	fullSize = int(alignedSize)
+
+	// Create array
+	fullPackage := make([]byte, 0, fullSize)
+
+	// Start
+	fullPackage = append(fullPackage, 0x12)
+	fullPackage = append(fullPackage, 0x34)
+
+	// Size
+	fullPackage = append(fullPackage, uint8(fullSize))
+	fullPackage = append(fullPackage, uint8(fullSize>>8))
+	fullPackage = append(fullPackage, uint8(fullSize>>16))
+	fullPackage = append(fullPackage, uint8(fullSize>>24))
+
+	// Flags
+	fullPackage = append(fullPackage, 0)
+
+	// Body
+	fullPackage = append(fullPackage, bytes...)
+
+	// Zero padding
+	zero := make([]byte, zeroPadding)
+	fullPackage = append(fullPackage, zero...)
+
+	// End
+	fullPackage = append(fullPackage, 0x56)
+	fullPackage = append(fullPackage, 0x78)
+
+	return fullPackage
+}
+
+/*func (s *Record[T]) Delete() bool {
 	// Lock table
 	s.table.rwLock.Lock()
 	defer s.table.rwLock.Unlock()
@@ -93,4 +144,4 @@ func (s *Record[T]) Update(fields map[string]any) bool {
 	s.offset = s.table.Insert(unpack).offset
 
 	return true
-}
+}*/

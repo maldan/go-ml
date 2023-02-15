@@ -8,7 +8,7 @@ import (
 /**
 Header struct
 
-[P R O T 1 2 3 4] - file id
+[G O S O N D B $] - file id
 [1] - version
 
 [0 0 0 0 0 0 0 0] - auto increment

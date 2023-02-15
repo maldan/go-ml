@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagram</title>
+    <style>
+        body {
+            background: #2b2b2b;
+            color: #fefefe;
+            font-size: 16px;
+            font-family: "SplineSans", system-ui, -apple-system, BlinkMacSystemFont,
+            "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: 0.3px;
+        }
+
+        .db {
+            border: 1px solid #fe0000;
+            width: 240px;
+            padding: 5px;
+        }
+
+        .header {
+            border: 1px solid #66ab0c;
+            padding: 5px;
+        }
+
+        .element {
+            background: #1e63cd;
+            width: max-content;
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .element:last-child {
+            margin-bottom: 0;
+        }
+
+        .recordList {
+            border: 1px solid #49b1fc;
+            padding: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="db">
+        <div class="header">
+            <div class="element">[8] GOSONDB$</div>
+            <div class="element">[1] 1</div>
+            <div class="element">[8] AI</div>
+            <div class="element">[8] Total</div>
+        </div>
+        <div class="recordList">
+            <div class="element">[2] 1234</div>
+            <div class="element">[4] Size</div>
+            <div class="element">[1] Flags</div>
+            <div class="element">[?] Body</div>
+            <div class="element">[2] 5678</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,6 +1,7 @@
 package ml_fs
 
 import (
+	"errors"
 	ml_file "github.com/maldan/go-ml/io/fs/file"
 	"os"
 	"path/filepath"
@@ -78,4 +79,22 @@ func List(path string) ([]ml_file.File, error) {
 		})
 	}
 	return out, nil
+}
+
+func DeleteFile(path string) error {
+	stat, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+
+	if !stat.IsDir() {
+		err = os.Remove(path)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("path is directory")
+	}
+
+	return nil
 }

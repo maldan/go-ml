@@ -1,6 +1,7 @@
 package ml_file
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"time"
@@ -65,4 +66,22 @@ func (f *File) Created() time.Time {
 		return time.Time{}
 	}
 	return s.ModTime()
+}
+
+func (f *File) Delete() error {
+	stat, err := os.Stat(f.Path)
+	if err != nil {
+		return err
+	}
+
+	if !stat.IsDir() {
+		err = os.Remove(f.Path)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("path is directory")
+	}
+
+	return nil
 }

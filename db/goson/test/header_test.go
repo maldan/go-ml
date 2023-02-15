@@ -1,15 +1,6 @@
-package mdb_goson_test
+package test_test
 
-import (
-	"encoding/binary"
-	"fmt"
-	"github.com/maldan/go-cdb/cdb_proto/pack"
-	"github.com/maldan/go-ml/db/goson/core"
-	"reflect"
-	"testing"
-)
-
-func TestHeader(t *testing.T) {
+/*func TestHeader(t *testing.T) {
 	typeOf := reflect.TypeOf(Test{})
 	bytes := pack.EmptyHeader[Test]()
 	offset := 0
@@ -71,3 +62,4 @@ func TestHeader(t *testing.T) {
 		}
 	}
 }
+*/

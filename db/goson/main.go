@@ -2,25 +2,25 @@ package mdb_goson
 
 import (
 	"github.com/edsrzf/mmap-go"
-	"github.com/maldan/go-ml/db/goson/core"
 	"os"
 	"sync"
 )
 
 type DataTable[T any] struct {
-	mem        mmap.MMap
-	file       *os.File
-	structInfo core.StructInfo
-	rwLock     sync.RWMutex
+	mem  mmap.MMap
+	file *os.File
+	// structInfo core.StructInfo
+	rwLock sync.RWMutex
 
 	Header Header
 
+	Path string
 	Name string
 }
 
-func New[T any](name string) *DataTable[T] {
-	d := DataTable[T]{Name: name}
-	d.structInfo.FieldNameToId = map[string]int{}
+func New[T any](path string, name string) *DataTable[T] {
+	d := DataTable[T]{Path: path, Name: name}
+	//d.structInfo.FieldNameToId = map[string]int{}
 
 	d.open()
 	d.remap()

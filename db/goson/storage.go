@@ -5,8 +5,6 @@ import (
 	"errors"
 	"github.com/edsrzf/mmap-go"
 	"github.com/maldan/go-ml/db/goson/core"
-	"math"
-
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -14,22 +12,29 @@ import (
 )
 
 func (d *DataTable[T]) open() {
+	finalPath, err := filepath.Abs(d.Path)
+	if err != nil {
+		panic(err)
+	}
+
+	finalPath += "/" + d.Name
+
 	// Check if file exists
-	if _, err := os.Stat(d.Name); errors.Is(err, fs.ErrNotExist) {
+	if _, err = os.Stat(finalPath); errors.Is(err, fs.ErrNotExist) {
 		// Create path for file
-		err = os.MkdirAll(filepath.Dir(d.Name), 0777)
+		err = os.MkdirAll(filepath.Dir(finalPath), 0777)
 		if err != nil {
 			panic(err)
 		}
 
 		// Init file, because 0 length file fails with memory mapping
-		if err = ioutil.WriteFile(d.Name, d.Header.ToBytes(), 0777); err != nil {
+		if err = ioutil.WriteFile(finalPath, d.Header.ToBytes(), 0777); err != nil {
 			panic(err)
 		}
 	}
 
 	// Open file
-	f, err := os.OpenFile(d.Name, os.O_RDWR, 0777)
+	f, err := os.OpenFile(finalPath, os.O_RDWR, 0777)
 	if err != nil {
 		panic(err)
 	}
@@ -106,49 +111,4 @@ func (d *DataTable[T]) writeAI() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func unwrap(bytes []byte) []byte {
-	if bytes[0] != 0x12 {
-		panic("non package")
-	}
-	hh := core.RecordStart + core.RecordSize + core.RecordFlags
-	return bytes[hh : len(bytes)-1]
-}
-
-func wrap(bytes []byte) []byte {
-	fullSize := len(bytes) + core.RecordStart + core.RecordSize + core.RecordFlags + core.RecordEnd
-
-	// Calculate aligned size
-	alignBy := 1
-	alignedSize := math.Ceil(float64(fullSize)/float64(alignBy)) * float64(alignBy)
-	zeroPadding := int(alignedSize) - fullSize
-	fullSize = int(alignedSize)
-
-	// Create array
-	fullPackage := make([]byte, 0, fullSize)
-
-	// Start
-	fullPackage = append(fullPackage, 0x12)
-
-	// Size
-	fullPackage = append(fullPackage, uint8(fullSize))
-	fullPackage = append(fullPackage, uint8(fullSize>>8))
-	fullPackage = append(fullPackage, uint8(fullSize>>16))
-	fullPackage = append(fullPackage, uint8(fullSize>>24))
-
-	// Flags
-	fullPackage = append(fullPackage, 0)
-
-	// Body
-	fullPackage = append(fullPackage, bytes...)
-
-	// Zero padding
-	zero := make([]byte, zeroPadding)
-	fullPackage = append(fullPackage, zero...)
-
-	// End
-	fullPackage = append(fullPackage, 0x34)
-
-	return fullPackage
 }

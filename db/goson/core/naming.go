@@ -1,35 +1,11 @@
 package core
 
 import (
+	"fmt"
+	ml_slice "github.com/maldan/go-ml/slice"
 	"reflect"
 	"strings"
 )
-
-/*func NameToId(v any) NameToId {
-	out := NameToId{}
-	nameToId(v, &out)
-	return out
-}
-
-func NameList(v any) []string {
-	out := NameToId{}
-	nameToId(v, &out)
-	out2 := make([]string, 0)
-	for name, _ := range out {
-		out2 = append(out2, name)
-	}
-	return out2
-}
-
-func IdToName(nameToId NameToId) IdToName {
-	out := core.IdToName{}
-
-	for k, v := range nameToId {
-		out[v] = k
-	}
-
-	return out
-}*/
 
 type NameToId map[string]uint8
 type IdToName map[uint8]string
@@ -40,12 +16,13 @@ func (n *NameToId) Add(names ...string) {
 	}
 }
 
+// GetNameList return unique list of names from given struct
 func GetNameList(v any) []string {
 	m := map[string]any{}
 	l := make([]string, 0)
 
 	// Get all fields names
-	getFieldList(v, &l)
+	__getFieldList(v, &l)
 	for _, name := range l {
 		m[name] = true
 	}
@@ -58,7 +35,7 @@ func GetNameList(v any) []string {
 	return out
 }
 
-func getFieldList(v any, out *[]string) {
+func __getFieldList(v any, out *[]string) {
 	typeOf := reflect.TypeOf(v)
 
 	for i := 0; i < typeOf.NumField(); i++ {
@@ -72,46 +49,26 @@ func getFieldList(v any, out *[]string) {
 		*out = append(*out, field.Name)
 
 		if field.Type.Kind() == reflect.Struct {
-			getFieldList(reflect.New(field.Type).Elem().Interface(), out)
+			__getFieldList(reflect.New(field.Type).Elem().Interface(), out)
 		}
 		if field.Type.Kind() == reflect.Slice {
-			getFieldList(reflect.New(field.Type.Elem()).Elem().Interface(), out)
+			__getFieldList(reflect.New(field.Type.Elem()).Elem().Interface(), out)
 		}
 	}
 }
 
-/*func FromIdToName(nameToId NameToId) IdToName {
-	out := core.IdToName{}
-
-	for k, v := range nameToId {
-		out[v] = k
-	}
-
-	return out
-}*/
-
-/*func nameToId(v any, out *NameToId) {
-	typeOf := reflect.TypeOf(v)
-
-	for i := 0; i < typeOf.NumField(); i++ {
-		field := typeOf.Field(i)
-
-		// Skip private
-		if string(field.Name[0]) == strings.ToLower(string(field.Name[0])) {
-			continue
-		}
-
-		_, ok := (*out)[field.Name]
+func NameListToIdList(fieldList string, nameToId NameToId) []uint8 {
+	// Field list
+	fieldList2 := ml_slice.Map(strings.Split(fieldList, ","), func(t string) string {
+		return strings.Trim(t, " ")
+	})
+	fieldIdList := make([]uint8, 0)
+	for _, v := range fieldList2 {
+		id, ok := nameToId[v]
 		if !ok {
-			(*out)[field.Name] = uint8(len(*out)) + 1
+			panic(fmt.Sprintf("field %v not found", id))
 		}
-
-		if field.Type.Kind() == reflect.Struct {
-			nameToId(reflect.New(field.Type).Elem().Interface(), out)
-		}
-		if field.Type.Kind() == reflect.Slice {
-			nameToId(reflect.New(field.Type.Elem()).Elem().Interface(), out)
-		}
+		fieldIdList = append(fieldIdList, id)
 	}
+	return fieldIdList
 }
-*/

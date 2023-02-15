@@ -1,11 +1,31 @@
-package mdb_goson_test
+package test_test
 
-import (
-	mdb_goson "github.com/maldan/go-ml/db/goson"
-	ml_console "github.com/maldan/go-ml/io/console"
-	"testing"
-	"time"
-)
+import "time"
+
+type TestA struct {
+	Name  string
+	Crazy TestB
+}
+
+type TestB struct {
+	Name string
+}
+
+type Test struct {
+	Id        int    `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName" len:"32"`
+	Phone     string `json:"phone" len:"64"`
+	/*Sex       string `json:"sex" id:"3" len:"64"`
+	Rock      string `json:"rock" id:"4" len:"64"`
+	Gas       string `json:"gas" id:"5" len:"64"`
+	Yas       string `json:"yas" id:"6" len:"64"`
+	Taj       string `json:"taj" id:"7" len:"64"`
+	Mahal     string `json:"mahal" id:"8" len:"64"`
+	Ebal      string `json:"ebal" id:"9" len:"64"`
+	Sasal     string `json:"sasal" id:"10" len:"64"`
+	Sasal2    string `json:"sasal2" id:"11" len:"64"`*/
+}
 
 type TestUser struct {
 	Id               int    `json:"id"`
@@ -32,23 +52,4 @@ type TestUser struct {
 
 	LastLogin  time.Time `json:"last_login"`
 	DateJoined time.Time `json:"date_joined"`
-}
-
-func TestXXX3(t *testing.T) {
-	userDb := mdb_goson.New[TestUser]("../../trash/db")
-	// userDb.Insert(TestUser{Id: int(userDb.GenerateId()), Username: "lox", Password: "oglox"})
-	sr := userDb.FindBy(mdb_goson.ArgsFind[TestUser]{
-		FieldList: "Id",
-		Where: func(u *TestUser) bool {
-			return u.Id == 3
-		},
-	})
-	sr.Result[0].Update(map[string]any{
-		"Phone": "5454545",
-	})
-	sr.Result[0].Update(map[string]any{
-		"Phone": "xx",
-	})
-
-	ml_console.PrettyPrint(sr.Unpack())
 }

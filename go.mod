@@ -6,8 +6,6 @@ require (
 	github.com/edsrzf/mmap-go v1.1.0
 	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/k0kubun/pp/v3 v3.2.0
-	github.com/maldan/go-cdb v0.0.10
-	github.com/maldan/go-cmhp v0.0.28
 )
 
 require (

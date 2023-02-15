@@ -2,8 +2,8 @@ package core
 
 const HeaderSize = 2048
 
-// RecordStart is 1 bytes 0x12 of header for each record
-const RecordStart = 1
+// SIZE_OF_RECORD_START is 2 bytes 0x1234 mark, stands for start of record
+const SIZE_OF_RECORD_START = 2
 
 // RecordSize is size of each record
 const RecordSize = 4
@@ -11,8 +11,8 @@ const RecordSize = 4
 // RecordFlags is deleted
 const RecordFlags = 1
 
-// RecordEnd is 1 bytes 0x34 of header for each record
-const RecordEnd = 1
+// SIZE_OF_RECORD_END is 2 bytes 0x5678  mark, stands for end of record
+const SIZE_OF_RECORD_END = 2
 
 const RecordStartMark = 0x12
 const RecordEndMark = 0x34
