@@ -64,8 +64,17 @@ func applyType[T any](v *ValueMapper[T], bytes []byte, offset int, fieldName uin
 	off := v.MapOffset[fieldName]
 
 	switch bytes[offset] {
+	case core.Type8:
+		*(*uint8)(off) = bytes[offset]
+		break
+	case core.Type16:
+		*(*uint16)(off) = binary.LittleEndian.Uint16(bytes[offset+1:])
+		break
 	case core.Type32:
 		*(*uint32)(off) = binary.LittleEndian.Uint32(bytes[offset+1:])
+		break
+	case core.Type64:
+		*(*uint64)(off) = binary.LittleEndian.Uint64(bytes[offset+1:])
 		break
 	case core.TypeString:
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[offset+1:]))
@@ -104,7 +113,6 @@ func handleStruct[T any](v *ValueMapper[T], bytes []byte, offset int, searchFiel
 		}
 
 		// Go next
-		// fmt.Printf("T: %v\n", core.TypeToString(bytes[offset]))
 		fieldSize := typeSize(bytes[offset:])
 		offset += 1 // field type
 		offset += fieldSize

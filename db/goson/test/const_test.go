@@ -53,3 +53,11 @@ type TestUser struct {
 	LastLogin  time.Time `json:"last_login"`
 	DateJoined time.Time `json:"date_joined"`
 }
+
+type StructNumber struct {
+	Balance int
+}
+
+type StructString struct {
+	Balance string
+}

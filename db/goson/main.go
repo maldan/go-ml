@@ -7,9 +7,8 @@ import (
 )
 
 type DataTable[T any] struct {
-	mem  mmap.MMap
-	file *os.File
-	// structInfo core.StructInfo
+	mem    mmap.MMap
+	file   *os.File
 	rwLock sync.RWMutex
 
 	Header Header
@@ -20,7 +19,6 @@ type DataTable[T any] struct {
 
 func New[T any](path string, name string) *DataTable[T] {
 	d := DataTable[T]{Path: path, Name: name}
-	//d.structInfo.FieldNameToId = map[string]int{}
 
 	d.open()
 	d.remap()

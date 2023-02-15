@@ -24,11 +24,12 @@ type Record[T any] struct {
 type SearchResult[T any] struct {
 	IsFound bool
 	Count   int
-	Result  []Record[T]
-	table   *DataTable[T]
+	Result  []T
+	// recordList []Record[T]
+	table *DataTable[T]
 }
 
-func (s *SearchResult[T]) Unpack() []T {
+/*func (s *SearchResult[T]) Unpack() []T {
 	out := make([]T, 0)
 
 	for i := 0; i < len(s.Result); i++ {
@@ -37,13 +38,23 @@ func (s *SearchResult[T]) Unpack() []T {
 	}
 
 	return out
-}
+}*/
 
 func (s *Record[T]) Unpack() T {
 	realData := unwrap(s.table.mem[s.offset : s.offset+uint64(s.size)])
 	return goson.Unmarshall[T](realData, s.table.Header.IdToName)
 }
 
+/*func unpack[T any](recordList []Record[T]) []T {
+	out := make([]T, 0)
+
+	for i := 0; i < len(recordList); i++ {
+		out = append(out, recordList[i].Unpack())
+	}
+
+	return out
+}
+*/
 func unwrap(bytes []byte) []byte {
 	if bytes[0] != 0x12 {
 		panic("non package")

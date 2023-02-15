@@ -18,36 +18,48 @@ func Marshal[T any](v T, nameToId core.NameToId) []byte {
 
 func Unmarshall[T any](bytes []byte, idToName core.IdToName) T {
 	t := new(T)
-	unpack(bytes, unsafe.Pointer(t), *t, idToName)
+	unpack(bytes, unsafe.Pointer(t), core.TypeStringToByteType(reflect.TypeOf(*t).Kind().String()), *t, idToName)
 	return *t
 }
 
-func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToName) int {
+func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToName core.IdToName) int {
 	offset := 0
 
 	// Read type
 	tp := bytes[offset]
 	offset += 1
 
+	// fmt.Printf("ptrType %v - %v\n", ptrType, core.TypeToString(ptrType))
+
 	switch tp {
 	case core.T_BOOL:
-		*(*bool)(ptr) = bytes[offset] != 0
+		if ptrType == core.T_BOOL {
+			*(*bool)(ptr) = bytes[offset] != 0
+		}
 		offset += 1
 		break
 	case core.Type8:
-		*(*uint8)(ptr) = bytes[offset]
+		if ptrType == core.Type8 {
+			*(*uint8)(ptr) = bytes[offset]
+		}
 		offset += 1
 		break
 	case core.Type16:
-		*(*uint16)(ptr) = binary.LittleEndian.Uint16(bytes[offset:])
+		if ptrType == core.Type16 {
+			*(*uint16)(ptr) = binary.LittleEndian.Uint16(bytes[offset:])
+		}
 		offset += 2
 		break
 	case core.Type32:
-		*(*uint32)(ptr) = binary.LittleEndian.Uint32(bytes[offset:])
+		if ptrType == core.Type32 {
+			*(*uint32)(ptr) = binary.LittleEndian.Uint32(bytes[offset:])
+		}
 		offset += 4
 		break
 	case core.Type64:
-		*(*uint64)(ptr) = binary.LittleEndian.Uint64(bytes[offset:])
+		if ptrType == core.Type64 {
+			*(*uint64)(ptr) = binary.LittleEndian.Uint64(bytes[offset:])
+		}
 		offset += 8
 		break
 	case core.TypeString:
@@ -55,7 +67,9 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 		offset += 2
 		blob := bytes[offset : offset+size]
 		offset += size
-		*(*string)(ptr) = string(blob)
+		if ptrType == core.TypeString {
+			*(*string)(ptr) = string(blob)
+		}
 		break
 	case core.TypeStruct:
 		// Size
@@ -81,6 +95,7 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 				offset += unpack(
 					bytes[offset:],
 					unsafe.Add(ptr, field.Offset),
+					core.TypeStringToByteType(reflect.ValueOf(typeHint).FieldByName(fieldName).Type().String()),
 					reflect.ValueOf(typeHint).FieldByName(fieldName).Interface(),
 					idToName,
 				)
@@ -88,11 +103,18 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 				offset += unpack(
 					bytes[offset:],
 					unsafe.Add(ptr, field.Offset),
+					core.TypeStringToByteType(reflect.ValueOf(typeHint).FieldByName(fieldName).Type().String()),
 					reflect.ValueOf(typeHint).FieldByName(fieldName).Interface(),
 					idToName,
 				)
 			} else {
-				offset += unpack(bytes[offset:], unsafe.Add(ptr, field.Offset), typeHint, idToName)
+				offset += unpack(
+					bytes[offset:],
+					unsafe.Add(ptr, field.Offset),
+					core.TypeStringToByteType(field.Type.String()),
+					typeHint,
+					idToName,
+				)
 			}
 		}
 		break
@@ -114,6 +136,7 @@ func unpack(bytes []byte, ptr unsafe.Pointer, typeHint any, idToName core.IdToNa
 			offset += unpack(
 				bytes[offset:],
 				unsafe.Pointer(elemSlice.Index(i).Addr().Pointer()),
+				ptrType,
 				typeHint,
 				idToName,
 			)

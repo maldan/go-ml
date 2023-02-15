@@ -18,25 +18,29 @@ func (d *DataTable[T]) GenerateId() uint64 {
 	return id
 }
 
-func (d *DataTable[T]) Insert(v T) Record[T] {
+func __insertToTable[T any](table *DataTable[T], value T, isLock bool, isRemap bool) Record[T] {
 	// Lock table
-	d.rwLock.Lock()
-	defer d.rwLock.Unlock()
-	defer d.remap()
+	if isLock {
+		table.rwLock.Lock()
+		defer table.rwLock.Unlock()
+	}
+	if isRemap {
+		defer table.remap()
+	}
 
-	bytes := goson.Marshal(v, d.Header.NameToId)
+	bytes := goson.Marshal(value, table.Header.NameToId)
 
 	bytes = wrap(bytes)
 
 	// Get file size
-	stat, err := d.file.Stat()
+	stat, err := table.file.Stat()
 	if err != nil {
 		panic(err)
 	}
 
 	// Write at end of file
 	endOfFile := stat.Size()
-	n, err := d.file.WriteAt(bytes, endOfFile)
+	n, err := table.file.WriteAt(bytes, endOfFile)
 	if err != nil {
 		panic(err)
 	}
@@ -48,17 +52,92 @@ func (d *DataTable[T]) Insert(v T) Record[T] {
 	return Record[T]{
 		offset: uint64(endOfFile),
 		size:   uint32(len(bytes)),
-		table:  d,
+		table:  table,
 	}
+}
+
+func __markDeleted[T any](table *DataTable[T], offset uint64) {
+	// Read flags
+	b := []byte{0}
+	_, err := table.file.ReadAt(b, int64(offset+core.SIZE_OF_RECORD_START+core.RecordSize))
+	if err != nil {
+		panic(err)
+	}
+	b[0] |= core.MaskDeleted
+
+	// Write back
+	_, err = table.file.WriteAt(b, int64(offset+core.SIZE_OF_RECORD_START+core.RecordSize))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func __offsetUntil(slice []byte, seq ...uint8) (uint64, bool) {
+	for i := 0; i < len(slice)-(len(seq)-1); i++ {
+		isFound := true
+
+		// Compare sequence
+		for j := 0; j < len(seq); j++ {
+			if slice[i+j] != seq[j] {
+				isFound = false
+				break
+			}
+		}
+
+		if isFound {
+			return uint64(i), true
+		}
+	}
+
+	return 0, false
+}
+
+func (d *DataTable[T]) Insert(v T) Record[T] {
+	return __insertToTable(d, v, true, true)
 }
 
 func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
 	offset := uint64(core.HeaderSize)
 
+	// Empty table
+	if len(d.mem) <= core.HeaderSize {
+		return
+	}
+
 	for {
+		// Check header
+		if !(d.mem[offset] == 0x12 && d.mem[offset+1] == 0x34) {
+			fmt.Printf("corrupted at %v\n", offset)
+			// error
+			next, ok := __offsetUntil(d.mem[offset:], 0x12, 0x34)
+			if ok {
+				offset += next
+			} else {
+				break
+			}
+		}
+
 		// Read size and flags
 		size := binary.LittleEndian.Uint32(d.mem[offset+core.SIZE_OF_RECORD_START:])
 		flags := int(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize])
+
+		// Check size, it may be out of memory if record is corrupted
+		if uint64(size)+offset > uint64(len(d.mem)) {
+			offset += 1 // offset by 1 byte
+			if offset > uint64(len(d.mem)) {
+				break
+			}
+			continue
+		}
+
+		// Check end
+		if !(d.mem[offset+uint64(size)-2] == 0x56 && d.mem[offset+uint64(size)-1] == 0x78) {
+			offset += 1 // offset by 1 byte
+			if offset > uint64(len(d.mem)) {
+				break
+			}
+			continue
+		}
 
 		// If field not deleted
 		if flags&core.MaskDeleted != core.MaskDeleted {
@@ -110,11 +189,14 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 		if args.Where(&mapper.Container) {
 			searchResult.table = d
 			searchResult.IsFound = true
-			searchResult.Result = append(searchResult.Result, Record[T]{
+			record := Record[T]{
 				offset: offset,
 				size:   size,
 				table:  d,
-			})
+			}
+			unpacked := record.Unpack()
+			searchResult.Result = append(searchResult.Result, unpacked)
+			searchResult.Count += 1
 
 			// Check limit
 			if args.Limit > 0 && len(searchResult.Result) >= args.Limit {
@@ -148,15 +230,7 @@ func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
 		if args.Where(&mapper.Container) {
 			counter += 1
 
-			// Read flags
-			b := []byte{0}
-			d.file.ReadAt(b, int64(offset+core.SIZE_OF_RECORD_START+core.RecordSize))
-			fmt.Printf("FB: %v\n", b[0])
-			b[0] |= core.MaskDeleted
-			fmt.Printf("FAPL: %v\n", b[0])
-
-			// Write back
-			d.file.WriteAt(b, int64(offset+core.SIZE_OF_RECORD_START+core.RecordSize))
+			__markDeleted(d, offset)
 
 			// Check limit
 			if args.Limit > 0 && counter >= args.Limit {
@@ -168,10 +242,11 @@ func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
 	})
 }
 
-func (d *DataTable[T]) UpdateBy(args ArgsFind[T], fields map[string]any) {
+func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
+	defer d.remap()
 
 	// Create mapper for capturing values from bytes
 	mapper := goson.NewMapper[T](d.Header.NameToId)
@@ -182,9 +257,24 @@ func (d *DataTable[T]) UpdateBy(args ArgsFind[T], fields map[string]any) {
 	d.ForEach(func(offset uint64, size uint32) bool {
 		mapper.Map(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize+core.RecordFlags:], fieldIdList)
 
-		// Collect values
+		// Check condition
 		if args.Where(&mapper.Container) {
 			counter += 1
+
+			// Get record
+			record := Record[T]{offset: offset, size: size, table: d}
+
+			// Unpack value
+			raw := record.Unpack()
+
+			// Change data
+			args.Change(&raw)
+
+			// Insert new
+			__insertToTable(d, raw, false, false)
+
+			// Delete old
+			__markDeleted(d, offset)
 
 			// Check limit
 			if args.Limit > 0 && counter >= args.Limit {
