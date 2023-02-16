@@ -3,6 +3,7 @@ package ml_time
 import (
 	"encoding/binary"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -66,18 +67,34 @@ func (t Time) ToBytes() []byte {
 
 	year := tm.Year()
 
-	out := make([]byte, 0, 8)
-	out = append(out, uint8(year))
-	out = append(out, uint8(year>>8))
+	// Put date
+	out := make([]byte, 0, 12)
+	out = append(out, uint8(year), uint8(year>>8))
+	out = append(out, uint8(tm.Month()), uint8(tm.Day()))
 
-	out = append(out, uint8(tm.Month()))
-	out = append(out, uint8(tm.Day()))
+	// Put time
+	hour := tm.Hour()
+	minute := tm.Minute()
+	second := tm.Second()
+	nsec := tm.Nanosecond() / 10
+	out = append(out, uint8(hour), uint8(minute), uint8(second), uint8(nsec>>8), uint8(nsec))
+
+	// Put location
+	loc := tm.Format("-07:00")
+	lh, _ := strconv.Atoi(loc[1:3])
+	lm, _ := strconv.Atoi(loc[4:6])
+	if loc[0] == '-' {
+		lh = -lh
+	}
+	out = append(out, uint8(lh), uint8(lm))
 
 	return out
 }
 
 func (t *Time) FromBytes(b []byte) error {
 	tm := time.Time{}
+
+	fmt.Printf("%v\n", len(b))
 
 	year := binary.LittleEndian.Uint16(b)
 	month := b[2]

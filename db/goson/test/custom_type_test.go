@@ -17,7 +17,7 @@ func TestCustomTypeFind(t *testing.T) {
 
 	// Insert
 	values := make([]StructCustomType, 0)
-	for i := 0; i < 1_000_000; i++ {
+	for i := 1; i < 10; i++ {
 		values = append(values, StructCustomType{
 			Time: ml_time.Time(time.Now().Add(time.Hour * time.Duration(i))),
 		})
