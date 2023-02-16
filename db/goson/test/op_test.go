@@ -93,3 +93,48 @@ func TestUpdate(t *testing.T) {
 		panic(err)
 	}
 }
+
+func TestInsertMeasureTime_1000000(t *testing.T) {
+	name := ml_crypto.UID(12)
+
+	userDb := mdb_goson.New[StructString]("../../../trash/db", name)
+
+	// Insert
+	values := make([]StructString, 0)
+	for i := 0; i < 1_000_000; i++ {
+		values = append(values, StructString{
+			Balance: ml_crypto.UID(12),
+		})
+	}
+
+	tm := time.Now()
+	userDb.InsertMany(values)
+	fmt.Printf("Insert Many Time: %v\n", time.Since(tm))
+
+	// Find
+	tm = time.Now()
+	list := userDb.FindBy(mdb_goson.ArgsFind[StructString]{
+		FieldList: "Balance",
+		Limit:     1,
+		Where: func(user *StructString) bool {
+			// fmt.Printf("%v\n", user.Time)
+			return false
+		},
+	})
+	fmt.Printf("Find Time: %v\n", time.Since(tm))
+	if !list.IsFound {
+		t.Fatalf("fuck")
+	}
+
+	// Close
+	err := userDb.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	// Delete
+	err = ml_file.New("../../../trash/db/" + name).Delete()
+	if err != nil {
+		panic(err)
+	}
+}

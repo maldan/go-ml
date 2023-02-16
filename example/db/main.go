@@ -4,7 +4,7 @@ import (
 	"fmt"
 	mdb_goson "github.com/maldan/go-ml/db/goson"
 	ml_console "github.com/maldan/go-ml/io/console"
-	"time"
+	ml_time "github.com/maldan/go-ml/util/time"
 )
 
 type User struct {
@@ -23,7 +23,7 @@ type User struct {
 
 	SubscriptionName string `json:"subscription_name"`
 	// SubscriptionType    string    `json:"subscription_type"`
-	SubscriptionExpires time.Time `json:"subscription_expires"`
+	SubscriptionExpires ml_time.Time `json:"subscription_expires"`
 
 	AvailablePhoto     int    `json:"available_photo"`
 	AvailableDocuments int    `json:"available_documents"`
@@ -31,13 +31,17 @@ type User struct {
 
 	OverridePermission uint64 `json:"override_permission"`
 
-	LastLogin  time.Time `json:"last_login"`
-	DateJoined time.Time `json:"date_joined"`
+	LastLogin  ml_time.Time `json:"last_login"`
+	DateJoined ml_time.Time `json:"date_joined"`
 }
 
 func main() {
-	userDb := mdb_goson.New[User]("db")
+	userDb := mdb_goson.New[User](".", "db2")
+
+	// userDb.SetBackupSchedule("../../trash", time.Second)
+
 	// userDb.Insert(User{Username: "lox", Password: "oglox"})
+
 	sr := userDb.FindBy(mdb_goson.ArgsFind[User]{
 		FieldList: "Username",
 		Where: func(u *User) bool {
@@ -45,5 +49,5 @@ func main() {
 			return u.Username == "lox"
 		},
 	})
-	ml_console.PrettyPrint(sr.Unpack())
+	ml_console.PrettyPrint(sr.Result)
 }

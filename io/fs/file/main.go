@@ -20,6 +20,13 @@ func NewWithMime(path string, mime string) *File {
 	return &File{Path: path, mime: mime}
 }
 
+/*func FromDataUrl(path string, dataUrl string) (*File, error) {
+	if dataUrl[0:4] != "data" {
+		return &File{}, errors.New("not a data url")
+	}
+	return &File{Path: path}
+}*/
+
 func (f *File) ReadAll() ([]byte, error) {
 	return os.ReadFile(f.Path)
 }

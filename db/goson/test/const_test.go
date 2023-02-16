@@ -1,6 +1,9 @@
 package test_test
 
-import "time"
+import (
+	ml_time "github.com/maldan/go-ml/util/time"
+	"time"
+)
 
 type TestA struct {
 	Name  string
@@ -60,4 +63,8 @@ type StructNumber struct {
 
 type StructString struct {
 	Balance string
+}
+
+type StructCustomType struct {
+	Time ml_time.Time
 }

@@ -1,8 +1,8 @@
 package ml_fs
 
 import (
-	"errors"
 	ml_file "github.com/maldan/go-ml/io/fs/file"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,6 +54,32 @@ func Exists(path string) bool {
 	return false
 }*/
 
+func Copy(from string, to string) error {
+	source, err := os.Open(from)
+	defer source.Close()
+	if err != nil {
+		return err
+	}
+
+	// Prepare dir
+	os.MkdirAll(filepath.Dir(to), 0777)
+
+	// Create destination file
+	destination, err := os.Create(to)
+	defer destination.Close()
+	if err != nil {
+		return err
+	}
+
+	// Copy
+	_, err = io.Copy(destination, source)
+	return err
+}
+
+func Rename(src string, dst string) error {
+	return os.Rename(src, dst)
+}
+
 func List(path string) ([]ml_file.File, error) {
 	// Get list of files and dirs
 	list, err := os.ReadDir(path)
@@ -82,19 +108,5 @@ func List(path string) ([]ml_file.File, error) {
 }
 
 func DeleteFile(path string) error {
-	stat, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-
-	if !stat.IsDir() {
-		err = os.Remove(path)
-		if err != nil {
-			return err
-		}
-	} else {
-		return errors.New("path is directory")
-	}
-
-	return nil
+	return ml_file.New(path).Delete()
 }

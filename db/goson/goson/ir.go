@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/maldan/go-ml/db/goson/core"
 	"reflect"
-	"time"
+	"strings"
 )
 
 type IR struct {
@@ -28,16 +28,16 @@ func (r *IR) Len() int {
 	outSize += 1
 
 	switch r.Type {
-	case core.Type8, core.T_BOOL:
+	case core.T_8, core.T_BOOL:
 		outSize += 1
 		break
-	case core.Type16:
+	case core.T_16:
 		outSize += 2
 		break
-	case core.Type32:
+	case core.T_32:
 		outSize += 4
 		break
-	case core.Type64:
+	case core.T_64:
 		outSize += 8
 		break
 	case core.TypeStruct:
@@ -66,8 +66,8 @@ func (r *IR) Len() int {
 		outSize += 2
 		outSize += len(r.Content)
 		break
-	case core.TypeTime:
-		outSize += 1
+	case core.T_CUSTOM:
+		outSize += 2
 		outSize += len(r.Content)
 		break
 	default:
@@ -91,7 +91,7 @@ func (r *IR) Build() []byte {
 	s = append(s, uint8(r.Type))
 
 	switch r.Type {
-	case core.T_BOOL, core.Type8, core.Type16, core.Type32, core.Type64, core.TypeF32, core.TypeF64:
+	case core.T_BOOL, core.T_8, core.T_16, core.T_32, core.T_64, core.TypeF32, core.TypeF64:
 		// Content
 		s = append(s, r.Content...)
 		break
@@ -135,14 +135,23 @@ func (r *IR) Build() []byte {
 		// Content
 		s = append(s, r.Content...)
 		break
-	case core.TypeTime:
+	case core.T_CUSTOM:
 		// Content length
 		l := len(r.Content)
 		s = append(s, uint8(l))
+		s = append(s, uint8(l>>8))
 
 		// Content
 		s = append(s, r.Content...)
 		break
+	/*case core.TypeTime:
+	// Content length
+	l := len(r.Content)
+	s = append(s, uint8(l))
+
+	// Content
+	s = append(s, r.Content...)
+	break*/
 	default:
 		panic("unknown type " + fmt.Sprintf("%v", r.Type))
 	}
@@ -167,11 +176,11 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 	// Int 8
 	case reflect.Int8:
 		ir.Content = []byte{uint8(valueOf.Int())}
-		ir.Type = core.Type8
+		ir.Type = core.T_8
 		break
 	case reflect.Uint8:
 		ir.Content = []byte{uint8(valueOf.Uint())}
-		ir.Type = core.Type8
+		ir.Type = core.T_8
 		break
 
 	// Int 16
@@ -179,13 +188,13 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 		b := []byte{0, 0}
 		binary.LittleEndian.PutUint16(b, uint16(valueOf.Int()))
 		ir.Content = b
-		ir.Type = core.Type16
+		ir.Type = core.T_16
 		break
 	case reflect.Uint16:
 		b := []byte{0, 0}
 		binary.LittleEndian.PutUint16(b, uint16(valueOf.Uint()))
 		ir.Content = b
-		ir.Type = core.Type16
+		ir.Type = core.T_16
 		break
 
 	// Int 32
@@ -193,13 +202,13 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 		b := []byte{0, 0, 0, 0}
 		binary.LittleEndian.PutUint32(b, uint32(valueOf.Int()))
 		ir.Content = b
-		ir.Type = core.Type32
+		ir.Type = core.T_32
 		break
 	case reflect.Uint32:
 		b := []byte{0, 0, 0, 0}
 		binary.LittleEndian.PutUint32(b, uint32(valueOf.Uint()))
 		ir.Content = b
-		ir.Type = core.Type32
+		ir.Type = core.T_32
 		break
 
 	// Int 64
@@ -207,13 +216,13 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 		b := []byte{0, 0, 0, 0, 0, 0, 0, 0}
 		binary.LittleEndian.PutUint64(b, uint64(valueOf.Int()))
 		ir.Content = b
-		ir.Type = core.Type64
+		ir.Type = core.T_64
 		break
 	case reflect.Uint64:
 		b := []byte{0, 0, 0, 0, 0, 0, 0, 0}
 		binary.LittleEndian.PutUint64(b, valueOf.Uint())
 		ir.Content = b
-		ir.Type = core.Type64
+		ir.Type = core.T_64
 		break
 
 	case reflect.String:
@@ -230,12 +239,27 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 		}
 		break
 	case reflect.Struct:
-		if typeOf.Name() == "Time" {
+		/*if typeOf.Name() == "Time" {
 			ir.Type = core.TypeTime
 			ir.Content = []byte(valueOf.Interface().(time.Time).Format("2006-01-02T15:04:05.999-07:00"))
+		} else {*/
+
+		// Check to response method
+		tb, ok := typeOf.MethodByName("ToBytes")
+		if ok {
+			// Call
+			ret := tb.Func.Call([]reflect.Value{valueOf})
+			if len(ret) > 0 {
+				ir.Type = core.T_CUSTOM
+				ir.Content = ret[0].Interface().([]byte)
+			}
 		} else {
 			ir.Type = core.TypeStruct
 			for i := 0; i < typeOf.NumField(); i++ {
+				if typeOf.Field(i).Name == strings.ToLower(typeOf.Field(i).Name) {
+					panic(fmt.Sprintf("struct %v with private fields impossible to serialize", typeOf))
+				}
+
 				id, ok := nameToId[typeOf.Field(i).Name]
 				if !ok {
 					panic("name not found")
@@ -247,6 +271,8 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 				BuildIR(&tr, valueOf.Field(i).Interface(), nameToId)
 			}
 		}
+
+		//}
 		break
 	default:
 		panic("unsupported kind " + typeOf.Kind().String())

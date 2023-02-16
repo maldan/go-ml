@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/maldan/go-ml/db/goson/core"
-	"time"
 )
 
 func visualizeIntent(amount int) {
@@ -66,13 +65,13 @@ func Visualize(bytes []byte, intent int) int {
 		offset += 1
 	}
 
-	if tp == core.Type32 {
+	if tp == core.T_32 {
 		value := binary.LittleEndian.Uint32(bytes[offset:])
 		offset += 4
 		fmt.Printf("%v", value)
 	}
 
-	if tp == core.Type64 {
+	if tp == core.T_64 {
 		value := binary.LittleEndian.Uint64(bytes[offset:])
 		offset += 8
 		fmt.Printf("%v", value)
@@ -101,7 +100,15 @@ func Visualize(bytes []byte, intent int) int {
 		fmt.Printf("]\n")
 	}
 
-	if tp == core.TypeTime {
+	if tp == core.T_CUSTOM {
+		size := int(binary.LittleEndian.Uint16(bytes[offset:]))
+		offset += 2
+		blob := bytes[offset : offset+size]
+		offset += size
+		fmt.Printf("%v", blob)
+	}
+
+	/*if tp == core.TypeTime {
 		size := int(bytes[offset])
 		offset += 1
 		blob := bytes[offset : offset+size]
@@ -113,7 +120,7 @@ func Visualize(bytes []byte, intent int) int {
 		fmt.Printf("%v", x)
 
 		offset += size
-	}
+	}*/
 
 	return offset
 }

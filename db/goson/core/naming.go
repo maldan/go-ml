@@ -10,10 +10,24 @@ import (
 type NameToId map[string]uint8
 type IdToName map[uint8]string
 
+func (n *NameToId) FromStruct(v any) {
+	n.Add(GetNameList(v)...)
+}
+
 func (n *NameToId) Add(names ...string) {
 	for _, nm := range names {
 		(*n)[nm] = uint8(len(*n)) + 1
 	}
+}
+
+func (n *NameToId) Invert() IdToName {
+	out := IdToName{}
+
+	for k, v := range *n {
+		out[v] = k
+	}
+
+	return out
 }
 
 // GetNameList return unique list of names from given struct

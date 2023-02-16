@@ -1,8 +1,10 @@
 package goson_test
 
 import (
+	"fmt"
 	"github.com/maldan/go-ml/db/goson/core"
 	"github.com/maldan/go-ml/db/goson/goson"
+	ml_time "github.com/maldan/go-ml/util/time"
 	"testing"
 	"time"
 )
@@ -26,6 +28,10 @@ type Sperm struct {
 	Urod   int
 	Peedar int
 	Record Record
+}
+
+type Gas struct {
+	Time ml_time.Time
 }
 
 type Test struct {
@@ -91,6 +97,20 @@ func TestVisualize(t *testing.T) {
 
 	packed := goson.Marshal(tt, nid)
 	goson.Visualize(packed, 0)
+}
+
+func TestToBytes(t *testing.T) {
+	tt := Gas{
+		Time: ml_time.Time(time.Now()),
+	}
+
+	nid := core.NameToId{}
+	nid.Add(core.GetNameList(tt)...)
+
+	packed := goson.Marshal(tt, nid)
+	goson.Visualize(packed, 0)
+	g := goson.Unmarshall[Gas](packed, nid.Invert())
+	fmt.Printf("G: %v\n", g)
 }
 
 /*

@@ -29,6 +29,13 @@ type SearchResult[T any] struct {
 	table *DataTable[T]
 }
 
+func (s *SearchResult[T]) First() (T, bool) {
+	if s.IsFound {
+		return s.Result[0], true
+	}
+	return *new(T), false
+}
+
 /*func (s *SearchResult[T]) Unpack() []T {
 	out := make([]T, 0)
 

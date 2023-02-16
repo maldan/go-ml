@@ -8,14 +8,17 @@ import (
 	"github.com/maldan/go-ml/db/goson/goson"
 )
 
-func (d *DataTable[T]) GenerateId() uint64 {
-	d.rwLock.Lock()
-	id := uint64(0)
-	d.Header.AutoIncrement += 1
-	id = d.Header.AutoIncrement
-	d.rwLock.Unlock()
-	d.writeAI()
-	return id
+type ArgsFind[T any] struct {
+	FieldList string
+	Limit     int
+	Where     func(*T) bool
+}
+
+type ArgsUpdate[T any] struct {
+	FieldList string
+	Limit     int
+	Where     func(*T) bool
+	Change    func(*T)
 }
 
 func __insertToTable[T any](table *DataTable[T], value T, isLock bool, isRemap bool) Record[T] {
@@ -92,8 +95,28 @@ func __offsetUntil(slice []byte, seq ...uint8) (uint64, bool) {
 	return 0, false
 }
 
+func (d *DataTable[T]) GenerateId() uint64 {
+	d.rwLock.Lock()
+	id := uint64(0)
+	d.Header.AutoIncrement += 1
+	id = d.Header.AutoIncrement
+	d.rwLock.Unlock()
+	d.writeAI()
+	return id
+}
+
 func (d *DataTable[T]) Insert(v T) Record[T] {
 	return __insertToTable(d, v, true, true)
+}
+
+func (d *DataTable[T]) InsertMany(v []T) {
+	d.rwLock.Lock()
+	defer d.rwLock.Unlock()
+	defer d.remap()
+
+	for i := 0; i < len(v); i++ {
+		__insertToTable(d, v[i], false, false)
+	}
 }
 
 func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
@@ -152,19 +175,6 @@ func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
 			break
 		}
 	}
-}
-
-type ArgsFind[T any] struct {
-	FieldList string
-	Limit     int
-	Where     func(*T) bool
-}
-
-type ArgsUpdate[T any] struct {
-	FieldList string
-	Limit     int
-	Where     func(*T) bool
-	Change    func(*T)
 }
 
 func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {

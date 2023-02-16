@@ -1,6 +1,7 @@
 package ml_time
 
 import (
+	"encoding/binary"
 	"fmt"
 	"strings"
 	"time"
@@ -58,6 +59,33 @@ func (t Time) MarshalJSON() ([]byte, error) {
 	out += tt.Format("-07:00")
 
 	return []byte("\"" + out + "\""), nil
+}
+
+func (t Time) ToBytes() []byte {
+	tm := time.Time(t)
+
+	year := tm.Year()
+
+	out := make([]byte, 0, 8)
+	out = append(out, uint8(year))
+	out = append(out, uint8(year>>8))
+
+	out = append(out, uint8(tm.Month()))
+	out = append(out, uint8(tm.Day()))
+
+	return out
+}
+
+func (t *Time) FromBytes(b []byte) error {
+	tm := time.Time{}
+
+	year := binary.LittleEndian.Uint16(b)
+	month := b[2]
+	day := b[3]
+
+	*t = Time(time.Date(int(year), time.Month(month), int(day), 0, 0, 0, 0, tm.Location()))
+
+	return nil
 }
 
 func (t Time) String() string {

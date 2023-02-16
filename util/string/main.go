@@ -1,6 +1,8 @@
 package ml_string
 
-import "strings"
+import (
+	"strings"
+)
 
 func UnTitle(str string) string {
 	if len(str) == 0 {

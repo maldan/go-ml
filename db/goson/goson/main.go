@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/maldan/go-ml/db/goson/core"
 	"reflect"
-	"time"
 	"unsafe"
 )
 
@@ -29,7 +28,7 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 	tp := bytes[offset]
 	offset += 1
 
-	// fmt.Printf("ptrType %v - %v\n", ptrType, core.TypeToString(ptrType))
+	fmt.Printf("ptrType %v - %v\n", ptrType, core.TypeToString(ptrType))
 
 	switch tp {
 	case core.T_BOOL:
@@ -38,26 +37,26 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 		}
 		offset += 1
 		break
-	case core.Type8:
-		if ptrType == core.Type8 {
+	case core.T_8:
+		if ptrType == core.T_8 {
 			*(*uint8)(ptr) = bytes[offset]
 		}
 		offset += 1
 		break
-	case core.Type16:
-		if ptrType == core.Type16 {
+	case core.T_16:
+		if ptrType == core.T_16 {
 			*(*uint16)(ptr) = binary.LittleEndian.Uint16(bytes[offset:])
 		}
 		offset += 2
 		break
-	case core.Type32:
-		if ptrType == core.Type32 {
+	case core.T_32:
+		if ptrType == core.T_32 {
 			*(*uint32)(ptr) = binary.LittleEndian.Uint32(bytes[offset:])
 		}
 		offset += 4
 		break
-	case core.Type64:
-		if ptrType == core.Type64 {
+	case core.T_64:
+		if ptrType == core.T_64 {
 			*(*uint64)(ptr) = binary.LittleEndian.Uint64(bytes[offset:])
 		}
 		offset += 8
@@ -95,7 +94,7 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 				offset += unpack(
 					bytes[offset:],
 					unsafe.Add(ptr, field.Offset),
-					core.TypeStringToByteType(reflect.ValueOf(typeHint).FieldByName(fieldName).Type().String()),
+					core.TypeSlice,
 					reflect.ValueOf(typeHint).FieldByName(fieldName).Interface(),
 					idToName,
 				)
@@ -103,7 +102,7 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 				offset += unpack(
 					bytes[offset:],
 					unsafe.Add(ptr, field.Offset),
-					core.TypeStringToByteType(reflect.ValueOf(typeHint).FieldByName(fieldName).Type().String()),
+					core.TypeStruct,
 					reflect.ValueOf(typeHint).FieldByName(fieldName).Interface(),
 					idToName,
 				)
@@ -151,18 +150,33 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 			Cap:  amount,
 		}
 		break
-	case core.TypeTime:
-		size := int(bytes[offset])
-		offset += 1
+	case core.T_CUSTOM:
+		size := int(binary.LittleEndian.Uint16(bytes[offset:]))
+		offset += 2
 		blob := bytes[offset : offset+size]
+		offset += size
 
-		x, err := time.Parse("2006-01-02T15:04:05.999-07:00", string(blob))
-		*(*time.Time)(ptr) = x
-		if err != nil {
-			fmt.Printf("%v\n", err)
+		// Get pointer to type hint
+		pp := reflect.PointerTo(reflect.TypeOf(typeHint))
+
+		// Find method from bytes
+		fromBytes, ok := pp.MethodByName("FromBytes")
+		if ok {
+			// Convert unsafe pointer to reflect pointer with type hinting
+			rf := reflect.NewAt(reflect.TypeOf(typeHint), ptr)
+
+			// Call
+			ret := fromBytes.Func.Call([]reflect.Value{rf, reflect.ValueOf(blob)})
+			if len(ret) > 0 {
+				err := ret[0].Interface()
+				if err != nil {
+					panic(err)
+				}
+			}
+		} else {
+			panic(fmt.Sprintf("custom type %T doesn't have FromBytes method", typeHint))
 		}
 
-		offset += size
 		break
 	default:
 		panic(fmt.Sprintf("uknown type %v", tp))

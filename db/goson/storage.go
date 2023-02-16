@@ -39,6 +39,10 @@ func (d *DataTable[T]) open() {
 		panic(err)
 	}
 
+	// Get size
+	s, _ := os.Stat(finalPath)
+
+	d.fileSize = uint64(s.Size())
 	d.file = f
 }
 
@@ -107,7 +111,7 @@ func (d *DataTable[T]) writeAI() {
 	ai := []byte{0, 0, 0, 0, 0, 0, 0, 0}
 	binary.LittleEndian.PutUint64(ai, d.Header.AutoIncrement)
 
-	_, err := d.file.WriteAt(ai, 9)
+	_, err := d.file.WriteAt(ai, 8+1) // GOSON + Version
 	if err != nil {
 		panic(err)
 	}
