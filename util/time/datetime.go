@@ -38,7 +38,7 @@ type DateTime struct {
 	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30,
 	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 31,
 }*/
-var daysInMonth = [...]uint8{
+var daysInMonth = [...]int{
 	31,
 	28,
 	31,
@@ -251,48 +251,126 @@ func (d *DateTime) TimezoneOffset() int {
 	return -(int(d.tzHour)*60 + int(d.tzMinute))
 }
 
+func (d *DateTime) SetTimezoneOffset(timeZoneOffset int) {
+	d.tzHour = -int8(timeZoneOffset/60) % 60
+	d.tzMinute = uint8(timeZoneOffset % 60)
+}
+
 func (d *DateTime) AddSecond(v int) DateTime {
 	nd := *d
 
-	currSec := int(nd.second)
-	currMin := int(nd.minute)
-	currHour := int(nd.hour)
+	// Offset forward of backward
+	dayOffset := 1
+	if v < 0 {
+		dayOffset = -1
+	}
 
-	daysToOffset := (v + currHour*3600 + currMin*60 + currSec) / 86400
+	// Total days to offset
+	totalSec := int(nd.hour)*3600 + int(nd.minute)*60 + int(nd.second)
+	daysToOffset := (totalSec + v) / 86400
+	if daysToOffset < 0 {
+		daysToOffset = -(daysToOffset)
+	}
 
-	for i := 0; i < daysToOffset; i++ {
-		nd.day += 1
+	// If now today time is 100 for example, and I subtract 101. Then time will be -1.
+	// But -1 means 86399. So it means we need go back to 1 day.
+	dede := (totalSec + v) % 86400
+	if dede < 0 {
+		daysToOffset += 1
+	}
 
-		dim := daysInMonth[nd.month-1]
+	// New day
+	newDay := int(nd.day)
+	newMonth := int(nd.month)
+	newYear := int(nd.year)
 
-		// Is leap and february
-		if nd.year%4 == 0 && nd.month == 2 {
-			// Set 29 days
-			dim += 1
+	if dayOffset > 0 {
+		for i := 0; i < daysToOffset; i++ {
+			newDay += 1
+
+			dim := daysInMonth[newMonth-1]
+
+			// Is leap and february
+			if ((newYear%4 == 0 && newYear%100 != 0) || newYear%400 == 0) && newMonth == 2 {
+				// Set 29 days
+				dim += 1
+			}
+			if newDay > dim {
+				newDay = 1
+				newMonth += 1
+				if newMonth > 12 {
+					newMonth = 1
+					newYear += 1
+				}
+			}
 		}
-		if nd.day > dim {
-			nd.day = 1
-			nd.month += 1
-			if nd.month > 12 {
-				nd.month = 1
-				nd.year += 1
+	} else {
+		for i := 0; i < daysToOffset; i++ {
+			newDay -= 1
+
+			// Backward
+			if newDay < 1 {
+				newMonth -= 1
+				if newMonth < 1 {
+					newMonth = 12
+					newYear -= 1
+				}
+
+				// Is leap and february
+				if ((newYear%4 == 0 && newYear%100 != 0) || newYear%400 == 0) && newMonth == 2 {
+					newDay = daysInMonth[newMonth-1] + 1
+				} else {
+					newDay = daysInMonth[newMonth-1]
+				}
 			}
 		}
 	}
 
-	// Change time
-	nd.hour = uint8((int(nd.hour) + (v+currMin*60+currSec)/3600) % 24)
-	nd.minute = uint8((int(nd.minute) + (v+currSec)/60) % 60)
-	nd.second = uint8((int(nd.second) + v) % 60)
+	// Set new date
+	nd.year = uint16(newYear)
+	nd.month = uint8(newMonth)
+	nd.day = uint8(newDay)
+
+	// Set new time
+	gav := ((int(nd.hour)*3600 + int(nd.minute)*60 + int(nd.second)) + v) % 86400
+	if gav < 0 {
+		gav += 86400
+	}
+
+	nd.hour = uint8((gav / 3600) % 24)
+	nd.minute = uint8((gav % 3600) / 60)
+	nd.second = uint8(gav % 60)
 
 	return nd
 }
 
-func (d *DateTime) In(timeZoneOffset int) DateTime {
-	return DateTime{}
+// In timeZoneOffset is offset in minutes. For example -180 means +03:00.
+func (d DateTime) In(timeZoneOffset int) DateTime {
+	// Difference between current timezone and given
+	diff := d.TimezoneOffset() - timeZoneOffset
+	offset := d.AddSecond(diff * 60)
+	offset.SetTimezoneOffset(timeZoneOffset)
+	return offset
 }
 
-func (d *DateTime) EqualDate(date *DateTime) bool {
+func (d DateTime) UTC() DateTime {
+	return d.In(0)
+}
+
+// Equal compares date and time. For example
+// 2006-01-02 15:04:03 == 1992-01-02 12:33:11
+func (d DateTime) Equal(date DateTime) bool {
+	return d.EqualDate(date) && d.EqualTime(date)
+}
+
+// PreciseEqual same as Equal but also compare nanoseconds
+func (d DateTime) PreciseEqual(date DateTime) bool {
+	return d.Equal(date) && d.nanoSecond == date.nanoSecond
+}
+
+// EqualDate compare only dates. For example
+// 2006-01-02 == 1992-01-02
+func (d DateTime) EqualDate(date DateTime) bool {
 	// Same timezone
 	if d.TimezoneOffset() == date.TimezoneOffset() {
 		if d.year != date.year {
@@ -305,8 +383,50 @@ func (d *DateTime) EqualDate(date *DateTime) bool {
 			return false
 		}
 	} else {
-		// @TODO realize
-		return false
+		// Make dates equal with timezone
+		dateIn := date.In(d.TimezoneOffset())
+
+		if d.year != dateIn.year {
+			return false
+		}
+		if d.month != dateIn.month {
+			return false
+		}
+		if d.day != dateIn.day {
+			return false
+		}
+	}
+
+	return true
+}
+
+// EqualTime compare only time. For example
+// 15:32:12 == 12:11:33
+func (d DateTime) EqualTime(date DateTime) bool {
+	// Same timezone
+	if d.TimezoneOffset() == date.TimezoneOffset() {
+		if d.hour != date.hour {
+			return false
+		}
+		if d.minute != date.minute {
+			return false
+		}
+		if d.second != date.second {
+			return false
+		}
+	} else {
+		// Make dates equal with timezone
+		dateIn := date.In(d.TimezoneOffset())
+
+		if d.hour != dateIn.hour {
+			return false
+		}
+		if d.minute != dateIn.minute {
+			return false
+		}
+		if d.second != dateIn.second {
+			return false
+		}
 	}
 
 	return true

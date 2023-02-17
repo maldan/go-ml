@@ -11,14 +11,19 @@ import (
 )
 
 func TestCustomTypeFind(t *testing.T) {
-	name := ml_crypto.UID(12)
+	// Define type
+	type structCustomType struct {
+		Time ml_time.Time
+	}
 
-	userDb := mdb_goson.New[StructCustomType]("../../../trash/db", name)
+	// Create DB
+	name := ml_crypto.UID(12)
+	userDb := mdb_goson.New[structCustomType]("../../../trash/db", name)
 
 	// Insert
-	values := make([]StructCustomType, 0)
-	for i := 1; i < 10; i++ {
-		values = append(values, StructCustomType{
+	values := make([]structCustomType, 0)
+	for i := 0; i < 1_000; i++ {
+		values = append(values, structCustomType{
 			Time: ml_time.Time(time.Now().Add(time.Hour * time.Duration(i))),
 		})
 	}
@@ -26,15 +31,15 @@ func TestCustomTypeFind(t *testing.T) {
 
 	tm := time.Now()
 	userDb.InsertMany(values)
-	userDb.Insert(StructCustomType{Time: lastDay})
+	userDb.Insert(structCustomType{Time: lastDay})
 	fmt.Printf("Insert Many Time: %v\n", time.Since(tm))
 
 	// Find
 	tm = time.Now()
-	list := userDb.FindBy(mdb_goson.ArgsFind[StructCustomType]{
+	list := userDb.FindBy(mdb_goson.ArgsFind[structCustomType]{
 		FieldList: "Time",
 		Limit:     1,
-		Where: func(user *StructCustomType) bool {
+		Where: func(user *structCustomType) bool {
 			d, m, y := time.Time(user.Time).Date()
 			d1, m1, y1 := time.Time(lastDay).Date()
 			return d == d1 && m == m1 && y == y1

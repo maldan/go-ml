@@ -140,35 +140,62 @@ func TestDateTimeAdd(t *testing.T) {
 	t1 := time.Now()
 	t2 := ml_time.FromTime(t1)
 
-	for i := 0; i < 1_000_000; i++ {
-		tn1 := t1.Add(time.Second * time.Duration(i))
-		tn2 := t2.AddSecond(i)
+	gapList := []int{1, 100, 1000}
 
-		if tn1.Second() != int(tn2.Second()) {
-			t.Fatalf("second fuck")
-		}
-		if tn1.Minute() != int(tn2.Minute()) {
-			t.Fatalf("minute fuck")
-		}
-		if tn1.Hour() != int(tn2.Hour()) {
-			t.Fatalf("hour fuck")
-		}
+	for _, gap := range gapList {
+		timing := time.Now()
+		for i := -1_000_000; i < 1_000_000; i++ {
+			tn1 := t1.Add(time.Second * time.Duration(i*gap))
+			tn2 := t2.AddSecond(i * gap)
 
-		if tn1.Day() != int(tn2.Day()) {
-			t.Fatalf("day fuck")
+			if tn1.Second() != int(tn2.Second()) {
+				t.Fatalf("second fuck %v %v", tn1, tn2)
+			}
+			if tn1.Minute() != int(tn2.Minute()) {
+				t.Fatalf("minute fuck %v %v", tn1, tn2)
+			}
+			if tn1.Hour() != int(tn2.Hour()) {
+				t.Fatalf("hour fuck %v %v", tn1, tn2)
+			}
+
+			if tn1.Day() != int(tn2.Day()) {
+				t.Fatalf("day fuck\n%v\n%v\n%v", tn1, tn2, i)
+			}
+			if int(tn1.Month()) != int(tn2.Month()) {
+				t.Fatalf("month fuck")
+			}
+			if tn1.Year() != int(tn2.Year()) {
+				t.Fatalf("year fuck")
+			}
 		}
-		if int(tn1.Month()) != int(tn2.Month()) {
-			t.Fatalf("month fuck")
-		}
-		if tn1.Year() != int(tn2.Year()) {
-			t.Fatalf("year fuck")
-		}
+		fmt.Printf("%v\n", time.Since(timing))
 	}
+}
 
-	//tm := ml_time.FromTime(time.Now())
-	fmt.Printf("%v\n", t1.Add(time.Second*86400*420))
-	fmt.Printf("%v\n", t2.AddSecond(86400*420))
+func TestDateTimeAdd2(t *testing.T) {
+	t1 := time.Now()
+	t2 := ml_time.FromTime(t1)
 
-	fmt.Printf("%v\n", t1.Add(time.Second*-100))
-	fmt.Printf("%v\n", t2.AddSecond(-100))
+	fmt.Printf("%v\n", t1.Add(time.Second*86400*4200))
+	fmt.Printf("%v\n", t2.AddSecond(86400*4200))
+
+	fmt.Printf("NOW: %v\n", t1.Format("2006-01-02 15:04:05"))
+	fmt.Printf("NED: %v\n", t1.Add(time.Second*time.Duration(1_000_000*5000)).Format("2006-01-02 15:04:05"))
+	fmt.Printf("HAV: %v\n", t2.AddSecond(1_000_000*5000))
+
+	fmt.Printf("NOW: %v\n", t1.Format("2006-01-02 15:04:05"))
+	fmt.Printf("NED: %v\n", t1.Add(time.Second*time.Duration(-1_000_000*5000)).Format("2006-01-02 15:04:05"))
+	fmt.Printf("HAV: %v\n", t2.AddSecond(-1_000_000*5000))
+}
+
+func TestDateTimeEqual(t *testing.T) {
+	t1 := time.Now()
+	t2 := ml_time.FromTime(t1)
+
+	fmt.Printf("%v\n", t2.In(0))
+	fmt.Printf("%v\n", t2.UTC())
+	fmt.Printf("%v\n", t2.UTC().In(-180))
+
+	fmt.Printf("%v\n", t2.UTC().EqualDate(t2))
+	fmt.Printf("%v\n", t2.UTC().EqualTime(t2))
 }

@@ -47,9 +47,7 @@ func NewMapper[T any](nameToId core.NameToId) *ValueMapper[T] {
 		// From bytes
 		fromBytes, ok := fieldPointer.MethodByName("FromBytes")
 		if ok {
-			// Convert unsafe pointer to reflect pointer with type hinting
-			// rf := reflect.NewAt(typeOf.Field(i).Type, mapper.MapOffset[fieldId])
-
+			// Get real function but it's in any type
 			realFn := fromBytes.Func.Interface()
 			rfnPtr := unsafe.Pointer(&realFn)
 			iface := (*emptyInterface)(rfnPtr)
