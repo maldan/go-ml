@@ -256,8 +256,8 @@ func (d *DateTime) SetTimezoneOffset(timeZoneOffset int) {
 	d.tzMinute = uint8(timeZoneOffset % 60)
 }
 
-func (d *DateTime) AddSecond(v int) DateTime {
-	nd := *d
+func (d DateTime) AddSecond(v int) DateTime {
+	nd := d
 
 	// Offset forward of backward
 	dayOffset := 1

@@ -13,16 +13,6 @@ var locationList = []string{
 	"Canada/Mountain", "Pacific/Marquesas",
 }
 
-func TestTime(t *testing.T) {
-	tt := time.Now()
-	now := ml_time.Time(time.Now())
-	for i := 0; i < 1; i++ {
-		// now.FromBytes(now.ToBytes())
-	}
-	fmt.Printf("%v\n", time.Time(now).Format("2006-01-02T15:04:05.999999Z-07:00"))
-	fmt.Printf("%v\n", time.Since(tt))
-}
-
 func TestDateTime(t *testing.T) {
 	// Local check
 	tm := time.Now()

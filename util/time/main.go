@@ -1,14 +1,6 @@
 package ml_time
 
-import (
-	"encoding/binary"
-	"fmt"
-	"strconv"
-	"strings"
-	"time"
-)
-
-type Time time.Time
+/*type Time time.Time
 
 var timeParseTemplateList = []string{
 	"2006-01-02T15:04:05.999-07:00",
@@ -94,7 +86,7 @@ func (t Time) ToBytes() []byte {
 func (t *Time) FromBytes(b []byte) error {
 	tm := time.Time{}
 
-	fmt.Printf("%v\n", len(b))
+	// fmt.Printf("%v\n", len(b))
 
 	year := binary.LittleEndian.Uint16(b)
 	month := b[2]
@@ -108,3 +100,4 @@ func (t *Time) FromBytes(b []byte) error {
 func (t Time) String() string {
 	return fmt.Sprintf("%v", time.Time(t))
 }
+*/

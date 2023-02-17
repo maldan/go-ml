@@ -56,49 +56,11 @@ func NewMapper[T any](nameToId core.NameToId) *ValueMapper[T] {
 			*(*emptyInterface)(rfnPtr) = emptyInterface{
 				typ: iface.ptr,
 			}
-			//fmt.Printf("%v\n", realFn)
-
-			// fmt.Printf("%x\n", mapper.MapOffset[fieldId])
-			/*hdr := *(*IHeader)(unsafe.Pointer(&rf))
-			fmt.Printf("%v\n", hdr)
-
-			realFn := fromBytes.Func.Interface()
-			rfnPtr := unsafe.Pointer(&realFn)
-			castFn := *(*func(*IHeader, []byte) error)(rfnPtr)
-			castFn(&hdr, []byte{1, 2, 3})*/
-
-			//zzz := fromBytes.Func.Interface().(func(unsafe.Pointer, []byte) error)
-			//zzz(mapper.MapOffset[fieldId], []byte{1, 2, 3})
-
-			/*zyz := unsafe.Pointer(&zzz)
-
-			zzx := *(*func(IHeader, []byte) error)(zyz)
-			zzx(IHeader{}, []byte{1, 2, 3})*/
-
-			//fmt.Printf("%v\n", yy)
-
-			//fnPtr := *(*func(any, []byte) error)(unsafe.Pointer(fromBytes.Func.Pointer()))
-
-			//fnPtr(uintptr(mapper.MapOffset[fieldId]), []byte{1})
-
-			// fnPtr([]byte{})
 
 			// Create callback
 			mapper.SetCustomContent[fieldId] = func(bytes []byte) error {
 				castFn := *(*func(unsafe.Pointer, []byte) error)(rfnPtr)
 				return castFn(mapper.MapOffset[fieldId], bytes)
-
-				/*ret := fromBytes.Func.Call([]reflect.Value{rf, reflect.ValueOf(bytes)})
-
-				if len(ret) > 0 {
-					err := ret[0].Interface()
-					if err != nil {
-						return err.(error)
-					} else {
-						return nil
-					}
-				}
-				return nil*/
 			}
 		}
 	}
