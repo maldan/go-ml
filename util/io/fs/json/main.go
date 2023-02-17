@@ -2,7 +2,7 @@ package ml_json
 
 import (
 	"encoding/json"
-	ml_file "github.com/maldan/go-ml/io/fs/file"
+	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 )
 
 func FromFile[T any](path string) (T, error) {

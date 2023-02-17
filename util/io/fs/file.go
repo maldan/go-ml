@@ -1,7 +1,7 @@
 package ml_fs
 
 import (
-	ml_file "github.com/maldan/go-ml/io/fs/file"
+	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	"io"
 	"os"
 	"path/filepath"

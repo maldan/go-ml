@@ -3,7 +3,7 @@ package ml_convert_test
 import (
 	"fmt"
 	ml_convert "github.com/maldan/go-ml/util/convert"
-	ml_time "github.com/maldan/go-ml/util/time"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -23,13 +23,27 @@ func TestE(t *testing.T) {
 	fmt.Printf("%v\n", time.Since(tt))
 }
 
-func Test2(t *testing.T) {
-	bb := ml_time.Time{}.ToBytes()
-	tt := time.Now()
-	for i := 0; i < 1_000_000; i++ {
-		tx := ml_time.Time{}
-		tx.FromBytes(bb)
-		// time.Parse("2006-01-01T15:04:05-07:00", "0001-01-01T00:00:00+00:00")
+func TestToString(t *testing.T) {
+	if ml_convert.ToString(1) != "1" {
+		t.Fatalf("fuck")
 	}
-	fmt.Printf("%v\n", time.Since(tt))
+	if ml_convert.ToString(uint8(1)) != "1" {
+		t.Fatalf("fuck")
+	}
+}
+
+func BenchmarkToString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if ml_convert.ToString(1) != "1" {
+			b.Fatalf("fuck")
+		}
+	}
+}
+
+func BenchmarkStrConv(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if strconv.Itoa(1) != "1" {
+			b.Fatalf("fuck")
+		}
+	}
 }

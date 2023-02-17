@@ -239,11 +239,6 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 		}
 		break
 	case reflect.Struct:
-		/*if typeOf.Name() == "Time" {
-			ir.Type = core.TypeTime
-			ir.Content = []byte(valueOf.Interface().(time.Time).Format("2006-01-02T15:04:05.999-07:00"))
-		} else {*/
-
 		// Check to response method
 		tb, ok := typeOf.MethodByName("ToBytes")
 		if ok {
@@ -271,8 +266,6 @@ func BuildIR(ir *IR, v any, nameToId core.NameToId) {
 				BuildIR(&tr, valueOf.Field(i).Interface(), nameToId)
 			}
 		}
-
-		//}
 		break
 	default:
 		panic("unsupported kind " + typeOf.Kind().String())

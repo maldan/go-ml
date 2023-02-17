@@ -2,6 +2,7 @@ package ml_time
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -17,27 +18,12 @@ type DateTime struct {
 	minute uint8
 	second uint8
 
-	nanoSecond uint16
+	nanoSecond uint32
 
 	tzHour   int8
 	tzMinute uint8
 }
 
-/*var daysBefore = [...]int32{
-	0,
-	31,
-	31 + 28,
-	31 + 28 + 31,
-	31 + 28 + 31 + 30,
-	31 + 28 + 31 + 30 + 31,
-	31 + 28 + 31 + 30 + 31 + 30,
-	31 + 28 + 31 + 30 + 31 + 30 + 31,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30,
-	31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 31,
-}*/
 var daysInMonth = [...]int{
 	31,
 	28,
@@ -75,7 +61,7 @@ func FromTime(t time.Time) DateTime {
 		minute: uint8(t.Minute()),
 		second: uint8(t.Second()),
 
-		nanoSecond: uint16(t.Nanosecond() / 100_000),
+		nanoSecond: uint32(t.Nanosecond() / 100),
 
 		tzHour:   int8(lh),
 		tzMinute: uint8(lm),
@@ -130,7 +116,7 @@ func (d *DateTime) UnmarshalJSON(b []byte) error {
 		}
 		if state == "nanosecond" && (b[i] == 'Z' || b[i] == ' ' || i == len(b)-1) {
 			nsec, _ := strconv.Atoi(string(b[dotPos+1 : i]))
-			d.nanoSecond = uint16(nsec)
+			d.nanoSecond = uint32(nsec)
 			state = "timezone"
 			continue
 		}
@@ -141,7 +127,7 @@ func (d *DateTime) UnmarshalJSON(b []byte) error {
 			state = "tzHour"
 			continue
 		}
-		if state == "tzHour" && b[i] == ':' {
+		if state == "tzHour" && (b[i] == ':' || i == len(b)-1) {
 			tzHour, _ := strconv.Atoi(string(b[i-2 : i]))
 			d.tzHour = int8(tzHour)
 			if sign == "-" {
@@ -167,7 +153,7 @@ func (d DateTime) MarshalJSON() ([]byte, error) {
 		sign = "-"
 	}
 	return []byte(fmt.Sprintf(
-		"\"%04d-%02d-%02dT%02d:%02d:%02d.%dZ%s%02d:%02d\"",
+		"\"%04d-%02d-%02d %02d:%02d:%02d.%d %s%02d:%02d\"",
 		d.year, d.month, d.day,
 		d.hour, d.minute, d.second, d.nanoSecond,
 		sign, int(math.Abs(float64(d.tzHour))), d.tzMinute,
@@ -176,7 +162,7 @@ func (d DateTime) MarshalJSON() ([]byte, error) {
 
 func (d DateTime) ToBytes() []byte {
 	// Prepare
-	out := make([]byte, 0, 11)
+	out := make([]byte, 0, 12)
 
 	// Put date
 	out = append(out, uint8(d.year), uint8(d.year>>8))
@@ -184,7 +170,7 @@ func (d DateTime) ToBytes() []byte {
 
 	// Put time
 	out = append(out, d.hour, d.minute, d.second)
-	out = append(out, uint8(d.nanoSecond), uint8(d.nanoSecond>>8))
+	out = append(out, uint8(d.nanoSecond), uint8(d.nanoSecond>>8), uint8(d.nanoSecond>>16))
 
 	// Put time zone
 	out = append(out, byte(d.tzHour), d.tzMinute)
@@ -193,6 +179,10 @@ func (d DateTime) ToBytes() []byte {
 }
 
 func (d *DateTime) FromBytes(b []byte) error {
+	if len(b) < 12 {
+		return errors.New("can't parse date")
+	}
+
 	// Read date
 	d.year = binary.LittleEndian.Uint16(b)
 	d.month = b[2]
@@ -202,11 +192,12 @@ func (d *DateTime) FromBytes(b []byte) error {
 	d.hour = b[4]
 	d.minute = b[5]
 	d.second = b[6]
-	d.nanoSecond = binary.LittleEndian.Uint16(b[7:])
+
+	d.nanoSecond = uint32(b[7]) | uint32(b[8])<<8 | uint32(b[9])<<16
 
 	// timeZone
-	d.tzHour = int8(b[9])
-	d.tzMinute = b[10]
+	d.tzHour = int8(b[10])
+	d.tzMinute = b[11]
 
 	return nil
 }
@@ -217,7 +208,7 @@ func (d DateTime) String() string {
 		sign = "-"
 	}
 	return fmt.Sprintf(
-		"%04d-%02d-%02d %02d:%02d:%02d.%05d %s%02d:%02d",
+		"%04d-%02d-%02d %02d:%02d:%02d.%07d %s%02d:%02d",
 		d.year, d.month, d.day,
 		d.hour, d.minute, d.second, d.nanoSecond,
 		sign, int(math.Abs(float64(d.tzHour))), d.tzMinute,
@@ -243,7 +234,7 @@ func (d *DateTime) Minute() uint8 {
 func (d *DateTime) Second() uint8 {
 	return d.second
 }
-func (d *DateTime) Nanosecond() uint16 {
+func (d *DateTime) Nanosecond() uint32 {
 	return d.nanoSecond
 }
 

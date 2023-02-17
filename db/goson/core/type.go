@@ -22,9 +22,6 @@ const TypeMap = 11
 
 const T_CUSTOM = 12
 
-// Custom types
-// const TypeTime = 12 // 0001-01-01T00:00:00+00:00
-
 func TypeToString(tp uint8) string {
 	switch tp {
 	case T_BOOL:
@@ -50,7 +47,7 @@ func TypeToString(tp uint8) string {
 	case TypeMap:
 		return "map"
 	case T_CUSTOM:
-		return "custom"
+		return "any"
 	default:
 		return "unknown"
 	}

@@ -1,34 +1,79 @@
 package ml_file
 
 import (
+	"encoding/base64"
 	"errors"
+	ml_convert "github.com/maldan/go-ml/util/convert"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 )
 
 type File struct {
-	Path string
-	mime string
+	Path      string
+	isVirtual bool
+	mime      string
+	content   []byte
 }
 
 func New(path string) *File {
-	return &File{Path: path}
+	return &File{Path: path, mime: "application/octet-stream"}
 }
 
 func NewWithMime(path string, mime string) *File {
 	return &File{Path: path, mime: mime}
 }
 
-/*func FromDataUrl(path string, dataUrl string) (*File, error) {
-	if dataUrl[0:4] != "data" {
-		return &File{}, errors.New("not a data url")
+func (f *File) UnmarshalJSON(b []byte) error {
+	removeQuotes := b[1 : len(b)-1]
+	data, mime, err := ml_convert.DataUrlToBytes(string(removeQuotes))
+	if err != nil {
+		return err
 	}
-	return &File{Path: path}
-}*/
+
+	f.isVirtual = true
+	f.mime = mime
+	f.content = data
+
+	return nil
+}
+
+func (f File) MarshalJSON() ([]byte, error) {
+	mime := f.mime
+	if mime == "" {
+		mime = "application/octet-stream"
+	}
+
+	// Get content
+	content, err := f.ReadAll()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	// Prepare
+	out := make([]byte, 0, len(content)+128)
+	out = append(out, '"')
+	out = append(out, []byte("data:"+mime+";base64,")...)
+
+	// Add
+	out = append(out, base64.StdEncoding.EncodeToString(content)...)
+	out = append(out, '"')
+
+	return out, nil
+}
 
 func (f *File) ReadAll() ([]byte, error) {
-	return os.ReadFile(f.Path)
+	if f.isVirtual {
+		return f.content, nil
+	}
+	content, err := os.ReadFile(f.Path)
+	f.mime = http.DetectContentType(content)
+	return content, err
+}
+
+func (f *File) Save() error {
+	return f.Write(f.content)
 }
 
 func (f *File) Write(content []byte) error {

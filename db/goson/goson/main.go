@@ -28,7 +28,7 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 	tp := bytes[offset]
 	offset += 1
 
-	fmt.Printf("ptrType %v - %v\n", ptrType, core.TypeToString(ptrType))
+	// fmt.Printf("ptrType %v - %v\n", ptrType, core.TypeToString(ptrType))
 
 	switch tp {
 	case core.T_BOOL:
