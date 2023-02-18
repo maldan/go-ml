@@ -61,7 +61,7 @@ func FromTime(t time.Time) DateTime {
 		minute: uint8(t.Minute()),
 		second: uint8(t.Second()),
 
-		nanoSecond: uint32(t.Nanosecond() / 100),
+		nanoSecond: uint32(t.Nanosecond()),
 
 		tzHour:   int8(lh),
 		tzMinute: uint8(lm),
@@ -162,7 +162,10 @@ func (d DateTime) MarshalJSON() ([]byte, error) {
 
 func (d DateTime) ToBytes() []byte {
 	// Prepare
-	out := make([]byte, 0, 12)
+	out := make([]byte, 0, 14)
+
+	// Encode method
+	out = append(out, 1)
 
 	// Put date
 	out = append(out, uint8(d.year), uint8(d.year>>8))
@@ -170,7 +173,7 @@ func (d DateTime) ToBytes() []byte {
 
 	// Put time
 	out = append(out, d.hour, d.minute, d.second)
-	out = append(out, uint8(d.nanoSecond), uint8(d.nanoSecond>>8), uint8(d.nanoSecond>>16))
+	out = append(out, uint8(d.nanoSecond), uint8(d.nanoSecond>>8), uint8(d.nanoSecond>>16), uint8(d.nanoSecond>>24))
 
 	// Put time zone
 	out = append(out, byte(d.tzHour), d.tzMinute)
@@ -179,25 +182,30 @@ func (d DateTime) ToBytes() []byte {
 }
 
 func (d *DateTime) FromBytes(b []byte) error {
-	if len(b) < 12 {
+	/*if len(b) < 12 {
 		return errors.New("can't parse date")
+	}*/
+	method := b[0]
+
+	if method == 1 {
+		// Read date
+		d.year = binary.LittleEndian.Uint16(b[1:])
+		d.month = b[3]
+		d.day = b[4]
+
+		// Read time
+		d.hour = b[5]
+		d.minute = b[6]
+		d.second = b[7]
+
+		d.nanoSecond = uint32(b[8]) | uint32(b[9])<<8 | uint32(b[10])<<16 | uint32(b[11])<<24
+
+		// timeZone
+		d.tzHour = int8(b[12])
+		d.tzMinute = b[13]
+	} else {
+		return errors.New("unsupported encode method")
 	}
-
-	// Read date
-	d.year = binary.LittleEndian.Uint16(b)
-	d.month = b[2]
-	d.day = b[3]
-
-	// Read time
-	d.hour = b[4]
-	d.minute = b[5]
-	d.second = b[6]
-
-	d.nanoSecond = uint32(b[7]) | uint32(b[8])<<8 | uint32(b[9])<<16
-
-	// timeZone
-	d.tzHour = int8(b[10])
-	d.tzMinute = b[11]
 
 	return nil
 }
@@ -208,7 +216,7 @@ func (d DateTime) String() string {
 		sign = "-"
 	}
 	return fmt.Sprintf(
-		"%04d-%02d-%02d %02d:%02d:%02d.%07d %s%02d:%02d",
+		"%04d-%02d-%02d %02d:%02d:%02d.%09d %s%02d:%02d",
 		d.year, d.month, d.day,
 		d.hour, d.minute, d.second, d.nanoSecond,
 		sign, int(math.Abs(float64(d.tzHour))), d.tzMinute,

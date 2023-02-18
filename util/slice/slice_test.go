@@ -2,7 +2,7 @@ package ml_slice_test
 
 import (
 	"fmt"
-	ml_slice "github.com/maldan/go-ml/slice"
+	ml_slice "github.com/maldan/go-ml/util/slice"
 	"testing"
 )
 

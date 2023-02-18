@@ -5,7 +5,7 @@ import (
 	"github.com/edsrzf/mmap-go"
 	"github.com/maldan/go-ml/db/goson/core"
 	"github.com/maldan/go-ml/db/goson/goson"
-	ml_fs "github.com/maldan/go-ml/io/fs"
+	ml_fs "github.com/maldan/go-ml/util/io/fs"
 	"os"
 	"sync"
 	"time"

@@ -1,4 +1,4 @@
-package core
+package gosn
 
 import (
 	"fmt"
@@ -52,6 +52,11 @@ func GetNameList(v any) []string {
 
 func __getFieldList(v any, out *[]string) {
 	typeOf := reflect.TypeOf(v)
+
+	// Skip non struct or non slice types
+	if !(typeOf.Kind() == reflect.Struct || typeOf.Kind() == reflect.Slice) {
+		return
+	}
 
 	for i := 0; i < typeOf.NumField(); i++ {
 		field := typeOf.Field(i)
