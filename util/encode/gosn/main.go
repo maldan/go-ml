@@ -1,4 +1,4 @@
-package gosn
+package ml_gosn
 
 import (
 	"encoding/binary"
@@ -7,29 +7,26 @@ import (
 	"unsafe"
 )
 
-func Marshal[T any](v T) []byte {
+func Marshal(v any) []byte {
 	ir := IR{}
 	BuildIR(&ir, v, nil)
 	return ir.Build()
 }
 
-func MarshalWithNameToId[T any](v T, nameToId NameToId) []byte {
+func MarshalExt(v any, nameToId NameToId) []byte {
 	ir := IR{}
 	BuildIR(&ir, v, nameToId)
-
 	return ir.Build()
 }
 
-func Unmarshall[T any](bytes []byte) T {
-	t := new(T)
-	unpack(bytes, unsafe.Pointer(t), TypeStringToTypeByte(reflect.TypeOf(*t).Kind().String()), *t, nil)
-	return *t
+func Unmarshall(bytes []byte, out any) {
+	UnmarshallExt(bytes, out, nil)
 }
 
-func UnmarshallWithNameToId[T any](bytes []byte, idToName IdToName) T {
-	t := new(T)
-	unpack(bytes, unsafe.Pointer(t), TypeStringToTypeByte(reflect.TypeOf(*t).Kind().String()), *t, idToName)
-	return *t
+func UnmarshallExt(bytes []byte, out any, idToName IdToName) {
+	valueOf := reflect.ValueOf(out)
+	typeByte := TypeStringToTypeByte(valueOf.Elem().Kind().String())
+	unpack(bytes, valueOf.UnsafePointer(), typeByte, valueOf.Elem().Interface(), idToName)
 }
 
 func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToName IdToName) int {

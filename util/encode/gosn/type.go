@@ -1,4 +1,4 @@
-package gosn
+package ml_gosn
 
 import (
 	"strings"

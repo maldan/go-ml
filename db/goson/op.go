@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/maldan/go-ml/db/goson/core"
-	"github.com/maldan/go-ml/db/goson/goson"
 )
 
 type ArgsFind[T any] struct {
@@ -31,8 +30,8 @@ func __insertToTable[T any](table *DataTable[T], value T, isLock bool, isRemap b
 		defer table.remap()
 	}
 
-	bytes := goson.Marshal(value, table.Header.NameToId)
-
+	bytes := table.Container.Marshal(value)
+	// bytes := goson.Marshal(value, table.Header.NameToId)
 	bytes = wrap(bytes)
 
 	// Get file size
@@ -186,6 +185,36 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 	searchResult := SearchResult[T]{}
 
 	// Create mapper for capturing values from bytes
+	mapperContainer := new(T)
+	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
+
+	// Go through each record
+	d.ForEach(func(offset uint64, size uint32) bool {
+		mapper.Map(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize+core.RecordFlags:])
+
+		// Collect values
+		if args.Where(mapperContainer) {
+			searchResult.table = d
+			searchResult.IsFound = true
+			record := Record[T]{
+				offset: offset,
+				size:   size,
+				table:  d,
+			}
+			unpacked := record.Unpack()
+			searchResult.Result = append(searchResult.Result, unpacked)
+			searchResult.Count += 1
+
+			// Check limit
+			if args.Limit > 0 && len(searchResult.Result) >= args.Limit {
+				return false
+			}
+		}
+
+		return true
+	})
+
+	/*// Create mapper for capturing values from bytes
 	mapper := goson.NewMapper[T](d.Header.NameToId)
 
 	// Field list
@@ -215,12 +244,12 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 		}
 
 		return true
-	})
+	})*/
 
 	return searchResult
 }
 
-func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
+/*func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
@@ -250,9 +279,9 @@ func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
 
 		return true
 	})
-}
+}*/
 
-func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
+/*func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
@@ -294,7 +323,7 @@ func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
 
 		return true
 	})
-}
+}*/
 
 func (d *DataTable[T]) Close() error {
 	err := d.mem.Unmap()

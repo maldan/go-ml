@@ -2,7 +2,6 @@ package mdb_goson
 
 import (
 	"github.com/maldan/go-ml/db/goson/core"
-	"github.com/maldan/go-ml/db/goson/goson"
 	"math"
 )
 
@@ -49,7 +48,10 @@ func (s *SearchResult[T]) First() (T, bool) {
 
 func (s *Record[T]) Unpack() T {
 	realData := unwrap(s.table.mem[s.offset : s.offset+uint64(s.size)])
-	return goson.Unmarshall[T](realData, s.table.Header.IdToName)
+	v := new(T)
+	s.table.Container.Unmarshall(realData, v)
+	return *v
+	// return goson.Unmarshall[T](realData, s.table.Header.IdToName)
 }
 
 /*func unpack[T any](recordList []Record[T]) []T {

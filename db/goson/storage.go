@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/edsrzf/mmap-go"
-	"github.com/maldan/go-ml/db/goson/core"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -70,7 +69,7 @@ func (d *DataTable[T]) readHeader() {
 
 	d.Header.FromBytes(d.mem)
 
-	// Get field names from struct
+	/*// Get field names from struct
 	nameList := core.GetNameList(*new(T))
 
 	// Fill with new fields
@@ -88,7 +87,7 @@ func (d *DataTable[T]) readHeader() {
 	// Init backward map
 	for name, id := range d.Header.NameToId {
 		d.Header.IdToName[id] = name
-	}
+	}*/
 }
 
 func (d *DataTable[T]) writeHeader() {

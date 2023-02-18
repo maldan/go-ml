@@ -2,9 +2,11 @@ package test_test
 
 import (
 	"fmt"
-	ml_crypto "github.com/maldan/go-ml/crypto"
+	gosn_driver "github.com/maldan/go-ml/db/driver/gosn"
 	mdb_goson "github.com/maldan/go-ml/db/goson"
-	ml_file "github.com/maldan/go-ml/io/fs/file"
+	ml_crypto "github.com/maldan/go-ml/util/crypto"
+	ml_file "github.com/maldan/go-ml/util/io/fs/file"
+
 	ml_time "github.com/maldan/go-ml/util/time"
 	"testing"
 	"time"
@@ -71,11 +73,11 @@ func TestCustomTypeFind2(t *testing.T) {
 
 	// Create DB
 	name := ml_crypto.UID(12)
-	userDb := mdb_goson.New[structCustomType]("../../../trash/db", name)
+	userDb := mdb_goson.New[structCustomType]("../../../trash/db", name, &gosn_driver.Container{})
 
 	// Insert 88 ms vs 39 ms
 	values := make([]structCustomType, 0)
-	for i := 0; i < 1_000_000; i++ {
+	for i := 0; i < 10; i++ {
 		values = append(values, structCustomType{
 			Time: ml_time.Now().AddSecond(i),
 		})

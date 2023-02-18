@@ -27,16 +27,17 @@ name to id map
 ] * totalFields
 */
 
-type Header struct {
+type Header[T any] struct {
 	FileId        string
 	Version       uint8
 	AutoIncrement uint64
 	TotalRecords  uint64
-	NameToId      core.NameToId
-	IdToName      core.IdToName
+	//NameToId      core.NameToId
+	//IdToName      core.IdToName
+	table *DataTable[T]
 }
 
-func (h *Header) FromBytes(bytes []byte) {
+func (h *Header[T]) FromBytes(bytes []byte) {
 	offset := 0
 
 	// File id
@@ -58,11 +59,14 @@ func (h *Header) FromBytes(bytes []byte) {
 	h.TotalRecords = binary.LittleEndian.Uint64(bytes[offset:])
 	offset += 8
 
-	// Amount
-	amount := int(bytes[offset])
-	offset += 1
+	// Set header
+	h.table.Container.SetHeader(bytes[offset:])
 
-	// Init maps
+	// Amount
+	//amount := int(bytes[offset])
+	//offset += 1
+
+	/*// Init maps
 	h.NameToId = map[string]uint8{}
 	h.IdToName = map[uint8]string{}
 
@@ -84,10 +88,10 @@ func (h *Header) FromBytes(bytes []byte) {
 	// Fill id to name
 	for name, id := range h.NameToId {
 		h.IdToName[id] = name
-	}
+	}*/
 }
 
-func (h *Header) ToBytes() []byte {
+func (h *Header[T]) ToBytes() []byte {
 	offset := 0
 	bytes := make([]byte, core.HeaderSize)
 
@@ -108,8 +112,13 @@ func (h *Header) ToBytes() []byte {
 	binary.LittleEndian.PutUint64(bytes[offset:], h.TotalRecords)
 	offset += 8
 
+	// Get header data
+	hdata := h.table.Container.GetHeader()
+
+	copy(bytes[offset:], hdata)
+
 	// Num of fields
-	bytes[offset] = uint8(len(h.NameToId))
+	/*bytes[offset] = uint8(len(h.NameToId))
 	offset += 1
 
 	// Write name to id
@@ -125,7 +134,7 @@ func (h *Header) ToBytes() []byte {
 		// Id
 		bytes[offset] = id
 		offset += 1
-	}
+	}*/
 
 	return bytes
 }

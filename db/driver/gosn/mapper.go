@@ -1,21 +1,24 @@
-package goson
+package gosn_driver
 
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/maldan/go-ml/db/goson/core"
+	"github.com/maldan/go-ml/util/encode/gosn"
 	"log"
 	"reflect"
 	"unsafe"
 )
 
-type ValueMapper[T any] struct {
-	Container T
-	NameToId  core.NameToId
+type Mapper struct {
+	Container any
+	NameToId  ml_gosn.NameToId
 	MapOffset []unsafe.Pointer
 
 	// Copy bytes and parse it and assign to pointer
 	SetCustomContent []func([]byte) error
+
+	// FieldIdList
+	FieldIdList []uint8
 }
 
 type emptyInterface struct {
@@ -23,16 +26,20 @@ type emptyInterface struct {
 	ptr unsafe.Pointer
 }
 
-func NewMapper[T any](nameToId core.NameToId) *ValueMapper[T] {
-	mapper := ValueMapper[T]{
-		Container:        *new(T),
+func NewMapper(nameToId ml_gosn.NameToId, fieldList string, out any) *Mapper {
+	mapper := Mapper{
+		Container:        out,
 		NameToId:         nameToId,
 		MapOffset:        make([]unsafe.Pointer, 255),
 		SetCustomContent: make([]func([]byte) error, 255),
 	}
 
-	typeOf := reflect.TypeOf(mapper.Container)
-	start := unsafe.Pointer(&mapper.Container)
+	// Convert field name to field id
+	mapper.FieldIdList = ml_gosn.NameListToIdList(fieldList, nameToId)
+
+	typeOf := reflect.TypeOf(mapper.Container).Elem()
+	start := reflect.ValueOf(out).UnsafePointer()
+	//start := unsafe.Pointer(&mapper.Container)
 
 	for i := 0; i < typeOf.NumField(); i++ {
 		fieldId, ok := nameToId[typeOf.Field(i).Name]
@@ -70,15 +77,15 @@ func NewMapper[T any](nameToId core.NameToId) *ValueMapper[T] {
 
 func typeSize(bytes []byte) int {
 	switch bytes[0] {
-	case core.T_BOOL, core.T_8:
+	case ml_gosn.T_BOOL, ml_gosn.T_8:
 		return 1
-	case core.T_16:
+	case ml_gosn.T_16:
 		return 2
-	case core.T_32, core.TypeF32:
+	case ml_gosn.T_32, ml_gosn.T_F32:
 		return 4
-	case core.T_64, core.TypeF64:
+	case ml_gosn.T_64, ml_gosn.T_F64:
 		return 8
-	case core.TypeString, core.T_CUSTOM:
+	case ml_gosn.T_STRING, ml_gosn.T_CUSTOM:
 		// Field size
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[1:]))
 		return 2 + fieldSize // 2 - is length size info
@@ -88,26 +95,26 @@ func typeSize(bytes []byte) int {
 	}
 }
 
-func applyType[T any](v *ValueMapper[T], bytes []byte, offset int, fieldId uint8) {
+func applyType(v *Mapper, bytes []byte, offset int, fieldId uint8) {
 	off := v.MapOffset[fieldId]
 
 	const offType = 1 // offset type
 	const offLen = 2  // offset length of field
 
 	switch bytes[offset] {
-	case core.T_8:
+	case ml_gosn.T_8:
 		*(*uint8)(off) = bytes[offset]
 		break
-	case core.T_16:
+	case ml_gosn.T_16:
 		*(*uint16)(off) = binary.LittleEndian.Uint16(bytes[offset+offType:])
 		break
-	case core.T_32:
+	case ml_gosn.T_32:
 		*(*uint32)(off) = binary.LittleEndian.Uint32(bytes[offset+offType:])
 		break
-	case core.T_64:
+	case ml_gosn.T_64:
 		*(*uint64)(off) = binary.LittleEndian.Uint64(bytes[offset+offType:])
 		break
-	case core.TypeString:
+	case ml_gosn.T_STRING:
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[offset+offType:]))
 		bts := *(*reflect.SliceHeader)(unsafe.Pointer(&bytes))
 
@@ -115,7 +122,7 @@ func applyType[T any](v *ValueMapper[T], bytes []byte, offset int, fieldId uint8
 		hh.Data = bts.Data + uintptr(offset) + offType + offLen
 		hh.Len = fieldSize
 		break
-	case core.T_CUSTOM:
+	case ml_gosn.T_CUSTOM:
 		fieldSize := int(binary.LittleEndian.Uint16(bytes[offset+offType:]))
 
 		if v.SetCustomContent[fieldId] == nil {
@@ -132,7 +139,7 @@ func applyType[T any](v *ValueMapper[T], bytes []byte, offset int, fieldId uint8
 	}
 }
 
-func handleStruct[T any](v *ValueMapper[T], bytes []byte, offset int, searchField uint8) int {
+func handleStruct(v *Mapper, bytes []byte, offset int, searchField uint8) int {
 	// Type
 	offset += 1
 
@@ -164,14 +171,14 @@ func handleStruct[T any](v *ValueMapper[T], bytes []byte, offset int, searchFiel
 	return size
 }
 
-func (v *ValueMapper[T]) Map(bytes []byte, fieldList []uint8) {
+func (v *Mapper) Map(bytes []byte) {
 	offset := 0
 
-	for i := 0; i < len(fieldList); i++ {
-		searchField := fieldList[i]
+	for i := 0; i < len(v.FieldIdList); i++ {
+		searchField := v.FieldIdList[i]
 
-		if bytes[0] == core.TypeStruct {
-			offset += handleStruct[T](v, bytes, offset, searchField)
+		if bytes[0] == ml_gosn.T_STRUCT {
+			offset += handleStruct(v, bytes, offset, searchField)
 		} else {
 			panic(fmt.Sprintf("unmapped type %v", bytes[0]))
 		}

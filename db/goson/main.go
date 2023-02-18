@@ -3,13 +3,26 @@ package mdb_goson
 import (
 	"fmt"
 	"github.com/edsrzf/mmap-go"
-	"github.com/maldan/go-ml/db/goson/core"
-	"github.com/maldan/go-ml/db/goson/goson"
 	ml_fs "github.com/maldan/go-ml/util/io/fs"
 	"os"
 	"sync"
 	"time"
 )
+
+type DBMapper interface {
+	Map([]byte)
+}
+
+type DBContainer interface {
+	Prepare(v any)
+	Marshal(a any) []byte
+	Unmarshall(b []byte, out any)
+
+	GetMapper(fieldList string, tp any) any
+
+	GetHeader() []byte
+	SetHeader([]byte)
+}
 
 type DataTable[T any] struct {
 	mem      mmap.MMap
@@ -17,7 +30,9 @@ type DataTable[T any] struct {
 	rwLock   sync.RWMutex
 	fileSize uint64
 
-	Header Header
+	Container DBContainer
+
+	Header Header[T]
 
 	Path string
 	Name string
@@ -45,18 +60,17 @@ func (d *DataTable[T]) SetBackupSchedule(dst string, each time.Duration) {
 	})()
 }
 
-func New[T any](path string, name string) *DataTable[T] {
-	d := DataTable[T]{Path: path, Name: name}
+func New[T any](path string, name string, container DBContainer) *DataTable[T] {
+	table := DataTable[T]{Path: path, Name: name}
+	table.Header.table = &table
 
-	// Check if type possible to serialize
-	nid := core.NameToId{}
-	nid.FromStruct(*new(T))
-	_ = goson.Marshal(*new(T), nid)
+	table.Container = container
+	table.Container.Prepare(*new(T))
 
-	d.open()
-	d.remap()
-	d.readHeader()
-	d.writeHeader()
+	table.open()
+	table.remap()
+	table.readHeader()
+	table.writeHeader()
 
-	return &d
+	return &table
 }

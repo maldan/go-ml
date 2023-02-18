@@ -1,4 +1,4 @@
-package gosn_test
+package ml_gosn_test
 
 import (
 	"github.com/maldan/go-ml/util/encode/gosn"
@@ -30,7 +30,7 @@ type TestStructSliceOnly struct {
 	SliceU8  []uint8
 }
 
-func sas(t *testing.T, nameToId gosn.NameToId) {
+func sas(t *testing.T, nameToId ml_gosn.NameToId) {
 	tsIn := TestStruct{
 		Bool:    true,
 		Uint8:   255,
@@ -54,11 +54,11 @@ func sas(t *testing.T, nameToId gosn.NameToId) {
 
 	// Encode and decode
 	if nameToId == nil {
-		x = gosn.Marshal(tsIn)
-		tsOut = gosn.Unmarshall[TestStruct](x)
+		x = ml_gosn.Marshal(tsIn)
+		ml_gosn.Unmarshall(x, &tsOut)
 	} else {
-		x = gosn.MarshalX(tsIn, nameToId)
-		tsOut = gosn.UnmarshallX[TestStruct](x, nameToId.Invert())
+		x = ml_gosn.MarshalExt(tsIn, nameToId)
+		ml_gosn.UnmarshallExt(x, &tsOut, nameToId.Invert())
 	}
 
 	// Compare bool
@@ -119,7 +119,7 @@ func TestMain_Named(t *testing.T) {
 }
 
 func TestMain_Id(t *testing.T) {
-	nameToId := gosn.NameToId{}
+	nameToId := ml_gosn.NameToId{}
 	nameToId.FromStruct(TestStruct{})
 	sas(t, nameToId)
 }
@@ -131,10 +131,11 @@ func TestMainSlice(t *testing.T) {
 	}
 
 	// Encode
-	x := gosn.Marshal(tsIn)
+	x := ml_gosn.Marshal(tsIn)
 
 	// Decode
-	tsOut := gosn.Unmarshall[TestStructSliceOnly](x)
+	tsOut := TestStructSliceOnly{}
+	ml_gosn.Unmarshall(x, &tsOut)
 
 	// Compare slice
 	if len(tsIn.SliceStr) != len(tsOut.SliceStr) {
