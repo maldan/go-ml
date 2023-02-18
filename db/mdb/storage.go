@@ -1,4 +1,4 @@
-package mdb_goson
+package mdb
 
 import (
 	"encoding/binary"
@@ -68,26 +68,6 @@ func (d *DataTable[T]) readHeader() {
 	defer d.rwLock.RUnlock()
 
 	d.Header.FromBytes(d.mem)
-
-	/*// Get field names from struct
-	nameList := core.GetNameList(*new(T))
-
-	// Fill with new fields
-	for _, name := range nameList {
-		// Check if already exists
-		_, ok := d.Header.NameToId[name]
-		if ok {
-			continue
-		}
-
-		// Add new name
-		d.Header.NameToId.Add(name)
-	}
-
-	// Init backward map
-	for name, id := range d.Header.NameToId {
-		d.Header.IdToName[id] = name
-	}*/
 }
 
 func (d *DataTable[T]) writeHeader() {

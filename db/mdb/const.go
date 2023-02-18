@@ -1,6 +1,6 @@
-package core
+package mdb
 
-const HeaderSize = 2048
+const HEADER_SIZE = 2048
 
 // SIZE_OF_RECORD_START is 2 bytes 0x1234 mark, stands for start of record
 const SIZE_OF_RECORD_START = 2

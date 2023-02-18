@@ -1,10 +1,9 @@
-package mdb_goson
+package mdb
 
 import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/maldan/go-ml/db/goson/core"
 )
 
 type ArgsFind[T any] struct {
@@ -61,14 +60,14 @@ func __insertToTable[T any](table *DataTable[T], value T, isLock bool, isRemap b
 func __markDeleted[T any](table *DataTable[T], offset uint64) {
 	// Read flags
 	b := []byte{0}
-	_, err := table.file.ReadAt(b, int64(offset+core.SIZE_OF_RECORD_START+core.RecordSize))
+	_, err := table.file.ReadAt(b, int64(offset+SIZE_OF_RECORD_START+RecordSize))
 	if err != nil {
 		panic(err)
 	}
-	b[0] |= core.MaskDeleted
+	b[0] |= MaskDeleted
 
 	// Write back
-	_, err = table.file.WriteAt(b, int64(offset+core.SIZE_OF_RECORD_START+core.RecordSize))
+	_, err = table.file.WriteAt(b, int64(offset+SIZE_OF_RECORD_START+RecordSize))
 	if err != nil {
 		panic(err)
 	}
@@ -119,10 +118,10 @@ func (d *DataTable[T]) InsertMany(v []T) {
 }
 
 func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
-	offset := uint64(core.HeaderSize)
+	offset := uint64(HEADER_SIZE)
 
 	// Empty table
-	if len(d.mem) <= core.HeaderSize {
+	if len(d.mem) <= HEADER_SIZE {
 		return
 	}
 
@@ -140,8 +139,8 @@ func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
 		}
 
 		// Read size and flags
-		size := binary.LittleEndian.Uint32(d.mem[offset+core.SIZE_OF_RECORD_START:])
-		flags := int(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize])
+		size := binary.LittleEndian.Uint32(d.mem[offset+SIZE_OF_RECORD_START:])
+		flags := int(d.mem[offset+SIZE_OF_RECORD_START+RecordSize])
 
 		// Check size, it may be out of memory if record is corrupted
 		if uint64(size)+offset > uint64(len(d.mem)) {
@@ -162,7 +161,7 @@ func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
 		}
 
 		// If field not deleted
-		if flags&core.MaskDeleted != core.MaskDeleted {
+		if flags&MaskDeleted != MaskDeleted {
 			if !fn(offset, size) {
 				break
 			}
@@ -190,7 +189,7 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 
 	// Go through each record
 	d.ForEach(func(offset uint64, size uint32) bool {
-		mapper.Map(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize+core.RecordFlags:])
+		mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
 
 		// Collect values
 		if args.Where(mapperContainer) {

@@ -1,4 +1,4 @@
-package mdb_goson
+package mdb
 
 import (
 	"fmt"
