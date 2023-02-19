@@ -3,10 +3,9 @@ package test_test
 import (
 	"fmt"
 	gosn_driver "github.com/maldan/go-ml/db/driver/gosn"
-	mdb_goson "github.com/maldan/go-ml/db/goson"
+	"github.com/maldan/go-ml/db/mdb"
 	ml_crypto "github.com/maldan/go-ml/util/crypto"
 	ml_file "github.com/maldan/go-ml/util/io/fs/file"
-
 	ml_time "github.com/maldan/go-ml/util/time"
 	"testing"
 	"time"
@@ -73,7 +72,7 @@ func TestCustomTypeFind2(t *testing.T) {
 
 	// Create DB
 	name := ml_crypto.UID(12)
-	userDb := mdb_goson.New[structCustomType]("../../../trash/db", name, &gosn_driver.Container{})
+	userDb := mdb.New[structCustomType]("../../../trash/db", name, &gosn_driver.Container{})
 
 	// Insert 88 ms vs 39 ms
 	values := make([]structCustomType, 0)
@@ -91,7 +90,7 @@ func TestCustomTypeFind2(t *testing.T) {
 
 	// Find
 	tm = time.Now()
-	list := userDb.FindBy(mdb_goson.ArgsFind[structCustomType]{
+	list := userDb.FindBy(mdb.ArgsFind[structCustomType]{
 		FieldList: "Time",
 		Limit:     1,
 		Where: func(user *structCustomType) bool {

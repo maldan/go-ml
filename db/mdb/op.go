@@ -213,59 +213,25 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 		return true
 	})
 
-	/*// Create mapper for capturing values from bytes
-	mapper := goson.NewMapper[T](d.Header.NameToId)
-
-	// Field list
-	fieldIdList := core.NameListToIdList(args.FieldList, d.Header.NameToId)
-
-	// Go through each record
-	d.ForEach(func(offset uint64, size uint32) bool {
-		mapper.Map(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize+core.RecordFlags:], fieldIdList)
-
-		// Collect values
-		if args.Where(&mapper.Container) {
-			searchResult.table = d
-			searchResult.IsFound = true
-			record := Record[T]{
-				offset: offset,
-				size:   size,
-				table:  d,
-			}
-			unpacked := record.Unpack()
-			searchResult.Result = append(searchResult.Result, unpacked)
-			searchResult.Count += 1
-
-			// Check limit
-			if args.Limit > 0 && len(searchResult.Result) >= args.Limit {
-				return false
-			}
-		}
-
-		return true
-	})*/
-
 	return searchResult
 }
 
-/*func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
+func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
 
 	// Create mapper for capturing values from bytes
-	mapper := goson.NewMapper[T](d.Header.NameToId)
-
-	// Field list
-	fieldIdList := core.NameListToIdList(args.FieldList, d.Header.NameToId)
+	mapperContainer := new(T)
+	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
 
 	// Go through each record
 	counter := 0
 	d.ForEach(func(offset uint64, size uint32) bool {
-		mapper.Map(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize+core.RecordFlags:], fieldIdList)
+		mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
 
 		// Collect values
-		if args.Where(&mapper.Container) {
+		if args.Where(mapperContainer) {
 			counter += 1
 
 			__markDeleted(d, offset)
@@ -278,25 +244,25 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 
 		return true
 	})
-}*/
+}
 
-/*func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
+func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
 	defer d.remap()
 
 	// Create mapper for capturing values from bytes
-	mapper := goson.NewMapper[T](d.Header.NameToId)
-	fieldIdList := core.NameListToIdList(args.FieldList, d.Header.NameToId)
+	mapperContainer := new(T)
+	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
 
 	// Go through each record
 	counter := 0
 	d.ForEach(func(offset uint64, size uint32) bool {
-		mapper.Map(d.mem[offset+core.SIZE_OF_RECORD_START+core.RecordSize+core.RecordFlags:], fieldIdList)
+		mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
 
 		// Check condition
-		if args.Where(&mapper.Container) {
+		if args.Where(mapperContainer) {
 			counter += 1
 
 			// Get record
@@ -322,7 +288,7 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 
 		return true
 	})
-}*/
+}
 
 func (d *DataTable[T]) Close() error {
 	err := d.mem.Unmap()

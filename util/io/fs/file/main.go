@@ -63,6 +63,40 @@ func (f File) MarshalJSON() ([]byte, error) {
 	return out, nil
 }
 
+func (f File) ToBytes() ([]byte, error) {
+	out := make([]byte, 0)
+
+	// Write name
+	out = append(out, uint8(len(f.Name())))
+	out = append(out, f.Name()...)
+
+	// Write size
+	size := f.Size()
+	out = append(out, uint8(size))
+	out = append(out, uint8(size>>8))
+	out = append(out, uint8(size>>16))
+	out = append(out, uint8(size>>24))
+
+	// Write content
+	if f.isVirtual {
+		out = append(out, f.content...)
+	} else {
+		err := f.Load()
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, f.content...)
+	}
+
+	return out, nil
+}
+
+func (f *File) Load() error {
+	content, err := f.ReadAll()
+	f.content = content
+	return err
+}
+
 func (f *File) ReadAll() ([]byte, error) {
 	if f.isVirtual {
 		return f.content, nil
@@ -77,6 +111,10 @@ func (f *File) Save() error {
 }
 
 func (f *File) Write(content []byte) error {
+	if f.Path == "" {
+		return errors.New("path not defined")
+	}
+
 	// Create path for file
 	err := os.MkdirAll(filepath.Dir(f.Path), 0777)
 	if err != nil {
@@ -97,6 +135,9 @@ func (f *File) Exists() bool {
 }
 
 func (f *File) Size() int64 {
+	if f.isVirtual {
+		return int64(len(f.content))
+	}
 	s, err := os.Stat(f.Path)
 	if err != nil {
 		return 0
@@ -121,6 +162,10 @@ func (f *File) Created() time.Time {
 }
 
 func (f *File) Delete() error {
+	if f.isVirtual {
+		return errors.New("file is virtual")
+	}
+
 	stat, err := os.Stat(f.Path)
 	if err != nil {
 		return err

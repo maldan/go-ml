@@ -20,10 +20,11 @@ const RecordEndMark = 0x34
 const MaskDeleted = 0b1000_0000
 const MaskTotalFields = 0b0011_1111
 
-type StructInfo struct {
+/*type StructInfo struct {
 	FieldCount    int
 	FieldNameToId map[string]int
 	FieldType     []int
 	FieldName     []string
 	FieldOffset   []uintptr
 }
+*/

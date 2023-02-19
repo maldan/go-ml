@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	mdb_goson "github.com/maldan/go-ml/db/goson"
-	ml_console "github.com/maldan/go-ml/io/console"
+	gosn_driver "github.com/maldan/go-ml/db/driver/gosn"
+	"github.com/maldan/go-ml/db/mdb"
+	ml_console "github.com/maldan/go-ml/util/io/console"
+
 	ml_time "github.com/maldan/go-ml/util/time"
 )
 
@@ -23,7 +25,7 @@ type User struct {
 
 	SubscriptionName string `json:"subscription_name"`
 	// SubscriptionType    string    `json:"subscription_type"`
-	SubscriptionExpires ml_time.Time `json:"subscription_expires"`
+	SubscriptionExpires ml_time.DateTime `json:"subscription_expires"`
 
 	AvailablePhoto     int    `json:"available_photo"`
 	AvailableDocuments int    `json:"available_documents"`
@@ -31,18 +33,18 @@ type User struct {
 
 	OverridePermission uint64 `json:"override_permission"`
 
-	LastLogin  ml_time.Time `json:"last_login"`
-	DateJoined ml_time.Time `json:"date_joined"`
+	LastLogin  ml_time.DateTime `json:"last_login"`
+	DateJoined ml_time.DateTime `json:"date_joined"`
 }
 
 func main() {
-	userDb := mdb_goson.New[User](".", "db2")
+	userDb := mdb.New[User](".", "db2", &gosn_driver.Container{})
 
 	// userDb.SetBackupSchedule("../../trash", time.Second)
 
 	// userDb.Insert(User{Username: "lox", Password: "oglox"})
 
-	sr := userDb.FindBy(mdb_goson.ArgsFind[User]{
+	sr := userDb.FindBy(mdb.ArgsFind[User]{
 		FieldList: "Username",
 		Where: func(u *User) bool {
 			fmt.Printf("%v\n", u)

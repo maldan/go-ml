@@ -158,6 +158,7 @@ func handleStruct(v *Mapper, bytes []byte, offset int, searchField uint8) int {
 
 		// Field matches
 		if fieldId == searchField {
+			// @TODO it's probably match only once
 			applyType(v, bytes, offset, fieldId)
 			return size
 		}

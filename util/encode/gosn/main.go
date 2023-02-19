@@ -88,22 +88,36 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 		offset += size
 
 		if ptrType == T_STRING {
-			*(*string)(ptr) = string(blob)
+			// Eliminate memory leaks
+			copyOfString := make([]byte, len(blob))
+			copy(copyOfString, blob)
+
+			*(*string)(ptr) = string(copyOfString)
 		}
 		break
-	case T_SLICE:
+	case T_SLICE, T_BIG_SLICE:
 		// Size
 		offset += 2
 
+		// Offset + 2 bytes for big slices
+		if tp == T_BIG_SLICE {
+			offset += 2
+		}
+
 		// Amount
-		amount := int(bytes[offset])
-		offset += 2
+		amount := 0
+		if tp == T_BIG_SLICE {
+			amount = int(binary.LittleEndian.Uint32(bytes[offset:]))
+			offset += 4
+		} else {
+			amount = int(binary.LittleEndian.Uint16(bytes[offset:]))
+			offset += 2
+		}
 
 		typeOf := reflect.TypeOf(typeHint).Elem()
 		typeHint = reflect.New(typeOf).Elem().Interface()
 
 		elemSlice := reflect.MakeSlice(reflect.SliceOf(typeOf), amount, amount)
-		arr := make([]any, amount, amount)
 
 		// Get pointer type of each element
 		elementPtrType := TypeStringToTypeByte(typeOf.String())
@@ -116,8 +130,6 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 				typeHint,
 				idToName,
 			)
-
-			arr[i] = elemSlice.Index(i).Interface()
 		}
 
 		g := elemSlice.Pointer()
@@ -130,6 +142,8 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 		break
 	case T_STRUCT:
 		// Size
+		size := binary.LittleEndian.Uint16(bytes[offset:])
+		fmt.Printf("READ SIZE: %v\n", size)
 		offset += 2
 
 		// Amount
@@ -186,7 +200,6 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 			}
 		}
 		break
-
 	case T_CUSTOM:
 		// Read size of data
 		size := int(binary.LittleEndian.Uint16(bytes[offset:]))
@@ -217,6 +230,23 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 			panic(fmt.Sprintf("custom type %T doesn't have FromBytes method", typeHint))
 		}
 
+		break
+	case T_BLOB:
+		// Read size of data
+		size := int(binary.LittleEndian.Uint32(bytes[offset:]))
+		offset += 4
+
+		// Get blob
+		blob := bytes[offset : offset+size]
+		offset += size
+
+		if ptrType == T_SLICE {
+			// Eliminate memory leaks
+			copyOfBlob := make([]byte, len(blob))
+			copy(copyOfBlob, blob)
+
+			*(*[]byte)(ptr) = copyOfBlob
+		}
 		break
 	default:
 		panic(fmt.Sprintf("uknown type %v", tp))

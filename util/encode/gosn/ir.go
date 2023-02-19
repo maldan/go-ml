@@ -50,12 +50,17 @@ func (r *IR) Len() int {
 		outSize += 2
 		outSize += len(r.Content)
 		break
-	case T_SLICE:
+	case T_SLICE, T_BIG_SLICE:
 		// Size
 		outSize += 2
 
 		// Amount of elements
 		outSize += 2
+
+		if r.Type == T_BIG_SLICE {
+			outSize += 2 // + 2 bytes for size
+			outSize += 2 // + 2 bytes for amount of elements
+		}
 
 		for i := 0; i < len(r.List); i++ {
 			outSize += r.List[i].Len()
@@ -74,6 +79,10 @@ func (r *IR) Len() int {
 		break
 	case T_CUSTOM:
 		outSize += 2
+		outSize += len(r.Content)
+		break
+	case T_BLOB:
+		outSize += 4
 		outSize += len(r.Content)
 		break
 	default:
@@ -116,16 +125,28 @@ func (r *IR) Build() []byte {
 		// Content
 		s = append(s, r.Content...)
 		break
-	case T_SLICE:
+	case T_SLICE, T_BIG_SLICE:
 		// Size of slice
 		l := r.Len()
 		s = append(s, uint8(l))
 		s = append(s, uint8(l>>8))
 
+		// 4 bytes for size
+		if r.Type == T_BIG_SLICE {
+			s = append(s, uint8(l>>16))
+			s = append(s, uint8(l>>24))
+		}
+
 		// Amount of elements
 		l = len(r.List)
 		s = append(s, uint8(l))
 		s = append(s, uint8(l>>8))
+
+		// 4 bytes for amount
+		if r.Type == T_BIG_SLICE {
+			s = append(s, uint8(l>>16))
+			s = append(s, uint8(l>>24))
+		}
 
 		// Elements
 		for i := 0; i < len(r.List); i++ {
@@ -152,6 +173,17 @@ func (r *IR) Build() []byte {
 		l := len(r.Content)
 		s = append(s, uint8(l))
 		s = append(s, uint8(l>>8))
+
+		// Content
+		s = append(s, r.Content...)
+		break
+	case T_BLOB:
+		// Content length
+		l := len(r.Content)
+		s = append(s, uint8(l))
+		s = append(s, uint8(l>>8))
+		s = append(s, uint8(l>>16))
+		s = append(s, uint8(l>>24))
 
 		// Content
 		s = append(s, r.Content...)
@@ -246,15 +278,37 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 	case reflect.String:
 		ir.Type = T_STRING
 		ir.Content = []byte(valueOf.String())
+
+		// Big strings
+		if len(ir.Content) > int(uint16(65535)) {
+			ir.Type = T_BIG_STRING
+		}
+
 		break
 	case reflect.Slice:
 		ir.Type = T_SLICE
 
+		// Blob types for []byte slice
+		if valueOf.Type().Elem().String() == "uint8" {
+			ir.Type = T_BLOB
+			for i := 0; i < valueOf.Len(); i++ {
+				ir.Content = append(ir.Content, uint8(valueOf.Index(i).Uint()))
+			}
+			break
+		}
+
+		// Any slice with any values
 		for i := 0; i < valueOf.Len(); i++ {
 			tr := IR{}
 			ir.List = append(ir.List, &tr)
 			BuildIR(&tr, valueOf.Index(i).Interface(), nameToId)
 		}
+
+		// Big slice
+		if len(ir.List) > 0xFFFF {
+			ir.Type = T_BIG_SLICE
+		}
+
 		break
 	case reflect.Struct:
 		// Check to custom encode method
@@ -265,6 +319,18 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 			if len(ret) > 0 {
 				ir.Type = T_CUSTOM
 				ir.Content = ret[0].Interface().([]byte)
+
+				// Big custom
+				if len(ir.Content) > 0xFFFF {
+					ir.Type = T_BIG_CUSTOM
+				}
+
+				// Check an error
+				if len(ret) > 1 {
+					if ret[1].Interface() != nil {
+						panic(ret[1])
+					}
+				}
 			}
 		} else {
 			ir.Type = T_STRUCT
@@ -288,6 +354,7 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 				ir.List = append(ir.List, &tr)
 				BuildIR(&tr, valueOf.Field(i).Interface(), nameToId)
 			}
+			fmt.Printf("Size of struct: %v\n", ir.Len())
 		}
 		break
 	default:

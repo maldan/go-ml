@@ -1,7 +1,6 @@
 package gosn_driver
 
 import (
-	"fmt"
 	"github.com/maldan/go-ml/util/encode/gosn"
 )
 
@@ -57,7 +56,6 @@ func (g *Container) Prepare(v any) {
 	nid.FromStruct(v)
 	_ = ml_gosn.MarshalExt(v, nid)
 	g.NameToId = nid
-	fmt.Printf("%v\n", g.NameToId)
 }
 
 func (g *Container) Marshal(v any) []byte {

@@ -39,7 +39,7 @@ func (h *Header[T]) FromBytes(bytes []byte) {
 
 	// File id
 	h.FileId = string(bytes[0:8])
-	if string(h.FileId) != "GOSONDB$" {
+	if string(h.FileId) != "MEGADBGO" {
 		panic("non db")
 	}
 	offset += 8
@@ -65,7 +65,7 @@ func (h *Header[T]) ToBytes() []byte {
 	bytes := make([]byte, HEADER_SIZE)
 
 	// File id
-	copy(bytes, "GOSONDB$")
+	copy(bytes, "MEGADBGO")
 	offset += 8
 
 	// Version

@@ -160,7 +160,7 @@ func (d DateTime) MarshalJSON() ([]byte, error) {
 	)), nil
 }
 
-func (d DateTime) ToBytes() []byte {
+func (d DateTime) ToBytes() ([]byte, error) {
 	// Prepare
 	out := make([]byte, 0, 14)
 
@@ -178,7 +178,7 @@ func (d DateTime) ToBytes() []byte {
 	// Put time zone
 	out = append(out, byte(d.tzHour), d.tzMinute)
 
-	return out
+	return out, nil
 }
 
 func (d *DateTime) FromBytes(b []byte) error {
