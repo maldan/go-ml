@@ -46,29 +46,43 @@ func (r *IR) Len() int {
 	case T_64, T_F64:
 		outSize += 8
 		break
-	case T_STRING:
-		outSize += 2
+	case T_STRING, T_SHORT_STRING, T_BIG_STRING:
+		outSize += 1
+		if r.Type == T_SHORT_STRING {
+			outSize += 1 // + 1 bytes for size
+		}
+		if r.Type == T_BIG_STRING {
+			outSize += 3 // + 3 bytes for size
+		}
+
 		outSize += len(r.Content)
 		break
-	case T_SLICE, T_BIG_SLICE:
+	case T_SLICE, T_SHORT_SLICE, T_BIG_SLICE:
 		// Size
-		outSize += 2
-
-		// Amount of elements
-		outSize += 2
-
-		if r.Type == T_BIG_SLICE {
-			outSize += 2 // + 2 bytes for size
-			outSize += 2 // + 2 bytes for amount of elements
+		outSize += 1
+		if r.Type == T_SHORT_SLICE {
+			outSize += 1 // + 1 bytes for size
 		}
+		if r.Type == T_BIG_SLICE {
+			outSize += 3 // + 3 bytes for size
+		}
+
+		// Amount of elements, max is 4_294_967_295
+		outSize += 4
 
 		for i := 0; i < len(r.List); i++ {
 			outSize += r.List[i].Len()
 		}
 		break
-	case T_STRUCT:
+	case T_STRUCT, T_SHORT_STRUCT, T_BIG_STRUCT:
 		// Size
-		outSize += 2
+		outSize += 1
+		if r.Type == T_SHORT_STRUCT {
+			outSize += 1 // + 1 bytes for size
+		}
+		if r.Type == T_BIG_STRUCT {
+			outSize += 3 // + 3 bytes for size
+		}
 
 		// Amount of elements
 		outSize += 1
@@ -77,8 +91,16 @@ func (r *IR) Len() int {
 			outSize += r.List[i].Len()
 		}
 		break
-	case T_CUSTOM:
-		outSize += 2
+	case T_CUSTOM, T_SHORT_CUSTOM, T_BIG_CUSTOM:
+		// Size
+		outSize += 1
+		if r.Type == T_SHORT_CUSTOM {
+			outSize += 1 // + 1 bytes for size
+		}
+		if r.Type == T_BIG_CUSTOM {
+			outSize += 3 // + 3 bytes for size
+		}
+
 		outSize += len(r.Content)
 		break
 	case T_BLOB:
@@ -116,23 +138,33 @@ func (r *IR) Build() []byte {
 		// Content
 		s = append(s, r.Content...)
 		break
-	case T_STRING:
+	case T_STRING, T_SHORT_STRING, T_BIG_STRING:
 		// Content length
 		l := len(r.Content)
 		s = append(s, uint8(l))
-		s = append(s, uint8(l>>8))
+
+		if r.Type == T_SHORT_STRING {
+			s = append(s, uint8(l>>8))
+		}
+		if r.Type == T_BIG_STRING {
+			s = append(s, uint8(l>>8))
+			s = append(s, uint8(l>>16))
+			s = append(s, uint8(l>>24))
+		}
 
 		// Content
 		s = append(s, r.Content...)
 		break
-	case T_SLICE, T_BIG_SLICE:
+	case T_SLICE, T_SHORT_SLICE, T_BIG_SLICE:
 		// Size of slice
 		l := r.Len()
 		s = append(s, uint8(l))
-		s = append(s, uint8(l>>8))
 
-		// 4 bytes for size
+		if r.Type == T_SHORT_SLICE {
+			s = append(s, uint8(l>>8))
+		}
 		if r.Type == T_BIG_SLICE {
+			s = append(s, uint8(l>>8))
 			s = append(s, uint8(l>>16))
 			s = append(s, uint8(l>>24))
 		}
@@ -141,23 +173,27 @@ func (r *IR) Build() []byte {
 		l = len(r.List)
 		s = append(s, uint8(l))
 		s = append(s, uint8(l>>8))
-
-		// 4 bytes for amount
-		if r.Type == T_BIG_SLICE {
-			s = append(s, uint8(l>>16))
-			s = append(s, uint8(l>>24))
-		}
+		s = append(s, uint8(l>>16))
+		s = append(s, uint8(l>>24))
 
 		// Elements
 		for i := 0; i < len(r.List); i++ {
 			s = append(s, r.List[i].Build()...)
 		}
 		break
-	case T_STRUCT:
+	case T_STRUCT, T_SHORT_STRUCT, T_BIG_STRUCT:
 		// Size of struct
 		l := r.Len()
 		s = append(s, uint8(l))
-		s = append(s, uint8(l>>8))
+
+		if r.Type == T_SHORT_STRUCT {
+			s = append(s, uint8(l>>8))
+		}
+		if r.Type == T_BIG_STRUCT {
+			s = append(s, uint8(l>>8))
+			s = append(s, uint8(l>>16))
+			s = append(s, uint8(l>>24))
+		}
 
 		// Amount of elements
 		l = len(r.List)
@@ -168,11 +204,19 @@ func (r *IR) Build() []byte {
 			s = append(s, r.List[i].Build()...)
 		}
 		break
-	case T_CUSTOM:
+	case T_CUSTOM, T_SHORT_CUSTOM, T_BIG_CUSTOM:
 		// Content length
 		l := len(r.Content)
 		s = append(s, uint8(l))
-		s = append(s, uint8(l>>8))
+
+		if r.Type == T_SHORT_CUSTOM {
+			s = append(s, uint8(l>>8))
+		}
+		if r.Type == T_BIG_CUSTOM {
+			s = append(s, uint8(l>>8))
+			s = append(s, uint8(l>>16))
+			s = append(s, uint8(l>>24))
+		}
 
 		// Content
 		s = append(s, r.Content...)
@@ -279,14 +323,25 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 		ir.Type = T_STRING
 		ir.Content = []byte(valueOf.String())
 
-		// Big strings
-		if len(ir.Content) > int(uint16(65535)) {
+		// Extend types by length
+		if len(ir.Content) > 0xFF {
+			ir.Type = T_SHORT_STRING
+		}
+		if len(ir.Content) > 0xFFFF {
 			ir.Type = T_BIG_STRING
+		}
+		if len(ir.Content) > 0xFFFF_FFFF {
+			panic("string is too big")
 		}
 
 		break
 	case reflect.Slice:
 		ir.Type = T_SLICE
+
+		// Check slice size
+		if valueOf.Len() > 0xFFFF_FFFF {
+			panic("slice is too big")
+		}
 
 		// Blob types for []byte slice
 		if valueOf.Type().Elem().String() == "uint8" {
@@ -304,9 +359,12 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 			BuildIR(&tr, valueOf.Index(i).Interface(), nameToId)
 		}
 
-		// Big slice
-		if len(ir.List) > 0xFFFF {
-			ir.Type = T_BIG_SLICE
+		// Extend types by length
+		if ir.Len() > 0xFF {
+			ir.Type = T_SHORT_SLICE
+		}
+		if ir.Len() > 0xFFFF {
+			ir.Type = T_BIG_STRING
 		}
 
 		break
@@ -320,7 +378,10 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 				ir.Type = T_CUSTOM
 				ir.Content = ret[0].Interface().([]byte)
 
-				// Big custom
+				// Extend types by length
+				if len(ir.Content) > 0xFF {
+					ir.Type = T_SHORT_CUSTOM
+				}
 				if len(ir.Content) > 0xFFFF {
 					ir.Type = T_BIG_CUSTOM
 				}
@@ -334,6 +395,12 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 			}
 		} else {
 			ir.Type = T_STRUCT
+
+			if typeOf.NumField() > 0xFF {
+				panic("too many fields in struct")
+			}
+
+			// Go through fields
 			for i := 0; i < typeOf.NumField(); i++ {
 				if typeOf.Field(i).Name == strings.ToLower(typeOf.Field(i).Name) {
 					panic(fmt.Sprintf("struct %v with private fields impossible to serialize", typeOf))
@@ -354,7 +421,14 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 				ir.List = append(ir.List, &tr)
 				BuildIR(&tr, valueOf.Field(i).Interface(), nameToId)
 			}
-			fmt.Printf("Size of struct: %v\n", ir.Len())
+
+			// Extend types by length
+			if ir.Len() > 0xFF {
+				ir.Type = T_SHORT_STRUCT
+			}
+			if ir.Len() > 0xFFFF {
+				ir.Type = T_BIG_STRUCT
+			}
 		}
 		break
 	default:

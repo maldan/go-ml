@@ -6,6 +6,7 @@ import (
 	"github.com/maldan/go-ml/util/encode/gosn"
 	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	ml_time "github.com/maldan/go-ml/util/time"
+	"strings"
 	"testing"
 	"text/template"
 	"time"
@@ -186,7 +187,129 @@ func TestMainByteSlice(t *testing.T) {
 	}
 }
 
-func _TestGen(t *testing.T) {
+func TestTypes(t *testing.T) {
+	a := ml_gosn.TypeToString(ml_gosn.T_BOOL)
+	if a != "bool" {
+		t.Fatal("fuck")
+	}
+}
+
+func TestGen_forType(t *testing.T) {
+	tpl := `
+func Test_Type_{{ .Type }}(t *testing.T) {
+	a := ml_gosn.TypeToString(ml_gosn.{{ .Type }})
+	if a != {{ .TypeString }} {
+		t.Fatalf("fuck %v %v", ml_gosn.{{ .Type }}, {{ .TypeString }})
+	}
+}
+	`
+
+	// Prepare
+	tt, err := template.New("code").Parse(tpl)
+	if err != nil {
+		panic(err)
+	}
+
+	// Execute
+	var code bytes.Buffer
+	code.Write([]byte("package test_test\n"))
+	code.Write([]byte("import (\n\tml_gosn \"github.com/maldan/go-ml/util/encode/gosn\"\n\t\"testing\"\n)"))
+
+	typeList := []string{
+		"T_BOOL", "T_8", "T_16", "T_32", "T_64", "T_F32", "T_F64",
+		"T_STRING", "T_SHORT_STRING", "T_BIG_STRING",
+		"T_SLICE", "T_SHORT_SLICE", "T_BIG_SLICE",
+		"T_MAP", "T_SHORT_MAP", "T_BIG_MAP",
+		"T_STRUCT", "T_SHORT_STRUCT", "T_BIG_STRUCT",
+		"T_CUSTOM", "T_SHORT_CUSTOM", "T_BIG_CUSTOM",
+	}
+	typeStringList := []any{
+		"\"bool\"", "\"uint8\"", "\"uint16\"", "\"uint32\"", "\"uint64\"", "\"float32\"", "\"float64\"",
+		"\"string\"", "\"string\"", "\"string\"",
+		"\"slice\"", "\"slice\"", "\"slice\"",
+		"\"map\"", "\"map\"", "\"map\"",
+		"\"struct\"", "\"struct\"", "\"struct\"",
+		"\"any\"", "\"any\"", "\"any\"",
+	}
+
+	// Type list
+	for i, tp := range typeList {
+		err = tt.Execute(&code, map[string]any{
+			"Type":       tp,
+			"TypeString": typeStringList[i],
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	ml_file.New("test/types_test.go").Write(code.Bytes())
+}
+
+func TestGen_forType2(t *testing.T) {
+	tpl := `
+func Test_Type2_{{ .FnName }}(t *testing.T) {
+	a := ml_gosn.TypeStringToTypeByte({{ .TypeString }})
+	if a != ml_gosn.{{ .Type }} {
+		t.Fatalf("fuck %v %v", ml_gosn.{{ .Type }}, {{ .TypeString }})
+	}
+}
+	`
+
+	// Prepare
+	tt, err := template.New("code").Parse(tpl)
+	if err != nil {
+		panic(err)
+	}
+
+	// Execute
+	var code bytes.Buffer
+	code.Write([]byte("package test_test\n"))
+	code.Write([]byte("import (\n\tml_gosn \"github.com/maldan/go-ml/util/encode/gosn\"\n\t\"testing\"\n)"))
+
+	typeStringList := []string{
+		"\"bool\"",
+		"\"int8\"", "\"uint8\"",
+		"\"int16\"", "\"uint16\"",
+		"\"int\"", "\"int32\"", "\"uint32\"",
+		"\"int64\"", "\"uint64\"",
+
+		"\"float32\"", "\"float64\"",
+
+		"\"string\"",
+		"\"slice\"",
+		"\"map\"",
+		"\"struct\"",
+	}
+	typeList := []string{
+		"T_BOOL",
+		"T_8", "T_8",
+		"T_16", "T_16",
+		"T_32", "T_32", "T_32",
+		"T_64", "T_64",
+		"T_F32", "T_F64",
+		"T_STRING",
+		"T_SLICE",
+		"T_MAP",
+		"T_STRUCT",
+	}
+
+	// Type list
+	for i, _ := range typeStringList {
+		err = tt.Execute(&code, map[string]any{
+			"FnName":     strings.ReplaceAll(typeStringList[i], "\"", ""),
+			"Type":       typeList[i],
+			"TypeString": typeStringList[i],
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	ml_file.New("test/types2_test.go").Write(code.Bytes())
+}
+
+func TestGen_packAndUnpackSimpleStruct(t *testing.T) {
 	tpl := `
 func Test_{{ .Type }}(t *testing.T) {
 	type tStruct struct {
@@ -222,7 +345,8 @@ func Test_{{ .Type }}(t *testing.T) {
 
 	// Execute
 	var code bytes.Buffer
-	code.Write([]byte("package ml_gosn_test\n"))
+	code.Write([]byte("package test_test\n"))
+	code.Write([]byte("import (\n\tml_gosn \"github.com/maldan/go-ml/util/encode/gosn\"\n\t\"testing\"\n)"))
 
 	typeList := []string{
 		"uint8", "uint16", "uint32", "uint64",
@@ -247,5 +371,5 @@ func Test_{{ .Type }}(t *testing.T) {
 		}
 	}
 
-	ml_file.New("gen_test.go").Write(code.Bytes())
+	ml_file.New("test/pack_and_unpack_simple_test.go").Write(code.Bytes())
 }

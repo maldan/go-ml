@@ -81,9 +81,22 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 		}
 		offset += 8
 		break
-	case T_STRING:
-		size := int(binary.LittleEndian.Uint16(bytes[offset:]))
-		offset += 2
+	case T_STRING, T_SHORT_STRING, T_BIG_STRING:
+		size := 0
+		if tp == T_STRING {
+			size = int(bytes[offset])
+			offset += 1
+		}
+		if tp == T_SHORT_STRING {
+			size = int(binary.LittleEndian.Uint16(bytes[offset:]))
+			offset += 2
+		}
+		if tp == T_BIG_STRING {
+			size = int(binary.LittleEndian.Uint32(bytes[offset:]))
+			offset += 4
+		}
+
+		// Get blob and offset
 		blob := bytes[offset : offset+size]
 		offset += size
 
@@ -95,24 +108,24 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 			*(*string)(ptr) = string(copyOfString)
 		}
 		break
-	case T_SLICE, T_BIG_SLICE:
-		// Size
-		offset += 2
-
-		// Offset + 2 bytes for big slices
-		if tp == T_BIG_SLICE {
+	case T_SLICE, T_SHORT_SLICE, T_BIG_SLICE:
+		// size := 0
+		if tp == T_SLICE {
+			// size = int(bytes[offset])
+			offset += 1
+		}
+		if tp == T_SHORT_SLICE {
+			// size = int(binary.LittleEndian.Uint16(bytes[offset:]))
 			offset += 2
+		}
+		if tp == T_BIG_SLICE {
+			// size = int(binary.LittleEndian.Uint32(bytes[offset:]))
+			offset += 4
 		}
 
 		// Amount
-		amount := 0
-		if tp == T_BIG_SLICE {
-			amount = int(binary.LittleEndian.Uint32(bytes[offset:]))
-			offset += 4
-		} else {
-			amount = int(binary.LittleEndian.Uint16(bytes[offset:]))
-			offset += 2
-		}
+		amount := int(binary.LittleEndian.Uint32(bytes[offset:]))
+		offset += 4
 
 		typeOf := reflect.TypeOf(typeHint).Elem()
 		typeHint = reflect.New(typeOf).Elem().Interface()
@@ -139,12 +152,24 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 			Len:  amount,
 			Cap:  amount,
 		}
+
 		break
-	case T_STRUCT:
+	case T_STRUCT, T_SHORT_STRUCT, T_BIG_STRUCT:
 		// Size
-		size := binary.LittleEndian.Uint16(bytes[offset:])
-		fmt.Printf("READ SIZE: %v\n", size)
-		offset += 2
+		// size := 0
+		if tp == T_STRUCT {
+			// size = int(bytes[offset])
+			offset += 1
+		}
+		if tp == T_SHORT_STRUCT {
+			// size = int(binary.LittleEndian.Uint16(bytes[offset:]))
+			offset += 2
+		}
+		if tp == T_BIG_STRUCT {
+			// size = int(binary.LittleEndian.Uint32(bytes[offset:]))
+			offset += 4
+		}
+		// fmt.Printf("READ SIZE: %v\n", size)
 
 		// Amount
 		amount := int(bytes[offset])
@@ -200,10 +225,21 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 			}
 		}
 		break
-	case T_CUSTOM:
-		// Read size of data
-		size := int(binary.LittleEndian.Uint16(bytes[offset:]))
-		offset += 2
+	case T_CUSTOM, T_SHORT_CUSTOM, T_BIG_CUSTOM:
+		// Size
+		size := 0
+		if tp == T_CUSTOM {
+			size = int(bytes[offset])
+			offset += 1
+		}
+		if tp == T_SHORT_CUSTOM {
+			size = int(binary.LittleEndian.Uint16(bytes[offset:]))
+			offset += 2
+		}
+		if tp == T_BIG_CUSTOM {
+			size = int(binary.LittleEndian.Uint32(bytes[offset:]))
+			offset += 4
+		}
 
 		// Read data
 		blob := bytes[offset : offset+size]
