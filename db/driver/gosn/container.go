@@ -69,3 +69,11 @@ func (g *Container) Unmarshall(b []byte, out any) {
 func (g *Container) GetMapper(fieldList string, out any) any {
 	return NewMapper(g.NameToId, fieldList, out)
 }
+
+func (g *Container) GetStruct() map[string]string {
+	out := map[string]string{}
+	for k, _ := range g.NameToId {
+		out[k] = ""
+	}
+	return out
+}

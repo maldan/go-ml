@@ -82,6 +82,10 @@ func NameListToIdList(fieldList string, nameToId NameToId) []uint8 {
 	fieldList2 := ml_slice.Map(strings.Split(fieldList, ","), func(t string) string {
 		return strings.Trim(t, " ")
 	})
+	if len(fieldList2) == 0 {
+		return []uint8{}
+	}
+
 	fieldIdList := make([]uint8, 0)
 	for _, v := range fieldList2 {
 		id, ok := nameToId[v]

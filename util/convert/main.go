@@ -2,6 +2,7 @@ package ml_convert
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -65,4 +66,11 @@ func ToString[T any](v T) string {
 func FromBase64(v string) []byte {
 	uDec, _ := base64.URLEncoding.DecodeString(v)
 	return uDec
+}
+
+func StructToMap(v any) map[string]any {
+	vv := map[string]any{}
+	bytes, _ := json.Marshal(v)
+	json.Unmarshal(bytes, &vv)
+	return vv
 }

@@ -1,9 +1,9 @@
 package main
 
 import (
-	ml_console "github.com/maldan/go-ml/io/console"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_response "github.com/maldan/go-ml/server/response"
+	ml_console "github.com/maldan/go-ml/util/io/console"
 	ml_time "github.com/maldan/go-ml/util/time"
 )
 
@@ -17,9 +17,9 @@ type ArgsX struct {
 }
 
 type Args2 struct {
-	A       string       `json:"a"`
-	B       int          `json:"b"`
-	Created ml_time.Time `json:"created"`
+	A       string           `json:"a"`
+	B       int              `json:"b"`
+	Created ml_time.DateTime `json:"created"`
 }
 
 type Gasofeal struct {

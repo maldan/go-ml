@@ -22,6 +22,8 @@ type DBContainer interface {
 
 	GetHeader() []byte
 	SetHeader([]byte)
+
+	GetStruct() map[string]string
 }
 
 type DataTable[T any] struct {

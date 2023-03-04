@@ -156,3 +156,10 @@ func Combine[T any](slices ...[]T) []T {
 func Prepend[T any](slice []T, value []T) []T {
 	return append(value, slice...)
 }
+
+func NotNil[T any](slice []T) []T {
+	if slice == nil {
+		return make([]T, 0)
+	}
+	return slice
+}

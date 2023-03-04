@@ -1,9 +1,16 @@
 package ml_file
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	ml_convert "github.com/maldan/go-ml/util/convert"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -91,6 +98,24 @@ func (f File) ToBytes() ([]byte, error) {
 	return out, nil
 }
 
+func (f File) ToDataUrl() ([]byte, error) {
+	// Get content
+	content, err := f.ReadAll()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	// Prepare
+	out := make([]byte, 0, len(content)+128)
+	// out = append(out, '"')
+	out = append(out, []byte("data:"+f.mime+";base64,")...)
+
+	// Add
+	out = append(out, base64.StdEncoding.EncodeToString(content)...)
+	// out = append(out, '"')
+	return out, nil
+}
+
 func (f *File) Load() error {
 	content, err := f.ReadAll()
 	f.content = content
@@ -104,6 +129,16 @@ func (f *File) ReadAll() ([]byte, error) {
 	content, err := os.ReadFile(f.Path)
 	f.mime = http.DetectContentType(content)
 	return content, err
+}
+
+func (f *File) ImageDimension() (int, int, error) {
+	reader, err := os.Open(f.Path)
+	defer reader.Close()
+	if err != nil {
+		return 0, 0, err
+	}
+	im, _, err := image.DecodeConfig(reader)
+	return im.Width, im.Height, err
 }
 
 func (f *File) Save() error {
@@ -181,4 +216,20 @@ func (f *File) Delete() error {
 	}
 
 	return nil
+}
+
+func (f *File) Sha256() (string, error) {
+	ff, err := os.Open(f.Path)
+	defer ff.Close()
+	if err != nil {
+		return "", err
+	}
+
+	hasher := sha256.New()
+	_, err = io.Copy(hasher, ff)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hasher.Sum(nil)), nil
 }

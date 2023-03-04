@@ -41,7 +41,6 @@ func main() {
 	userDb := mdb.New[User](".", "db2", &gosn_driver.Container{})
 
 	// userDb.SetBackupSchedule("../../trash", time.Second)
-
 	// userDb.Insert(User{Username: "lox", Password: "oglox"})
 
 	sr := userDb.FindBy(mdb.ArgsFind[User]{

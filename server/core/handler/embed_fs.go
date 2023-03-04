@@ -3,8 +3,8 @@ package ms_handler
 import (
 	"embed"
 	"fmt"
-	ml_file "github.com/maldan/go-ml/io/fs/file"
 	ms_error "github.com/maldan/go-ml/server/error"
+	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	"net/http"
 	"os"
 	"path/filepath"

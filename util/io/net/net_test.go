@@ -2,7 +2,7 @@ package ml_net_test
 
 import (
 	"fmt"
-	ml_net "github.com/maldan/go-ml/io/net"
+	ml_net "github.com/maldan/go-ml/util/io/net"
 	"testing"
 )
 

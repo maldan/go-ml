@@ -7,7 +7,7 @@ import (
 	"fmt"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
-	ml_slice "github.com/maldan/go-ml/slice"
+	ml_slice "github.com/maldan/go-ml/util/slice"
 	"log"
 	"net/http"
 	"runtime"
