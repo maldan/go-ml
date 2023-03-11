@@ -15,10 +15,12 @@ import (
 )
 
 type UIInfo[T any] struct {
-	DB        *mdb.DataTable[T]
-	Elements  []ui.Drawable
-	TableInfo *widgets.Paragraph
-	PrintInfo *widgets.Table
+	DB              *mdb.DataTable[T]
+	Elements        []ui.Drawable
+	TableInfo       *widgets.Paragraph
+	PrintInfo       *widgets.Table
+	IsShowTableMode bool
+	HideColumns     []string
 }
 
 func Search[T any](h *UIInfo[T], query string) mdb.SearchResult[T] {
@@ -31,6 +33,9 @@ func Search[T any](h *UIInfo[T], query string) mdb.SearchResult[T] {
 		Where: func(v *T) bool {
 			parameters := ml_convert.StructToMap(v)
 			r, _ := expression.Evaluate(parameters)
+			if r == nil {
+				return false
+			}
 			return r.(bool)
 		},
 	})
@@ -38,10 +43,53 @@ func Search[T any](h *UIInfo[T], query string) mdb.SearchResult[T] {
 }
 
 func HandleCommand[T any](h *UIInfo[T], cmd string) {
-	tw, _ := ui.TerminalDimensions()
+	// Table mode
+	if h.IsShowTableMode {
+		ui.Clear()
+
+		tw, _ := ui.TerminalDimensions()
+		h.PrintInfo = widgets.NewTable()
+		h.PrintInfo.SetRect(0, 0, tw, 20)
+		h.PrintInfo.Rows = [][]string{}
+
+		// Select
+		result := Search[T](h, cmd)
+
+		// Prepare keys
+		ss := h.DB.Container.GetStruct()
+		keys := ml_slice.GetKeys(ss)
+
+		vKeys := make([]string, 0)
+		vKeys = append(vKeys, "#")
+		vKeys = append(vKeys, keys...)
+
+		h.PrintInfo.Rows = append(h.PrintInfo.Rows, vKeys)
+
+		for i := 0; i < result.Count; i++ {
+			valueOf := reflect.ValueOf(result.Result[i])
+			values := make([]string, 0)
+			values = append(values, fmt.Sprintf("%v", i))
+
+			for _, key := range keys {
+				field := valueOf.FieldByName(key)
+				values = append(values, fmt.Sprintf("%v", field.Interface()))
+			}
+			h.PrintInfo.Rows = append(h.PrintInfo.Rows, values)
+		}
+
+		h.PrintInfo.ColumnWidths = make([]int, len(vKeys))
+		for i := 0; i < len(vKeys); i++ {
+			h.PrintInfo.ColumnWidths[i] = 20
+		}
+		h.PrintInfo.ColumnWidths[0] = 5
+
+		return
+	}
 
 	if cmd == "show table" {
-		h.PrintInfo = widgets.NewTable()
+		h.IsShowTableMode = true
+
+		/*h.PrintInfo = widgets.NewTable()
 		h.PrintInfo.SetRect(0, 0, tw, 20)
 		h.PrintInfo.Rows = [][]string{}
 
@@ -76,12 +124,7 @@ func HandleCommand[T any](h *UIInfo[T], cmd string) {
 		for i := 0; i < len(vKeys); i++ {
 			h.PrintInfo.ColumnWidths[i] = 20
 		}
-		h.PrintInfo.ColumnWidths[0] = 5
-
-		//info := ""
-		//for i := 0; i < result.Count; i++ {
-		// info += fmt.Sprintf("%+v\n", result.Result[i])
-		//}
+		h.PrintInfo.ColumnWidths[0] = 5*/
 	}
 	if cmd == "total" {
 		h.TableInfo = widgets.NewParagraph()

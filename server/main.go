@@ -7,8 +7,8 @@ import (
 	"fmt"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
+	ms_panel "github.com/maldan/go-ml/server/panel"
 	ml_slice "github.com/maldan/go-ml/util/slice"
-	"log"
 	"net/http"
 	"runtime"
 	"strings"
@@ -29,40 +29,34 @@ func endOfRequest(args *ms_handler.Args) {
 	switch e := err.(type) {
 	case ms_error.Error:
 		args.Response.WriteHeader(e.Code)
+		e.EndPoint = args.Path
 		message, _ := json.Marshal(e)
 		args.Response.Write(message)
-		/*if args.DebugMode {
-			rapi_debug.Log(args.Id).SetError(e)
-			rapi_debug.Log(args.Id).SetArgs(args.MethodArgs)
-		}*/
+		Log("request error", e)
 	default:
-		// _, file, line, _ := runtime.Caller(3)
 		debugInfo := make([]string, 0, 10)
 		for i := 0; i < 10; i++ {
-			_, f, l, ok := runtime.Caller(i)
+			_, f, l, ok := runtime.Caller(i + 1)
 			if ok {
+				// Skip system libs, no points in it
+				if strings.Contains(f, "/local/go/src/") {
+					continue
+				}
 				debugInfo = append(debugInfo, fmt.Sprintf("%v:%v", f, l))
 			}
 		}
 
 		args.Response.WriteHeader(500)
-		// fmt.Println(string(debug.Stack()))
+
 		ee := ms_error.Error{
-			//Code:        500,
 			Type:        "unknown",
 			Description: fmt.Sprintf("%v", e),
 			Debug:       debugInfo,
-			//Line:        line,
-			//File:        file,
-			// Stack:       string(debug.Stack()),
-			//Created: time.Now(),
+			EndPoint:    args.Path,
 		}
 		message, _ := json.Marshal(ee)
 		args.Response.Write(message)
-		/*if args.DebugMode {
-			rapi_debug.Log(args.Id).SetError(ee)
-			rapi_debug.Log(args.Id).SetArgs(args.MethodArgs)
-		}*/
+		Log("request error", ee)
 	}
 }
 
@@ -86,10 +80,32 @@ func injectDebug(config *Config) {
 				Fs:   panelFs,
 			},
 		},
+		{
+			Path: "/debug/api",
+			Handler: ms_handler.API{
+				ControllerList: []any{
+					ms_panel.Panel{
+						HasLogTab: config.Panel.HasLogTab,
+					},
+					ms_panel.Log{
+						Path: "./logfile",
+					},
+				},
+			},
+		},
 	})
 }
 
+func globalPanicHandler() {
+	err := recover()
+	if err == nil {
+		return
+	}
+	Log("global panic", err)
+}
+
 func Start(config Config) {
+	defer globalPanicHandler()
 	injectDebug(&config)
 
 	// Entry point
@@ -116,7 +132,10 @@ func Start(config Config) {
 		h.Handle(args)
 	})
 
-	log.Printf("Mega Server Starts at host %v\n", config.Host)
+	// Start logger
+	startLog()
+
+	Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
 
 	if config.TLS.Enabled {
 		err := http.ListenAndServeTLS(config.Host, config.TLS.CertFile, config.TLS.KeyFile, nil)

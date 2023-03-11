@@ -188,6 +188,10 @@ func (f *File) Name() string {
 	return filepath.Base(f.Path)
 }
 
+/*func (f *File) RelativePath() string {
+	return filepath.Rel(f.Path)
+}*/
+
 func (f *File) Created() time.Time {
 	s, err := os.Stat(f.Path)
 	if err != nil {

@@ -41,10 +41,10 @@ func DataUrlToBytes(dataUrl string) ([]byte, string, error) {
 func ToBase64[T string | []byte](v T) string {
 	switch any(v).(type) {
 	case string:
-		enc := base64.URLEncoding.EncodeToString([]byte(any(v).(string)))
+		enc := base64.StdEncoding.EncodeToString([]byte(any(v).(string)))
 		return enc
 	case []byte:
-		enc := base64.URLEncoding.EncodeToString(any(v).([]byte))
+		enc := base64.StdEncoding.EncodeToString(any(v).([]byte))
 		return enc
 	default:
 		return ""
@@ -63,9 +63,9 @@ func ToString[T any](v T) string {
 	}
 }
 
-func FromBase64(v string) []byte {
-	uDec, _ := base64.URLEncoding.DecodeString(v)
-	return uDec
+func FromBase64(v string) ([]byte, error) {
+	uDec, err := base64.StdEncoding.DecodeString(v)
+	return uDec, err
 }
 
 func StructToMap(v any) map[string]any {

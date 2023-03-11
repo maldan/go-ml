@@ -174,8 +174,9 @@ func (a API) Handle(args Args) {
 	var controller any = nil
 	for _, c := range a.ControllerList {
 		cc := strings.Split(reflect.TypeOf(c).String(), ".")
-		ctrName := ml_string.UnTitle(cc[len(cc)-1])
-		if ctrName == controllerName {
+		// ctrName := ml_string.UnTitle(cc[len(cc)-1])
+
+		if strings.ToLower(cc[len(cc)-1]) == strings.ToLower(controllerName) {
 			controller = c
 			break
 		}
@@ -188,7 +189,7 @@ func (a API) Handle(args Args) {
 	var method any = nil
 	controllerType := reflect.TypeOf(controller)
 	for i := 0; i < controllerType.NumMethod(); i++ {
-		if controllerType.Method(i).Name == methodName {
+		if strings.ToLower(controllerType.Method(i).Name) == strings.ToLower(methodName) {
 			method = controllerType.Method(i)
 			break
 		}

@@ -1,6 +1,11 @@
 package ms_panel
 
-/*var Html []byte
-var Css []byte
-var Js []byte
-*/
+type Panel struct {
+	HasLogTab bool
+}
+
+func (p Panel) GetSetting() any {
+	return map[string]any{
+		"hasLogTab": p.HasLogTab,
+	}
+}

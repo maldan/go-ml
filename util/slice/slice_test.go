@@ -2,6 +2,7 @@ package ml_slice_test
 
 import (
 	"fmt"
+	ml_console "github.com/maldan/go-ml/util/io/console"
 	ml_slice "github.com/maldan/go-ml/util/slice"
 	"testing"
 )
@@ -87,6 +88,51 @@ func TestPaginate(t *testing.T) {
 	if fmt.Sprintf("%v", s) != "[]" {
 		t.Error("Fuck paginate")
 	}
+}
+
+func TestAZ(t *testing.T) {
+	// Sort AZ
+	newArray := []int{3, 4, 1, 0, 10}
+	ml_slice.SortAZ(newArray)
+	ml_console.PrettyPrint(newArray)
+
+	// Sort AZ
+	newArray2 := []string{"xuahoo", "baban", "abc", "gas"}
+	ml_slice.SortAZ(newArray2)
+	ml_console.PrettyPrint(newArray2)
+
+	type Human struct {
+		Age  int
+		Name string
+		Sex  bool
+	}
+	newArray3 := []Human{{Age: 32, Name: "lox"}, {Age: 5, Name: "pidor", Sex: true}, {99, "gay", false}}
+	ml_slice.SortAZBy(newArray3, func(i, j int) (string, string) {
+		return newArray3[i].Name, newArray3[j].Name
+	})
+	ml_console.PrettyPrint(newArray3)
+}
+
+func TestZA(t *testing.T) {
+	// Sort AZ
+	newArray := []int{3, 4, 1, 0, 10}
+	ml_slice.SortZA(newArray)
+	ml_console.PrettyPrint(newArray)
+
+	// Sort AZ
+	newArray2 := []string{"xuahoo", "baban", "abc", "gas"}
+	ml_slice.SortZA(newArray2)
+	ml_console.PrettyPrint(newArray2)
+
+	type Human struct {
+		Age  int
+		Name string
+		Sex  bool
+	}
+
+	newArray3 := []Human{{Age: 32, Name: "lox"}, {Age: 5, Name: "pidor", Sex: true}, {99, "gay", false}}
+	ml_slice.SortZABy(newArray3, func(i, j int) (string, string) { return newArray3[i].Name, newArray3[j].Name })
+	ml_console.PrettyPrint(newArray3)
 }
 
 func BenchmarkOne(b *testing.B) {

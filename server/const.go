@@ -13,6 +13,7 @@ type PanelConfig struct {
 	HasTestTab    bool
 	HasDbTab      bool
 	HasControlTab bool
+	HasLogTab     bool
 }
 
 type SecureConfig struct {

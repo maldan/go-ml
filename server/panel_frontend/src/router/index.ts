@@ -5,6 +5,7 @@ import Tests from "../page/Tests.vue";
 import Requests from "../page/Requests.vue";
 import DB from "../page/DB.vue";
 import Control from "../page/Control.vue";
+import Logs from "../page/Logs.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -43,6 +44,11 @@ const router = createRouter({
       path: "/control",
       name: "Control",
       component: Control,
+    },
+    {
+      path: "/logs",
+      name: "Logs",
+      component: Logs,
     },
   ],
 });

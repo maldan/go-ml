@@ -107,6 +107,43 @@ func List(path string) ([]ml_file.File, error) {
 	return out, nil
 }
 
+func ListAll(path string) ([]ml_file.File, error) {
+	list := make([]ml_file.File, 0)
+
+	curAbsPath, _ := filepath.Abs(path)
+	curAbsPath = strings.ReplaceAll(curAbsPath, "\\", "/")
+
+	err := filepath.Walk(path,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			// Skip dir
+			if info.IsDir() {
+				return nil
+			}
+
+			absPath, _ := filepath.Abs(path)
+			absPath = strings.ReplaceAll(absPath, "\\", "/")
+
+			list = append(list, ml_file.File{
+				Path: absPath,
+				//FullPath:     absPath,
+				//RelativePath: strings.Replace(absPath, curAbsPath, "", 1),
+				//Dir:          strings.ReplaceAll(filepath.Dir(absPath), "\\", "/"),
+				//Name:         info.Name(),
+			})
+
+			return nil
+		})
+	if err != nil {
+		return list, err
+	}
+
+	return list, nil
+}
+
 func DeleteFile(path string) error {
 	return ml_file.New(path).Delete()
 }

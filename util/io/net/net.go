@@ -35,6 +35,17 @@ func (r *Response) JSON(v any) error {
 	return err
 }
 
+func (r *Response) Bytes() ([]byte, error) {
+	// Read
+	body, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		return body, err
+	}
+
+	return body, nil
+}
+
 func (r *Response) Close() {
 	r.Body.Close()
 }

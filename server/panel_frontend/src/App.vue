@@ -6,6 +6,9 @@
       mode="horizontal"
       @select="handleSelect"
     >
+      <el-menu-item index="/logs" style="color: #fe6e3d">
+        <el-icon><Promotion /></el-icon>Logs
+      </el-menu-item>
       <el-menu-item index="/requests" style="color: #fe6e3d">
         <el-icon><Promotion /></el-icon>Requests
       </el-menu-item>
@@ -32,12 +35,19 @@
 
 <script lang="ts" setup>
 import { RouterView, useRouter } from "vue-router";
+import {onMounted} from "vue";
+import {useMainStore} from "@/store/main";
 
 const router = useRouter();
+const mainStore = useMainStore();
 
 const handleSelect = (key: string, keyPath: string[]) => {
   router.push(key);
 };
+
+onMounted(async () => {
+  mainStore.getSetting()
+})
 </script>
 
 <style lang="scss" module>

@@ -8,17 +8,12 @@ type ErrorDebugInfo struct {
 }
 
 type Error struct {
-	//Status      bool   `json:"-"`
 	Code        int      `json:"-"`
 	Type        string   `json:"type"`
 	Field       string   `json:"field,omitempty"`
 	Description string   `json:"description"`
 	Debug       []string `json:"debug,omitempty"`
-
-	//File        string `json:"-"`
-	//Line        int    `json:"-"`
-	// Stack       string    `json:"stack,omitempty"`
-	//Created time.Time `json:"-"`
+	EndPoint    string   `json:"endPoint,omitempty"`
 }
 
 func Fatal(err Error) {

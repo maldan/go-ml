@@ -1,7 +1,9 @@
 package ml_slice
 
 import (
+	"golang.org/x/exp/constraints"
 	"math/rand"
+	"sort"
 	"time"
 )
 
@@ -162,4 +164,51 @@ func NotNil[T any](slice []T) []T {
 		return make([]T, 0)
 	}
 	return slice
+}
+
+func SortAZ[T constraints.Ordered](slice []T) []T {
+	fn := func(i, j int) (T, T) { return slice[i], slice[j] }
+
+	sort.SliceStable(slice, func(i, j int) bool {
+		a, b := fn(i, j)
+		return a < b
+	})
+	return slice
+}
+
+func SortZA[T constraints.Ordered](slice []T) []T {
+	fn := func(i, j int) (T, T) { return slice[i], slice[j] }
+
+	sort.SliceStable(slice, func(i, j int) bool {
+		a, b := fn(i, j)
+		return a > b
+	})
+	return slice
+}
+
+func SortAZBy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N, N)) []T {
+	sort.SliceStable(slice, func(i, j int) bool {
+		a, b := fn(i, j)
+		return a < b
+	})
+	return slice
+}
+
+func SortZABy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N, N)) []T {
+	sort.SliceStable(slice, func(i, j int) bool {
+		a, b := fn(i, j)
+		return a > b
+	})
+	return slice
+}
+
+func Reverse[T any](slice []T) []T {
+	out := make([]T, len(slice))
+	copy(out, slice)
+
+	for i, j := 0, len(out)-1; i < j; i, j = i+1, j-1 {
+		out[i], out[j] = out[j], out[i]
+	}
+
+	return out
 }

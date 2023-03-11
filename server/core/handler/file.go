@@ -17,7 +17,7 @@ func (f FS) Handle(args Args) {
 	ms_error.FatalIfError(err)
 
 	// Pure path without route // example /data/test -> /test
-	routePath := strings.Replace(args.Request.URL.Path, args.Path, "", 1)
+	routePath := strings.Replace(args.Request.URL.Path, args.Route, "", 1)
 
 	path := strings.ReplaceAll(f.ContentPath, "@", cwd) + routePath
 	path = strings.ReplaceAll(path, "\\", "/")
