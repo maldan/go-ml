@@ -18,7 +18,20 @@
       style="width: 100%"
       :height="tableHeight"
     >
-      <el-table-column prop="kind" label="Kind" width="110" />
+      <!-- Kind -->
+      <el-table-column label="Kind" width="110">
+        <template #header>
+          <el-input
+            v-model="logStore.filter['kind']"
+            size="small"
+            placeholder="Kind..."
+            @change="refresh"
+          />
+        </template>
+        <template #default="scope">
+          {{ scope.row.kind }}
+        </template>
+      </el-table-column>
 
       <!-- Body -->
       <el-table-column label="Body">
@@ -27,7 +40,7 @@
             v-if="scope.row.isJsonBody"
             v-html="formatHighlight(scope.row.body, customColorOptions)"
           ></pre>
-          <div v-else>{{ scope.row.body }}</div>
+          <div v-else v-html="format(scope.row.body)"></div>
         </template>
       </el-table-column>
 
@@ -41,6 +54,15 @@
 
       <!-- Created -->
       <el-table-column label="Created" width="220">
+        <template #header>
+          <el-input
+            size="small"
+            v-model="logStore.filter['created']"
+            placeholder="Created..."
+            style="width: 195px"
+            @change="refresh"
+          />
+        </template>
         <template #default="scope">
           <div :class="$style.created">
             <el-tag type="danger" effect="plain">
@@ -118,7 +140,12 @@ async function changePage(page: number) {
 }
 async function refresh() {
   await logStore.getList();
-  console.log(logStore.list);
+}
+function format(x: any) {
+  if (typeof x === "string") {
+    return x.replace(/\n/g, "<br>");
+  }
+  return x;
 }
 </script>
 

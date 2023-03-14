@@ -34,3 +34,16 @@ func ToFloat(s string) float64 {
 	n, _ := strconv.ParseFloat(s, 64)
 	return n
 }
+
+func OnlyDigit(str string) string {
+	return Only(str, "0123456789")
+}
+
+func Only(str string, allowList string) string {
+	return strings.Map(func(r rune) rune {
+		if strings.ContainsRune(allowList, r) {
+			return r
+		}
+		return -1
+	}, str)
+}

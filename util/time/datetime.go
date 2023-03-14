@@ -43,6 +43,12 @@ func Now() DateTime {
 	return FromTime(time.Now())
 }
 
+func FromString(str string) DateTime {
+	d := DateTime{}
+	d.FromString(str)
+	return d
+}
+
 func FromTime(t time.Time) DateTime {
 	// Put location
 	loc := t.Format("-07:00")
@@ -68,12 +74,131 @@ func FromTime(t time.Time) DateTime {
 	}
 }
 
-func (d *DateTime) UnmarshalJSON(b []byte) error {
+func (d *DateTime) FromString(b string) {
 	state := "year"
 	dotPos := 0
 	sign := "+"
 
+	// Skip ""
+	if len(b) <= 2 {
+		return
+	}
+
+	atoiR := func(i, j int) int {
+		y, _ := strconv.Atoi(b[i:j])
+		return y
+	}
+
 	for i := 0; i < len(b); i++ {
+		cc := b[i]
+		isEnd := i == len(b)-1
+
+		// Date
+		if state == "year" && (cc == '-' || isEnd) {
+			from, to := i-4, i
+			if isEnd {
+				from, to = i-3, i+1
+			}
+			d.year = uint16(atoiR(from, to))
+			state = "month"
+			continue
+		}
+		if state == "month" && (cc == '-' || isEnd) {
+			from, to := i-2, i
+			if isEnd {
+				from, to = i-1, i+1
+			}
+			d.month = uint8(atoiR(from, to))
+			state = "day"
+			continue
+		}
+		if state == "day" && (cc == 'T' || cc == ' ' || isEnd) {
+			from, to := i-2, i
+			if isEnd {
+				from, to = i-1, i+1
+			}
+			d.day = uint8(atoiR(from, to))
+			state = "hour"
+			continue
+		}
+
+		// Time
+		if state == "hour" && (b[i] == ':' || isEnd) {
+			from, to := i-2, i
+			if isEnd {
+				from, to = i-1, i+1
+			}
+			d.hour = uint8(atoiR(from, to))
+			state = "minute"
+			continue
+		}
+		if state == "minute" && (b[i] == ':' || isEnd) {
+			from, to := i-2, i
+			if isEnd {
+				from, to = i-1, i+1
+			}
+			d.minute = uint8(atoiR(from, to))
+			state = "second"
+			continue
+		}
+		if state == "second" && (b[i] == '.' || isEnd) {
+			from, to := i-2, i
+			if isEnd {
+				from, to = i-1, i+1
+			}
+			d.second = uint8(atoiR(from, to))
+			state = "nanosecond"
+			dotPos = i
+			continue
+		}
+		if state == "nanosecond" && (b[i] == 'Z' || b[i] == ' ' || isEnd) {
+			nsec, _ := strconv.Atoi(b[dotPos+1 : i])
+			d.nanoSecond = uint32(nsec)
+			state = "timezone"
+			continue
+		}
+
+		// TimeZone
+		if state == "timezone" && (b[i] == '+' || b[i] == '-') {
+			sign = string(b[i])
+			state = "tzHour"
+			continue
+		}
+		if state == "tzHour" && (b[i] == ':' || isEnd) {
+			tzHour, _ := strconv.Atoi(b[i-2 : i])
+			d.tzHour = int8(tzHour)
+			if sign == "-" {
+				d.tzHour = -d.tzHour
+			}
+			state = "tzMinute"
+			continue
+		}
+		if state == "tzMinute" && isEnd {
+			tzMinute, _ := strconv.Atoi(b[i-2 : i])
+			d.tzMinute = uint8(tzMinute)
+			state = "end"
+			continue
+		}
+	}
+}
+
+func (d *DateTime) UnmarshalJSON(b []byte) error {
+	/*state := "year"
+	dotPos := 0
+	sign := "+"*/
+
+	// Skip ""
+	if len(b) <= 2 {
+		return nil
+	}
+
+	if b[0] == '"' {
+		b = b[1 : len(b)-1]
+	}
+
+	d.FromString(string(b))
+
+	/*for i := 0; i < len(b); i++ {
 		// Date
 		if state == "year" && (b[i] == '-' || i == len(b)-1) {
 			year, _ := strconv.Atoi(string(b[i-4 : i]))
@@ -142,7 +267,7 @@ func (d *DateTime) UnmarshalJSON(b []byte) error {
 			state = "end"
 			continue
 		}
-	}
+	}*/
 
 	return nil
 }

@@ -29,6 +29,13 @@ func UnmarshallExt(bytes []byte, out any, idToName IdToName) {
 	unpack(bytes, valueOf.UnsafePointer(), typeByte, valueOf.Elem().Interface(), idToName)
 }
 
+func Map(bytes []byte, out any, fieldList string) {
+	// Only struct possible to map
+	if !(bytes[0] == T_STRUCT || bytes[0] == T_SHORT_STRUCT || bytes[0] == T_BIG_STRUCT) {
+		return
+	}
+}
+
 func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToName IdToName) int {
 	offset := 0
 

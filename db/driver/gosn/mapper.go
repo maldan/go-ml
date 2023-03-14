@@ -175,13 +175,13 @@ func handleStruct(v *Mapper, bytes []byte, offset int, searchField uint8) int {
 }
 
 func (v *Mapper) Map(bytes []byte) {
-	offset := 0
+	// offset := 0
 
 	ml_gosn.UnmarshallExt(bytes, v.Container, v.NameToId.Invert())
 	return
 	// v.Container
 
-	for i := 0; i < len(v.FieldIdList); i++ {
+	/*for i := 0; i < len(v.FieldIdList); i++ {
 		searchField := v.FieldIdList[i]
 
 		if bytes[0] == ml_gosn.T_STRUCT || bytes[0] == ml_gosn.T_SHORT_STRUCT || bytes[0] == ml_gosn.T_BIG_STRUCT {
@@ -189,5 +189,5 @@ func (v *Mapper) Map(bytes []byte) {
 		} else {
 			panic(fmt.Sprintf("unmapped type %v", bytes[0]))
 		}
-	}
+	}*/
 }

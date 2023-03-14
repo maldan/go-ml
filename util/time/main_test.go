@@ -79,7 +79,7 @@ func TestDateTimeBytes(t *testing.T) {
 
 		// Local check
 		today := ml_time.FromTime(time.Now().In(loc))
-		bytes := today.ToBytes()
+		bytes, _ := today.ToBytes()
 
 		// Unpack
 		todayUnpacked := ml_time.DateTime{}
@@ -115,7 +115,7 @@ func TestDateTimeBytes(t *testing.T) {
 	}
 }
 
-func TestDateTimeParse(t *testing.T) {
+func TestDateTimeParseJson(t *testing.T) {
 	type tmp struct {
 		D2 ml_time.DateTime
 	}
@@ -124,6 +124,26 @@ func TestDateTimeParse(t *testing.T) {
 	json.Unmarshal([]byte(js1), &testStruct)
 
 	fmt.Printf("%v\n", testStruct.D2)
+}
+
+func TestDateTimeFromString(t *testing.T) {
+	d1 := ml_time.FromString("2023")
+	if d1.Year() != 2023 {
+		t.Fatalf("Fuck year %v", d1.Year())
+	}
+	d1 = ml_time.FromString("2023-03")
+	if d1.Month() != 03 {
+		t.Fatalf("Fuck month %v", d1.Month())
+	}
+	d1 = ml_time.FromString("2023-03-05")
+	if d1.Day() != 05 {
+		t.Fatalf("Fuck day %v", d1.Day())
+	}
+
+	d1 = ml_time.FromString("2023-03-05 17:21:10")
+	if d1.Second() != 10 {
+		t.Fatalf("Fuck second %v", d1.Day())
+	}
 }
 
 func TestDateTimeAdd(t *testing.T) {

@@ -213,6 +213,10 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 		return true
 	})
 
+	if len(searchResult.Result) == 0 {
+		searchResult.Result = make([]T, 0)
+	}
+
 	return searchResult
 }
 

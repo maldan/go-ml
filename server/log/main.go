@@ -31,7 +31,7 @@ func Log(kind string, message any) {
 		File:    file,
 		Line:    line,
 		Body:    string(b),
-		Created: ml_time.Now(),
+		Created: ml_time.Now().UTC(),
 	})
 }
 
@@ -39,6 +39,8 @@ func Init(logFile string) {
 	LogDB = mdb.New[LogBody]("./db", "logs", &gosn_driver.Container{})
 
 	r, w, err := os.Pipe()
+	// mw := io.MultiWriter(os.Stdout, w)
+
 	ms_error.FatalIfError(err)
 	os.Stdout = w
 	os.Stderr = w
@@ -51,7 +53,7 @@ func Init(logFile string) {
 				LogDB.Insert(LogBody{
 					Kind:    "raw",
 					Body:    string(x[0:n]),
-					Created: ml_time.Now(),
+					Created: ml_time.Now().UTC(),
 				})
 			}
 			time.Sleep(time.Millisecond)
