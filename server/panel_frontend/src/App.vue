@@ -6,7 +6,7 @@
       mode="horizontal"
       @select="handleSelect"
     >
-      <el-menu-item index="/logs" style="color: #fe6e3d">
+      <!--      <el-menu-item index="/logs" style="color: #fe6e3d">
         <el-icon><Promotion /></el-icon>Logs
       </el-menu-item>
       <el-menu-item index="/requests" style="color: #fe6e3d">
@@ -26,6 +26,9 @@
       </el-menu-item>
       <el-menu-item index="/settings">
         <el-icon><Tools /></el-icon>Settings
+      </el-menu-item>-->
+      <el-menu-item :index="x.url" v-for="x in links" :key="x.url">
+        <el-icon><component :is="x.icon" /></el-icon>{{ x.title }}
       </el-menu-item>
     </el-menu>
 
@@ -35,19 +38,30 @@
 
 <script lang="ts" setup>
 import { RouterView, useRouter } from "vue-router";
-import {onMounted} from "vue";
-import {useMainStore} from "@/store/main";
+import { onMounted, ref } from "vue";
+import { useMainStore } from "@/store/main";
 
 const router = useRouter();
 const mainStore = useMainStore();
+const links = ref<any[]>([
+  /*
+    { url: "/logs", title: "Logs", icon: "Promotion" },
+    { url: "/requests", title: "Requests", icon: "Promotion" },
+    { url: "/settings", title: "Settings", icon: "Tools" },
+  */
+]);
 
 const handleSelect = (key: string, keyPath: string[]) => {
   router.push(key);
 };
 
 onMounted(async () => {
-  mainStore.getSetting()
-})
+  await mainStore.getSetting();
+
+  if (mainStore.hasLogTab) {
+    links.value.push({ url: "/logs", title: "Logs", icon: "Promotion" });
+  }
+});
 </script>
 
 <style lang="scss" module>

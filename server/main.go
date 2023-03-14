@@ -7,6 +7,7 @@ import (
 	"fmt"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
+	ms_log "github.com/maldan/go-ml/server/log"
 	ms_panel "github.com/maldan/go-ml/server/panel"
 	ml_slice "github.com/maldan/go-ml/util/slice"
 	"net/http"
@@ -32,17 +33,17 @@ func endOfRequest(args *ms_handler.Args) {
 		e.EndPoint = args.Path
 		message, _ := json.Marshal(e)
 		args.Response.Write(message)
-		Log("request error", e)
+		ms_log.Log("request error", e)
 	default:
-		debugInfo := make([]string, 0, 10)
+		stackInfo := make([]string, 0, 10)
 		for i := 0; i < 10; i++ {
 			_, f, l, ok := runtime.Caller(i + 1)
 			if ok {
 				// Skip system libs, no points in it
-				if strings.Contains(f, "/local/go/src/") {
+				if strings.Contains(f, "/local/go/src/") || strings.Contains(f, "/Program Files/Go/src/") {
 					continue
 				}
-				debugInfo = append(debugInfo, fmt.Sprintf("%v:%v", f, l))
+				stackInfo = append(stackInfo, fmt.Sprintf("%v:%v", f, l))
 			}
 		}
 
@@ -51,12 +52,12 @@ func endOfRequest(args *ms_handler.Args) {
 		ee := ms_error.Error{
 			Type:        "unknown",
 			Description: fmt.Sprintf("%v", e),
-			Debug:       debugInfo,
+			Stack:       stackInfo,
 			EndPoint:    args.Path,
 		}
 		message, _ := json.Marshal(ee)
 		args.Response.Write(message)
-		Log("request error", ee)
+		ms_log.Log("request error", ee)
 	}
 }
 
@@ -88,7 +89,7 @@ func injectDebug(config *Config) {
 						HasLogTab: config.Panel.HasLogTab,
 					},
 					ms_panel.Log{
-						Path: "./logfile",
+						Path: config.LogFile,
 					},
 				},
 			},
@@ -96,16 +97,16 @@ func injectDebug(config *Config) {
 	})
 }
 
-func globalPanicHandler() {
+/*func globalPanicHandler() {
 	err := recover()
 	if err == nil {
 		return
 	}
 	Log("global panic", err)
-}
+}*/
 
 func Start(config Config) {
-	defer globalPanicHandler()
+	// defer globalPanicHandler()
 	injectDebug(&config)
 
 	// Entry point
@@ -133,9 +134,13 @@ func Start(config Config) {
 	})
 
 	// Start logger
-	startLog()
+	if config.LogFile != "" {
+		config.Panel.HasLogTab = false
+		ms_log.Init(config.LogFile)
+	}
 
-	Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
+	// fmt.Printf("%v\n", "FUCK")
+	ms_log.Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
 
 	if config.TLS.Enabled {
 		err := http.ListenAndServeTLS(config.Host, config.TLS.CertFile, config.TLS.KeyFile, nil)

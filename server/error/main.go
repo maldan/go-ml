@@ -12,7 +12,7 @@ type Error struct {
 	Type        string   `json:"type"`
 	Field       string   `json:"field,omitempty"`
 	Description string   `json:"description"`
-	Debug       []string `json:"debug,omitempty"`
+	Stack       []string `json:"stack,omitempty"`
 	EndPoint    string   `json:"endPoint,omitempty"`
 }
 

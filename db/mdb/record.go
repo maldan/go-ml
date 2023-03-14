@@ -20,9 +20,9 @@ type Record[T any] struct {
 }
 
 type SearchResult[T any] struct {
-	IsFound bool
-	Count   int
-	Result  []T
+	IsFound bool `json:"isFound"`
+	Count   int  `json:"count"`
+	Result  []T  `json:"result"`
 	// recordList []Record[T]
 	table *DataTable[T]
 }

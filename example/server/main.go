@@ -26,6 +26,9 @@ func main() {
 				Handler: ms_handler.EmbedFS{},
 			},
 		},
-		Panel: ms.PanelConfig{},
+		Panel: ms.PanelConfig{
+			HasLogTab: true,
+		},
+		LogFile: "sex",
 	})
 }

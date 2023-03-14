@@ -23,8 +23,9 @@ type SecureConfig struct {
 }
 
 type Config struct {
-	Host   string
-	Router []ms_handler.RouteHandler
-	TLS    SecureConfig
-	Panel  PanelConfig
+	Host    string
+	Router  []ms_handler.RouteHandler
+	TLS     SecureConfig
+	Panel   PanelConfig
+	LogFile string
 }

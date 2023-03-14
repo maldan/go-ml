@@ -14,9 +14,9 @@ export const useMainStore = defineStore({
     } as MainState),
   actions: {
     async getSetting() {
-      const x = (await Axios.get(`${HOST}/debug/api/panel/setting`)).data
-        .response;
-      console.log(x);
+      const response = (await Axios.get(`${HOST}/debug/api/panel/setting`))
+        .data;
+      this.hasLogTab = response.hasLogTab;
     },
   },
 });
