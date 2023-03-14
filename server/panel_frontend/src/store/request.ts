@@ -10,7 +10,8 @@ export interface IRequest {
 
 export type RequestState = {
   list: IRequest[];
-  search: {
+  filter: Record<string, string>;
+  /*search: {
     total: number;
     count: number;
     page: number;
@@ -19,7 +20,7 @@ export type RequestState = {
   offset: number;
   limit: number;
   error: string;
-  filter: Record<string, string>;
+  filter: Record<string, string>;*/
 };
 
 export const useRequestStore = defineStore({
@@ -27,7 +28,11 @@ export const useRequestStore = defineStore({
   state: () =>
     ({
       list: [],
-      search: {
+      filter: {
+        httpMethod: "",
+        created: "",
+      },
+      /*search: {
         result: [],
         total: 0,
         page: 0,
@@ -36,11 +41,25 @@ export const useRequestStore = defineStore({
       filter: {},
       offset: 0,
       limit: 20,
-      error: "",
+      error: "",*/
     } as RequestState),
   actions: {
-    async getSearch() {
-      this.error = "";
+    async getList() {
+      this.list.length = 0;
+
+      const r = (
+        await Axios.get(
+          `${HOST}/debug/api/request/list?httpMethod=${
+            this.filter["httpMethod"]
+          }&created=${encodeURIComponent(
+            this.filter["created"]
+          )}&timezoneOffset=${new Date().getTimezoneOffset()}`
+        )
+      ).data;
+
+      this.list = r.result;
+
+      /*this.error = "";
       this.search.result = [];
 
       try {
@@ -54,7 +73,7 @@ export const useRequestStore = defineStore({
         this.search.total = 0;
       }
 
-      console.log(this.search);
+      console.log(this.search);*/
     },
   },
 });

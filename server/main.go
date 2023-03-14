@@ -1,6 +1,7 @@
 package ms
 
 import (
+	"bytes"
 	"embed"
 	_ "embed"
 	"encoding/json"
@@ -21,11 +22,12 @@ var panelFs embed.FS
 func endOfRequest(args *ms_handler.Args) {
 	err := recover()
 	if err == nil {
+		ms_log.LogRequest(args.Request, args.Body, args.Response)
 		return
 	}
 
 	// Set error output as json
-	args.Response.Header().Add("Content-Type", "application/json")
+	args.Response.AddHeader("Content-Type", "application/json")
 
 	switch e := err.(type) {
 	case ms_error.Error:
@@ -34,6 +36,7 @@ func endOfRequest(args *ms_handler.Args) {
 		message, _ := json.Marshal(e)
 		args.Response.Write(message)
 		ms_log.Log("request error", e)
+		ms_log.LogRequest(args.Request, args.Body, args.Response)
 	default:
 		stackInfo := make([]string, 0, 10)
 		for i := 0; i < 10; i++ {
@@ -58,6 +61,7 @@ func endOfRequest(args *ms_handler.Args) {
 		message, _ := json.Marshal(ee)
 		args.Response.Write(message)
 		ms_log.Log("request error", ee)
+		ms_log.LogRequest(args.Request, args.Body, args.Response)
 	}
 }
 
@@ -91,6 +95,7 @@ func injectDebug(config *Config) {
 					ms_panel.Log{
 						Path: config.LogFile,
 					},
+					ms_panel.Request{},
 				},
 			},
 		},
@@ -112,7 +117,10 @@ func Start(config Config) {
 	// Entry point
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
 		// Prepare args
-		args := ms_handler.Args{Response: response, Request: request}
+		virtualBuffer := bytes.NewBuffer([]byte{})
+		virtualStatus := 200
+		virtualResponse := ms_handler.VirtualResponseWriter{Response: response, Buffer: virtualBuffer, StatusCode: &virtualStatus}
+		args := ms_handler.Args{Response: virtualResponse, Request: request}
 		defer endOfRequest(&args)
 
 		// Disable cors for all queries
@@ -129,8 +137,11 @@ func Start(config Config) {
 		args.Path = request.URL.Path
 		args.Route = route
 
+		// buf := bytes.NewBuffer([]byte{})
+		// io.MultiWriter(args.Response, buf)
+
 		// Handle
-		h.Handle(args)
+		h.Handle(&args)
 	})
 
 	// Start logger

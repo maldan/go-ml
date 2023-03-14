@@ -94,7 +94,7 @@ func callMethod(method reflect.Method, controller any, params map[string]any) re
 	panic("Method not found")
 }
 
-func (a API) Handle(args Args) {
+func (a API) Handle(args *Args) {
 	// Get authorization
 	authorization := args.Request.Header.Get("Authorization")
 	authorization = strings.Replace(authorization, "Token ", "", 1)
@@ -114,10 +114,16 @@ func (a API) Handle(args Args) {
 		}
 	}
 
+	// Read body
+	bodyBytes, _ := io.ReadAll(args.Request.Body)
+	err := args.Request.Body.Close()
+	ms_error.FatalIfError(err)
+	args.Body = bodyBytes
+
 	// Parse multipart body
 	if strings.Contains(args.Request.Header.Get("Content-Type"), "multipart/form-data") {
 		// Parse multipart body and collect params
-		err := args.Request.ParseMultipartForm(0)
+		err = args.Request.ParseMultipartForm(0)
 		ms_error.FatalIfError(err)
 		for key, element := range args.Request.MultipartForm.Value {
 			params[key] = element[0]
@@ -136,14 +142,10 @@ func (a API) Handle(args Args) {
 		}
 	} else {
 		// Read body as json
-		bodyBytes, _ := io.ReadAll(args.Request.Body)
-		err := args.Request.Body.Close()
-		ms_error.FatalIfError(err)
-
-		if len(bodyBytes) > 0 {
+		if len(args.Body) > 0 {
 			// Parse json body and
 			jsonMap := map[string]any{}
-			err2 := json.Unmarshal(bodyBytes, &jsonMap)
+			err2 := json.Unmarshal(args.Body, &jsonMap)
 			ms_error.FatalIfError(err2)
 
 			// Collect params
@@ -182,7 +184,10 @@ func (a API) Handle(args Args) {
 		}
 	}
 	if controller == nil {
-		panic(fmt.Sprintf("controller %v not found", controllerName))
+		ms_error.Fatal(ms_error.Error{
+			Code:        404,
+			Description: fmt.Sprintf("controller %v not found", controllerName),
+		})
 	}
 
 	// Find method
@@ -195,7 +200,10 @@ func (a API) Handle(args Args) {
 		}
 	}
 	if method == nil {
-		panic(fmt.Sprintf("method %v not found", methodName))
+		ms_error.Fatal(ms_error.Error{
+			Code:        404,
+			Description: fmt.Sprintf("method %v not found", methodName),
+		})
 	}
 
 	// Call method
@@ -208,7 +216,7 @@ func (a API) Handle(args Args) {
 
 		// Copy headers
 		for k, v := range v.Headers {
-			args.Response.Header().Add(k, v)
+			args.Response.AddHeader(k, v)
 		}
 
 		http.ServeFile(args.Response, args.Request, v.Path)
@@ -218,7 +226,7 @@ func (a API) Handle(args Args) {
 
 		// Copy headers
 		for k, v := range v.Headers {
-			args.Response.Header().Add(k, v)
+			args.Response.AddHeader(k, v)
 		}
 
 		_, err := args.Response.Write(v.Body)
@@ -240,7 +248,7 @@ func (a API) Handle(args Args) {
 		ms_error.FatalIfError(err)
 
 		// Write response
-		args.Response.Header().Add("Content-Type", "application/json")
+		args.Response.AddHeader("Content-Type", "application/json")
 		_, err = args.Response.Write(data)
 		ms_error.FatalIfError(err)
 		break

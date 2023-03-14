@@ -11,7 +11,7 @@ type FS struct {
 	ContentPath string
 }
 
-func (f FS) Handle(args Args) {
+func (f FS) Handle(args *Args) {
 	// Get current path
 	cwd, err := os.Getwd()
 	ms_error.FatalIfError(err)

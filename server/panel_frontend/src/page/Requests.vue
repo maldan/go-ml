@@ -11,17 +11,17 @@
     </div>-->
 
     <!-- Pagination -->
-    <el-pagination
+    <!--    <el-pagination
       background
       layout="prev, pager, next"
       :total="requestStore.search.total"
       :page-size="requestStore.limit"
       style="margin-bottom: 10px; width: 100%"
       @current-change="changePage"
-    />
+    />-->
 
     <el-table
-      :data="requestStore.search.result"
+      :data="requestStore.list"
       stripe
       :border="true"
       style="width: 100%"
@@ -42,7 +42,7 @@
             v-model="requestStore.filter['url']"
             @change="refresh"
             size="small"
-            placeholder="Filter by url..."
+            placeholder="Url..."
           />
         </template>
         <template #default="scope">
@@ -50,31 +50,26 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="Args">
+      <!-- Header -->
+      <el-table-column label="Header">
         <template #default="scope">
-          <pre
-            v-if="toggleArgs[scope.row.id]"
-            v-html="formatHighlight(scope.row.args || {}, customColorOptions)"
-          ></pre>
+          <pre v-if="toggleArgs[scope.row.id]" v-html="scope.row.header"></pre>
         </template>
       </el-table-column>
 
+      <!-- Request -->
+      <el-table-column label="Body">
+        <template #default="scope">
+          <pre v-if="toggleArgs[scope.row.id]" v-html="scope.row.body"></pre>
+        </template>
+      </el-table-column>
+
+      <!-- Response -->
       <el-table-column label="Response">
         <template #default="scope">
           <pre
             v-if="toggleArgs[scope.row.id]"
-            v-html="
-              formatHighlight(scope.row.response || {}, customColorOptions)
-            "
-          ></pre>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="Error">
-        <template #default="scope">
-          <pre
-            v-if="toggleArgs[scope.row.id]"
-            v-html="scope.row.error ? formatHighlight(scope.row.error) : '-'"
+            v-html="scope.row.response"
           ></pre>
         </template>
       </el-table-column>
@@ -87,16 +82,27 @@
       <!-- Status -->
       <el-table-column label="Status" width="80">
         <template #default="scope">
-          <el-tag v-if="scope.row.error?.code" type="danger">{{
+          <div>{{ scope.row.statusCode }}</div>
+          <!--          <el-tag v-if="scope.row.error?.code" type="danger">{{
             scope.row.error?.code
           }}</el-tag>
-          <el-tag v-else type="success">{{ 200 }}</el-tag>
+          <el-tag v-else type="success">{{ 200 }}</el-tag>-->
         </template>
       </el-table-column>
 
-      <el-table-column label="Created" width="180">
+      <el-table-column label="Created" width="220">
         <template #default="scope">
-          {{ dayjs(scope.row.created).format("MMM DD HH:mm:ss (SSS)") }}
+          <div :class="$style.created">
+            <el-tag type="danger" effect="plain">
+              {{ dayjs(scope.row.created).format("YYYY-MM-DD") }}
+            </el-tag>
+            <el-tag type="success" effect="plain">
+              {{ dayjs(scope.row.created).format("HH:mm:ss") }}
+            </el-tag>
+            <el-tag type="warning" effect="plain">
+              {{ dayjs(scope.row.created).format("SSS") }}
+            </el-tag>
+          </div>
         </template>
       </el-table-column>
 
@@ -144,15 +150,15 @@ onMounted(async () => {
 
 // Methods
 async function refresh() {
-  await requestStore.getSearch();
-  console.log(requestStore.search.result);
+  await requestStore.getList();
+  // console.log(requestStore.search.result);
 }
 
-async function changePage(page: number) {
+/*async function changePage(page: number) {
   requestStore.offset = (page - 1) * requestStore.limit;
   requestStore.search.result = [];
   await requestStore.getSearch();
-}
+}*/
 </script>
 
 <style module lang="scss">
@@ -185,6 +191,12 @@ async function changePage(page: number) {
     > div {
       flex: 1;
     }
+  }
+
+  .created {
+    display: grid;
+    grid-template-columns: 80px 65px 1fr;
+    gap: 7px;
   }
 }
 </style>

@@ -16,7 +16,7 @@ type EmbedFS struct {
 	Fs   embed.FS
 }
 
-func (e EmbedFS) Handle(args Args) {
+func (e EmbedFS) Handle(args *Args) {
 	// Prepare path
 	pathWithoutKey := strings.Replace(args.Path, args.Route, "", 1)
 

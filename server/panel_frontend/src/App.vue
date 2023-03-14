@@ -61,6 +61,8 @@ onMounted(async () => {
   if (mainStore.hasLogTab) {
     links.value.push({ url: "/logs", title: "Logs", icon: "Promotion" });
   }
+
+  links.value.push({ url: "/requests", title: "Requests", icon: "Promotion" });
 });
 </script>
 
