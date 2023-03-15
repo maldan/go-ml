@@ -5,7 +5,12 @@ import { HOST } from "@/const";
 export interface IRequest {
   id: string;
   httpMethod: string;
+  inputHeader: string;
+  inputBody: string;
+  outputHeader: string;
+  outputBody: string;
   url: string;
+  created: string;
 }
 
 export type RequestState = {

@@ -22,7 +22,7 @@ var panelFs embed.FS
 func endOfRequest(args *ms_handler.Args) {
 	err := recover()
 	if err == nil {
-		ms_log.LogRequest(args.Request, args.Body, args.Response)
+		ms_log.LogRequest(args)
 		return
 	}
 
@@ -36,7 +36,7 @@ func endOfRequest(args *ms_handler.Args) {
 		message, _ := json.Marshal(e)
 		args.Response.Write(message)
 		ms_log.Log("request error", e)
-		ms_log.LogRequest(args.Request, args.Body, args.Response)
+		ms_log.LogRequest(args)
 	default:
 		stackInfo := make([]string, 0, 10)
 		for i := 0; i < 10; i++ {
@@ -61,7 +61,7 @@ func endOfRequest(args *ms_handler.Args) {
 		message, _ := json.Marshal(ee)
 		args.Response.Write(message)
 		ms_log.Log("request error", ee)
-		ms_log.LogRequest(args.Request, args.Body, args.Response)
+		ms_log.LogRequest(args)
 	}
 }
 

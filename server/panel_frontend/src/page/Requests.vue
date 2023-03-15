@@ -36,7 +36,7 @@
       </el-table-column>
 
       <!-- Url -->
-      <el-table-column label="Url">
+      <el-table-column label="Url" width="240">
         <template #header>
           <el-input
             v-model="requestStore.filter['url']"
@@ -50,27 +50,27 @@
         </template>
       </el-table-column>
 
-      <!-- Header -->
-      <el-table-column label="Header">
+      <!-- Input -->
+      <el-table-column label="Input">
         <template #default="scope">
-          <pre v-if="toggleArgs[scope.row.id]" v-html="scope.row.header"></pre>
+          <div v-if="toggleArgs[scope.row.id]">
+            <div>Header</div>
+            <pre v-html="scope.row.inputHeader"></pre>
+            <div>Body</div>
+            <pre v-html="scope.row.inputBody"></pre>
+          </div>
         </template>
       </el-table-column>
 
-      <!-- Request -->
-      <el-table-column label="Body">
+      <!-- Output -->
+      <el-table-column label="Output">
         <template #default="scope">
-          <pre v-if="toggleArgs[scope.row.id]" v-html="scope.row.body"></pre>
-        </template>
-      </el-table-column>
-
-      <!-- Response -->
-      <el-table-column label="Response">
-        <template #default="scope">
-          <pre
-            v-if="toggleArgs[scope.row.id]"
-            v-html="scope.row.response"
-          ></pre>
+          <div v-if="toggleArgs[scope.row.id]">
+            <div>Header</div>
+            <pre v-html="scope.row.outputHeader"></pre>
+            <div>Body</div>
+            <pre v-html="scope.row.outputBody"></pre>
+          </div>
         </template>
       </el-table-column>
 
@@ -107,7 +107,7 @@
       </el-table-column>
 
       <!-- Expand -->
-      <el-table-column label="Expand" width="100">
+      <el-table-column label="Expand" width="90">
         <template #default="scope">
           <el-button
             @click="toggleArgs[scope.row.id] = !toggleArgs[scope.row.id]"
