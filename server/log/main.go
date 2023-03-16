@@ -27,6 +27,7 @@ type RequestBody struct {
 	HttpMethod string `json:"httpMethod"`
 	Url        string `json:"url"`
 	StatusCode int    `json:"statusCode"`
+	RemoteAddr string `json:"remoteAddr"`
 
 	InputHeader  string `json:"inputHeader"`
 	InputBody    string `json:"inputBody"`
@@ -68,19 +69,29 @@ func LogRequest(args *ms_handler.Args) {
 		outputHeader += fmt.Sprintf("%v: %v\n", k, strings.Join(v, ", "))
 	}
 
+	// Ip
+	IPAddress := args.Request.Header.Get("X-Real-Ip")
+	if IPAddress == "" {
+		IPAddress = args.Request.Header.Get("X-Forwarded-For")
+	}
+	if IPAddress == "" {
+		IPAddress = args.Request.RemoteAddr
+	}
+
 	// Add to db
 	RequestDB.Insert(RequestBody{
 		Id:         int(RequestDB.GenerateId()),
 		HttpMethod: args.Request.Method,
+		Url:        args.Request.URL.RequestURI(),
+		StatusCode: *args.Response.StatusCode,
+		RemoteAddr: IPAddress,
 
 		InputHeader:  inputHeader,
 		InputBody:    string(args.Body),
 		OutputHeader: outputHeader,
 		OutputBody:   string(args.Response.Buffer.Bytes()),
 
-		StatusCode: *args.Response.StatusCode,
-		Url:        args.Request.URL.RequestURI(),
-		Created:    ml_time.Now().UTC(),
+		Created: ml_time.Now().UTC(),
 	})
 }
 

@@ -2,7 +2,9 @@ package ml_number
 
 import (
 	"fmt"
+	"golang.org/x/exp/constraints"
 	"math"
+	"math/rand"
 	"reflect"
 )
 
@@ -58,4 +60,16 @@ func ToHumanReadableSize[T any](something T) string {
 		return fmt.Sprintf("%.2f gB", float64(length)/math.Pow(2.0, 30.0))
 	}
 	return fmt.Sprintf("%d", length)
+}
+
+func RandInt(min int, max int) int {
+	return min + rand.Intn(max-min+1)
+}
+
+func RandFloat(min float64, max float64) float64 {
+	return Remap(rand.Float64(), 0, 1, min, max)
+}
+
+func Remap[T constraints.Float | constraints.Integer](value T, low1 T, high1 T, low2 T, high2 T) T {
+	return low2 + (high2-low2)*(value-low1)/(high1-low1)
 }

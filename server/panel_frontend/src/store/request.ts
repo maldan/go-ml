@@ -10,6 +10,7 @@ export interface IRequest {
   outputHeader: string;
   outputBody: string;
   url: string;
+  remoteAddr: string;
   created: string;
 }
 

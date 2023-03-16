@@ -75,14 +75,26 @@
       </el-table-column>
 
       <!-- Remote addr -->
-      <el-table-column label="Remote IP" width="150">
+      <el-table-column label="Remote IP" width="130">
         <template #default="scope"> {{ scope.row.remoteAddr }} </template>
       </el-table-column>
 
       <!-- Status -->
-      <el-table-column label="Status" width="80">
+      <el-table-column label="Status" width="70">
         <template #default="scope">
-          <div>{{ scope.row.statusCode }}</div>
+          <el-tag
+            v-if="scope.row.statusCode >= 200 && scope.row.statusCode <= 200"
+            type="success"
+            effect="plain"
+            >{{ scope.row.statusCode }}</el-tag
+          >
+          <el-tag
+            v-if="scope.row.statusCode >= 300 && scope.row.statusCode <= 500"
+            type="danger"
+            effect="plain"
+            >{{ scope.row.statusCode }}</el-tag
+          >
+
           <!--          <el-tag v-if="scope.row.error?.code" type="danger">{{
             scope.row.error?.code
           }}</el-tag>

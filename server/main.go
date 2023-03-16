@@ -96,6 +96,9 @@ func injectDebug(config *Config) {
 						Path: config.LogFile,
 					},
 					ms_panel.Request{},
+					ms_panel.Router{
+						List: config.Router,
+					},
 				},
 			},
 		},

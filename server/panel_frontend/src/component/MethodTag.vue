@@ -1,28 +1,41 @@
 <template>
   <div :class="$style.main">
     <!-- Get -->
-    <el-tag v-if="props.tag === 'GET'" effect="dark">{{ tag }}</el-tag>
+    <el-tag v-if="props.tag === 'GET'" effect="plain" style="font-size: 14px">{{
+      tag
+    }}</el-tag>
 
     <!-- Post -->
     <el-tag
       v-else-if="props.tag === 'POST' || props.tag === 'PUT'"
-      effect="dark"
+      effect="plain"
       type="warning"
+      style="font-size: 14px"
       >{{ tag }}</el-tag
     >
 
     <!-- Post -->
-    <el-tag v-else-if="props.tag === 'PATCH'" effect="dark" type="success">{{
-      tag
-    }}</el-tag>
+    <el-tag
+      v-else-if="props.tag === 'PATCH'"
+      effect="plain"
+      type="success"
+      style="font-size: 14px"
+      >{{ tag }}</el-tag
+    >
 
     <!-- Delete -->
-    <el-tag v-else-if="props.tag === 'DELETE'" effect="dark" type="danger">{{
-      tag
-    }}</el-tag>
+    <el-tag
+      v-else-if="props.tag === 'DELETE'"
+      effect="plain"
+      type="danger"
+      style="font-size: 14px"
+      >{{ tag }}</el-tag
+    >
 
     <!-- Other -->
-    <el-tag v-else effect="dark" type="info">{{ tag }}</el-tag>
+    <el-tag v-else effect="plain" type="info" style="font-size: 14px">{{
+      tag
+    }}</el-tag>
   </div>
 </template>
 
@@ -39,5 +52,6 @@ onMounted(async () => {});
 
 <style module lang="scss">
 .main {
+  user-select: none;
 }
 </style>
