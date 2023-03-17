@@ -119,6 +119,9 @@ func injectDebug(config *Config) {
 					ms_panel.Router{
 						List: config.Router,
 					},
+					ms_panel.DB{
+						DataBase: config.DataBase.DataBase,
+					},
 				},
 			},
 		},
@@ -135,8 +138,8 @@ func injectDebug(config *Config) {
 
 func Start(config Config) {
 	// defer globalPanicHandler()
-	injectDebug(&config)
 	initDb(&config)
+	injectDebug(&config)
 
 	// Entry point
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {

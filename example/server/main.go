@@ -8,6 +8,14 @@ import (
 
 var DataBase map[string]*mdb.DataTable
 
+type ImageDescription struct {
+	Path        string
+	Hash        string
+	Width       int
+	Height      int
+	Description string
+}
+
 func main() {
 	ms.Start(ms.Config{
 		Host: "127.0.0.1:16000",
@@ -35,6 +43,7 @@ func main() {
 			DataBase: &DataBase,
 			TableList: []ms.TableConfig{
 				{Name: "x", Type: Gasofeal{}},
+				{Name: "tags", Type: ImageDescription{}},
 			},
 		},
 	})

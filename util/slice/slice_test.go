@@ -7,6 +7,20 @@ import (
 	"testing"
 )
 
+func TestRemoveAt(t *testing.T) {
+	newArray := []int{1, 2, 3, 4, 5}
+	newArray = ml_slice.RemoveAt(newArray, 1)
+	if len(newArray) != 4 {
+		t.Error("Fuck removeAt")
+	}
+	if newArray[0] != 1 {
+		t.Error("Fuck removeAt")
+	}
+	if newArray[1] != 3 {
+		t.Error("Fuck removeAt")
+	}
+}
+
 func TestIncludes(t *testing.T) {
 	newArray := []int{1, 2, 3, 4, 5}
 	if !ml_slice.Includes(newArray, 2) {
