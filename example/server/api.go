@@ -54,11 +54,8 @@ func (u User) GetIndex2() Gasofeal {
 }
 
 func (u User) GetIndex3() any {
-	return DataBase["x"].FindBy(mdb.ArgsFind{
-		FieldList: "Name",
-		Where: func(any2 any) bool {
-			return true
-		},
+	return DataBase["tags"].FindBy(mdb.ArgsFind{
+		WhereExpression: "Width == 820",
 	}).Result
 }
 

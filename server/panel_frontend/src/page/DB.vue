@@ -11,6 +11,12 @@
       >
         {{ x }}
       </el-button>
+      <el-input
+        placeholder="Filter..."
+        v-model="dbStore.where"
+        style="margin-top: 10px"
+        @change="dbStore.getSearch"
+      />
     </div>
 
     <!-- Body -->

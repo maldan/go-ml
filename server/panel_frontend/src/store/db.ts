@@ -12,6 +12,7 @@ export interface DBState {
   list: string[];
   recordList: any[];
   selectedTable: string;
+  where: string;
 }
 
 export const useDBStore = defineStore({
@@ -21,17 +22,24 @@ export const useDBStore = defineStore({
       list: [],
       recordList: [],
       selectedTable: "",
+      where: "",
     } as DBState),
   actions: {
     async getList() {
       this.list = (await Axios.get(`${HOST}/debug/api/db/list`)).data;
     },
     async getSearch() {
-      this.recordList = (
-        await Axios.get(
-          `${HOST}/debug/api/db/search?table=${this.selectedTable}`
-        )
-      ).data;
+      try {
+        this.recordList = (
+          await Axios.get(
+            `${HOST}/debug/api/db/search?table=${
+              this.selectedTable
+            }&where=${btoa(this.where)}`
+          )
+        ).data;
+      } catch {
+        this.recordList = [];
+      }
     },
     async selectTable(table: string) {
       this.selectedTable = table;

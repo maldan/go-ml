@@ -4,13 +4,15 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	ml_expression "github.com/maldan/go-ml/util/expression"
 	"reflect"
 )
 
 type ArgsFind struct {
-	FieldList string
-	Limit     int
-	Where     func(any2 any) bool
+	FieldList       string
+	Limit           int
+	WhereExpression string
+	Where           func(any2 any) bool
 }
 
 type ArgsUpdate struct {
@@ -187,6 +189,15 @@ func (d *DataTable) FindBy(args ArgsFind) SearchResult {
 	// Create mapper for capturing values from bytes
 	mapperContainer := reflect.New(d.Type).Interface()
 	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
+
+	// Compile expression
+	if args.WhereExpression != "" {
+		expr, _ := ml_expression.Parse(args.WhereExpression)
+		expr.Bind(mapperContainer)
+		args.Where = func(any2 any) bool {
+			return expr.Execute().(bool)
+		}
+	}
 
 	// Go through each record
 	d.ForEach(func(offset uint64, size uint32) bool {

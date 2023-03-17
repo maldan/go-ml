@@ -1,4 +1,4 @@
-package expression
+package ml_expression
 
 import (
 	"fmt"
@@ -135,13 +135,19 @@ func tokenizer(str string) []TokenType {
 		} else if str[i] == '&' {
 			tempOp += "&"
 			mode = "&"
+		} else if str[i] == '>' {
+			tempOp += ">"
+			mode = ">"
 		} else {
 			tempStr += string(str[i])
 			mode = "string"
 		}
 
 		if mode != previousMode {
-			if previousMode == "&" {
+			if previousMode == ">" {
+				out = append(out, TokenType{Token: tempOp, Type: TokenOp})
+				tempOp = ""
+			} else if previousMode == "&" {
 				out = append(out, TokenType{Token: tempOp, Type: TokenOp})
 				tempOp = ""
 			} else if previousMode == "=" {

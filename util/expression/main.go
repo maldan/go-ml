@@ -1,7 +1,6 @@
-package expression
+package ml_expression
 
 import (
-	"fmt"
 	ml_console "github.com/maldan/go-ml/util/io/console"
 	"reflect"
 	"unsafe"
@@ -49,8 +48,8 @@ func (e *Expression) Execute() any {
 				stackCounter -= 1
 				a := anyStack[stackCounter].(unsafe.Pointer)
 
-				fmt.Printf("B: %v\n", *(*int)(b))
-				fmt.Printf("A: %v\n", *(*int)(a))
+				//fmt.Printf("B: %v\n", *(*int)(b))
+				//fmt.Printf("A: %v\n", *(*int)(a))
 
 				anyStack[stackCounter] = *(*int)(a) == *(*int)(b)
 				stackCounter += 1
@@ -62,6 +61,15 @@ func (e *Expression) Execute() any {
 				a := anyStack[stackCounter]
 
 				anyStack[stackCounter] = a == b
+				stackCounter += 1
+				break
+			case ">":
+				stackCounter -= 1
+				b := anyStack[stackCounter].(unsafe.Pointer)
+				stackCounter -= 1
+				a := anyStack[stackCounter].(unsafe.Pointer)
+
+				anyStack[stackCounter] = *(*int)(a) > *(*int)(b)
 				stackCounter += 1
 				break
 			}

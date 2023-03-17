@@ -1,4 +1,4 @@
-package expression
+package ml_expression
 
 func StrCmp(a []byte, b []byte) bool {
 	if len(a) != len(b) {
