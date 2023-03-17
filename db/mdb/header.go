@@ -26,15 +26,15 @@ name to id map
 ] * totalFields
 */
 
-type Header[T any] struct {
+type Header struct {
 	FileId        string
 	Version       uint8
 	AutoIncrement uint64
 	TotalRecords  uint64
-	table         *DataTable[T]
+	table         *DataTable
 }
 
-func (h *Header[T]) FromBytes(bytes []byte) {
+func (h *Header) FromBytes(bytes []byte) {
 	offset := 0
 
 	// File id
@@ -60,7 +60,7 @@ func (h *Header[T]) FromBytes(bytes []byte) {
 	h.table.Container.SetHeader(bytes[offset:])
 }
 
-func (h *Header[T]) ToBytes() []byte {
+func (h *Header) ToBytes() []byte {
 	offset := 0
 	bytes := make([]byte, HEADER_SIZE)
 

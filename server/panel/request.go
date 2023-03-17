@@ -65,16 +65,16 @@ func (r Request) GetList(args ArgsRequestOffset) any {
 	*/
 
 	// Final where
-	finalWhere := func(t *ms_log.RequestBody) bool {
+	finalWhere := func(t any) bool {
 		for i := 0; i < len(whereFn); i++ {
-			if !whereFn[i](t) {
+			if !whereFn[i](t.(*ms_log.RequestBody)) {
 				return false
 			}
 		}
 		return true
 	}
 
-	return ms_log.RequestDB.FindBy(mdb.ArgsFind[ms_log.RequestBody]{
+	return ms_log.RequestDB.FindBy(mdb.ArgsFind{
 		FieldList: strings.Join(fieldList, ","),
 		Where:     finalWhere,
 		// Limit:     10,

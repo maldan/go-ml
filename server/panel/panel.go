@@ -1,11 +1,13 @@
 package ms_panel
 
 type Panel struct {
-	HasLogTab bool
+	HasLogTab      bool
+	HasRequestLogs bool
 }
 
 func (p Panel) GetSetting() any {
 	return map[string]any{
-		"hasLogTab": p.HasLogTab,
+		"hasLogTab":     p.HasLogTab,
+		"hasRequestTab": p.HasRequestLogs,
 	}
 }

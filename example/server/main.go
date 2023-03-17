@@ -1,9 +1,12 @@
 package main
 
 import (
+	"github.com/maldan/go-ml/db/mdb"
 	ms "github.com/maldan/go-ml/server"
 	"github.com/maldan/go-ml/server/core/handler"
 )
+
+var DataBase map[string]*mdb.DataTable
 
 func main() {
 	ms.Start(ms.Config{
@@ -26,9 +29,13 @@ func main() {
 				Handler: ms_handler.EmbedFS{},
 			},
 		},
-		Panel: ms.PanelConfig{
-			HasLogTab: true,
+		Panel: ms.PanelConfig{},
+		DataBase: ms.DataBaseConfig{
+			Path:     "./db",
+			DataBase: &DataBase,
+			TableList: []ms.TableConfig{
+				{Name: "x", Type: Gasofeal{}},
+			},
 		},
-		LogFile: "sex",
 	})
 }

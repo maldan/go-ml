@@ -4,22 +4,23 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"reflect"
 )
 
-type ArgsFind[T any] struct {
+type ArgsFind struct {
 	FieldList string
 	Limit     int
-	Where     func(*T) bool
+	Where     func(any2 any) bool
 }
 
-type ArgsUpdate[T any] struct {
+type ArgsUpdate struct {
 	FieldList string
 	Limit     int
-	Where     func(*T) bool
-	Change    func(*T)
+	Where     func(any2 any) bool
+	Change    func(any2 any)
 }
 
-func __insertToTable[T any](table *DataTable[T], value T, isLock bool, isRemap bool) Record[T] {
+func __insertToTable(table *DataTable, value any, isLock bool, isRemap bool) Record {
 	// Lock table
 	if isLock {
 		table.rwLock.Lock()
@@ -50,14 +51,14 @@ func __insertToTable[T any](table *DataTable[T], value T, isLock bool, isRemap b
 	}
 
 	// Return record info
-	return Record[T]{
+	return Record{
 		offset: uint64(endOfFile),
 		size:   uint32(len(bytes)),
 		table:  table,
 	}
 }
 
-func __markDeleted[T any](table *DataTable[T], offset uint64) {
+func __markDeleted(table *DataTable, offset uint64) {
 	// Read flags
 	b := []byte{0}
 	_, err := table.file.ReadAt(b, int64(offset+SIZE_OF_RECORD_START+RecordSize))
@@ -93,7 +94,7 @@ func __offsetUntil(slice []byte, seq ...uint8) (uint64, bool) {
 	return 0, false
 }
 
-func (d *DataTable[T]) GenerateId() uint64 {
+func (d *DataTable) GenerateId() uint64 {
 	d.rwLock.Lock()
 	id := uint64(0)
 	d.Header.AutoIncrement += 1
@@ -103,11 +104,11 @@ func (d *DataTable[T]) GenerateId() uint64 {
 	return id
 }
 
-func (d *DataTable[T]) Insert(v T) Record[T] {
+func (d *DataTable) Insert(v any) Record {
 	return __insertToTable(d, v, true, true)
 }
 
-func (d *DataTable[T]) InsertMany(v []T) {
+func (d *DataTable) InsertMany(v []any) {
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
 	defer d.remap()
@@ -117,7 +118,7 @@ func (d *DataTable[T]) InsertMany(v []T) {
 	}
 }
 
-func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
+func (d *DataTable) ForEach(fn func(offset uint64, size uint32) bool) {
 	offset := uint64(HEADER_SIZE)
 
 	// Empty table
@@ -175,16 +176,16 @@ func (d *DataTable[T]) ForEach(fn func(offset uint64, size uint32) bool) {
 	}
 }
 
-func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
+func (d *DataTable) FindBy(args ArgsFind) SearchResult {
 	// Lock table
 	d.rwLock.RLock()
 	defer d.rwLock.RUnlock()
 
 	// Return
-	searchResult := SearchResult[T]{}
+	searchResult := SearchResult{}
 
 	// Create mapper for capturing values from bytes
-	mapperContainer := new(T)
+	mapperContainer := reflect.New(d.Type).Interface()
 	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
 
 	// Go through each record
@@ -195,7 +196,7 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 		if args.Where(mapperContainer) {
 			searchResult.table = d
 			searchResult.IsFound = true
-			record := Record[T]{
+			record := Record{
 				offset: offset,
 				size:   size,
 				table:  d,
@@ -214,13 +215,13 @@ func (d *DataTable[T]) FindBy(args ArgsFind[T]) SearchResult[T] {
 	})
 
 	if len(searchResult.Result) == 0 {
-		searchResult.Result = make([]T, 0)
+		searchResult.Result = make([]any, 0)
 	}
 
 	return searchResult
 }
 
-func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
+/*func (d *DataTable) DeleteBy(args ArgsFind[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
@@ -250,7 +251,7 @@ func (d *DataTable[T]) DeleteBy(args ArgsFind[T]) {
 	})
 }
 
-func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
+func (d *DataTable) UpdateBy(args ArgsUpdate[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
@@ -292,9 +293,9 @@ func (d *DataTable[T]) UpdateBy(args ArgsUpdate[T]) {
 
 		return true
 	})
-}
+}*/
 
-func (d *DataTable[T]) Close() error {
+func (d *DataTable) Close() error {
 	err := d.mem.Unmap()
 	if err != nil {
 		return err

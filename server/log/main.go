@@ -37,10 +37,15 @@ type RequestBody struct {
 	Created ml_time.DateTime `json:"created"`
 }
 
-var LogDB *mdb.DataTable[LogBody]
-var RequestDB *mdb.DataTable[RequestBody]
+var LogDB *mdb.DataTable
+var RequestDB *mdb.DataTable
 
 func Log(kind string, message any) {
+	if LogDB == nil {
+		fmt.Printf("[%v] - %v\n", kind, message)
+		return
+	}
+
 	_, file, line, _ := runtime.Caller(1)
 
 	b, _ := json.Marshal(message)
@@ -55,6 +60,10 @@ func Log(kind string, message any) {
 }
 
 func LogRequest(args *ms_handler.Args) {
+	if RequestDB == nil {
+		return
+	}
+
 	if strings.HasPrefix(args.Request.RequestURI, "/debug/") {
 		return
 	}
@@ -95,12 +104,14 @@ func LogRequest(args *ms_handler.Args) {
 	})
 }
 
-func Init(logFile string) {
-	LogDB = mdb.New[LogBody]("./db", "logs", &gosn_driver.Container{})
-	RequestDB = mdb.New[RequestBody]("./db", "requests", &gosn_driver.Container{})
+func InitRequestLogs(logFile string) {
+	RequestDB = mdb.New("./db", "requests", RequestBody{}, &gosn_driver.Container{})
+}
+
+func InitLogs(logFile string) {
+	LogDB = mdb.New("./db", "logs", LogBody{}, &gosn_driver.Container{})
 
 	r, w, err := os.Pipe()
-	// mw := io.MultiWriter(os.Stdout, w)
 
 	ms_error.FatalIfError(err)
 	os.Stdout = w

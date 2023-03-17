@@ -64,6 +64,7 @@ onMounted(async () => {
 
   links.value.push({ url: "/requests", title: "Requests", icon: "Promotion" });
   links.value.push({ url: "/router", title: "Router", icon: "Promotion" });
+  links.value.push({ url: "/db", title: "DB", icon: "Promotion" });
 });
 </script>
 

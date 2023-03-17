@@ -5,6 +5,7 @@ import (
 	"github.com/edsrzf/mmap-go"
 	ml_fs "github.com/maldan/go-ml/util/io/fs"
 	"os"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -26,21 +27,21 @@ type DBContainer interface {
 	GetStruct() map[string]string
 }
 
-type DataTable[T any] struct {
+type DataTable struct {
 	mem      mmap.MMap
 	file     *os.File
 	rwLock   sync.RWMutex
 	fileSize uint64
 
 	Container DBContainer
-
-	Header Header[T]
+	Type      reflect.Type
+	Header    Header
 
 	Path string
 	Name string
 }
 
-func (d *DataTable[T]) SetBackupSchedule(dst string, each time.Duration) {
+func (d *DataTable) SetBackupSchedule(dst string, each time.Duration) {
 	go (func() {
 		// File size
 		fmt.Printf("Initializing backup: %v - %v\n", d.Name, d.fileSize)
@@ -62,12 +63,13 @@ func (d *DataTable[T]) SetBackupSchedule(dst string, each time.Duration) {
 	})()
 }
 
-func New[T any](path string, name string, container DBContainer) *DataTable[T] {
-	table := DataTable[T]{Path: path, Name: name}
+func New(path string, name string, tp any, container DBContainer) *DataTable {
+	table := DataTable{Path: path, Name: name}
 	table.Header.table = &table
 
+	table.Type = reflect.TypeOf(tp)
 	table.Container = container
-	table.Container.Prepare(*new(T))
+	table.Container.Prepare(tp)
 
 	table.open()
 	table.remap()

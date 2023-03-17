@@ -6,6 +6,8 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	gosn_driver "github.com/maldan/go-ml/db/driver/gosn"
+	"github.com/maldan/go-ml/db/mdb"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
 	ms_log "github.com/maldan/go-ml/server/log"
@@ -75,6 +77,23 @@ func getHandler(url string, routers []ms_handler.RouteHandler) (string, ms_handl
 	return "", ms_handler.Undefined{}
 }
 
+func initDb(config *Config) {
+	if *config.DataBase.DataBase == nil {
+		*config.DataBase.DataBase = map[string]*mdb.DataTable{}
+	}
+
+	for i := 0; i < len(config.DataBase.TableList); i++ {
+		table := config.DataBase.TableList[i]
+
+		(*config.DataBase.DataBase)[table.Name] = mdb.New(
+			config.DataBase.Path,
+			table.Name,
+			table.Type,
+			&gosn_driver.Container{},
+		)
+	}
+}
+
 func injectDebug(config *Config) {
 	// Add debug controller
 	config.Router = ml_slice.Prepend(config.Router, []ms_handler.RouteHandler{
@@ -90,7 +109,8 @@ func injectDebug(config *Config) {
 			Handler: ms_handler.API{
 				ControllerList: []any{
 					ms_panel.Panel{
-						HasLogTab: config.Panel.HasLogTab,
+						HasLogTab:      config.Debug.UseLogs,
+						HasRequestLogs: config.Debug.UseRequestLogs,
 					},
 					ms_panel.Log{
 						Path: config.LogFile,
@@ -116,6 +136,7 @@ func injectDebug(config *Config) {
 func Start(config Config) {
 	// defer globalPanicHandler()
 	injectDebug(&config)
+	initDb(&config)
 
 	// Entry point
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
@@ -148,12 +169,13 @@ func Start(config Config) {
 	})
 
 	// Start logger
-	if config.LogFile != "" {
-		config.Panel.HasLogTab = false
-		ms_log.Init(config.LogFile)
+	if config.Debug.UseLogs {
+		ms_log.InitLogs(config.LogFile)
+	}
+	if config.Debug.UseRequestLogs {
+		ms_log.InitRequestLogs(config.LogFile)
 	}
 
-	// fmt.Printf("%v\n", "FUCK")
 	ms_log.Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
 
 	if config.TLS.Enabled {

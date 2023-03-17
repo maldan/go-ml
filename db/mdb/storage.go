@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-func (d *DataTable[T]) open() {
+func (d *DataTable) open() {
 	finalPath, err := filepath.Abs(d.Path)
 	if err != nil {
 		panic(err)
@@ -45,7 +45,7 @@ func (d *DataTable[T]) open() {
 	d.file = f
 }
 
-func (d *DataTable[T]) remap() {
+func (d *DataTable) remap() {
 	// Unmap previous
 	if d.mem != nil {
 		err := d.mem.Unmap()
@@ -62,7 +62,7 @@ func (d *DataTable[T]) remap() {
 	d.mem = mem
 }
 
-func (d *DataTable[T]) readHeader() {
+func (d *DataTable) readHeader() {
 	// Thread safe operation
 	d.rwLock.RLock()
 	defer d.rwLock.RUnlock()
@@ -70,7 +70,7 @@ func (d *DataTable[T]) readHeader() {
 	d.Header.FromBytes(d.mem)
 }
 
-func (d *DataTable[T]) writeHeader() {
+func (d *DataTable) writeHeader() {
 	// Thread safe operation
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()
@@ -81,7 +81,7 @@ func (d *DataTable[T]) writeHeader() {
 	}
 }
 
-func (d *DataTable[T]) writeAI() {
+func (d *DataTable) writeAI() {
 	// Thread safe operation
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()

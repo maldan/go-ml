@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/maldan/go-ml/db/mdb"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_response "github.com/maldan/go-ml/server/response"
 	ml_console "github.com/maldan/go-ml/util/io/console"
@@ -23,9 +24,9 @@ type Args2 struct {
 }
 
 type Gasofeal struct {
-	Name string
-	Lox  string
-	Gas  string
+	Name string `json:"name"`
+	Lox  string `json:"lox"`
+	Gas  string `json:"gas"`
 }
 
 func (g Gasofeal) ToResponse() map[string]any {
@@ -46,6 +47,19 @@ func (u User) GetIndex(ctx *ms_handler.Context, x ArgsX) int {
 
 func (u User) GetIndex2() Gasofeal {
 	return Gasofeal{Name: "Gas", Lox: "bas", Gas: "ZZAS"}
+}
+
+func (u User) GetIndex3() any {
+	return DataBase["x"].FindBy(mdb.ArgsFind{
+		FieldList: "Name",
+		Where: func(any2 any) bool {
+			return true
+		},
+	}).Result
+}
+
+func (u User) PostIndex3() {
+	DataBase["x"].Insert(Gasofeal{Name: "Xa"})
 }
 
 func (u User) PostIndex(x Args2) any {
