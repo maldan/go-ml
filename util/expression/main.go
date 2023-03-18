@@ -1,8 +1,8 @@
 package ml_expression
 
 import (
-	ml_console "github.com/maldan/go-ml/util/io/console"
 	"reflect"
+	"strings"
 	"unsafe"
 )
 
@@ -16,7 +16,6 @@ func (e *Expression) Bind(v any) {
 	for i := 0; i < valueOf.NumField(); i++ {
 		e.Map[typeOf.Field(i).Name] = unsafe.Add(start, typeOf.Field(i).Offset)
 	}
-	ml_console.PrettyPrint(e.Map)
 }
 
 func (e *Expression) Execute() any {
@@ -27,13 +26,13 @@ func (e *Expression) Execute() any {
 	for i := 0; i < len(ops); i++ {
 		v := ops[i]
 
-		switch v.Type {
+		switch v.Token {
 		case TokenIdentifier:
 			anyStack[stackCounter] = e.Map[v.Value.(string)]
 			stackCounter += 1
 			break
 		case TokenString:
-			//anyStack[stackCounter] = v.Value
+			anyStack[stackCounter] = v.Address
 			stackCounter += 1
 			break
 		case TokenNumber:
@@ -42,14 +41,43 @@ func (e *Expression) Execute() any {
 			break
 		case TokenOp:
 			switch v.Value.(string) {
+			case "not in":
+				stackCounter -= 1
+				b := anyStack[stackCounter].(unsafe.Pointer)
+				stackCounter -= 1
+				a := anyStack[stackCounter].(unsafe.Pointer)
+
+				anyStack[stackCounter] = !strings.Contains(*(*string)(b), *(*string)(a))
+				stackCounter += 1
+
+				break
+			case "in":
+				stackCounter -= 1
+				b := anyStack[stackCounter].(unsafe.Pointer)
+				stackCounter -= 1
+				a := anyStack[stackCounter].(unsafe.Pointer)
+
+				anyStack[stackCounter] = strings.Contains(*(*string)(b), *(*string)(a))
+				stackCounter += 1
+
+				break
+			case OperatorStringCompare:
+				stackCounter -= 1
+				b := anyStack[stackCounter].(unsafe.Pointer)
+				stackCounter -= 1
+				a := anyStack[stackCounter].(unsafe.Pointer)
+
+				anyStack[stackCounter] = *(*string)(a) == *(*string)(b)
+				stackCounter += 1
+				break
 			case "==":
 				stackCounter -= 1
 				b := anyStack[stackCounter].(unsafe.Pointer)
 				stackCounter -= 1
 				a := anyStack[stackCounter].(unsafe.Pointer)
 
-				//fmt.Printf("B: %v\n", *(*int)(b))
-				//fmt.Printf("A: %v\n", *(*int)(a))
+				// fmt.Printf("B: %v\n", *(*string)(b))
+				// fmt.Printf("A: %v\n", *(*string)(a))
 
 				anyStack[stackCounter] = *(*int)(a) == *(*int)(b)
 				stackCounter += 1
@@ -70,6 +98,15 @@ func (e *Expression) Execute() any {
 				a := anyStack[stackCounter].(unsafe.Pointer)
 
 				anyStack[stackCounter] = *(*int)(a) > *(*int)(b)
+				stackCounter += 1
+				break
+			case "+":
+				stackCounter -= 1
+				b := anyStack[stackCounter].(unsafe.Pointer)
+				stackCounter -= 1
+				a := anyStack[stackCounter].(unsafe.Pointer)
+
+				anyStack[stackCounter] = *(*int)(a) + *(*int)(b)
 				stackCounter += 1
 				break
 			}

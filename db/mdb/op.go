@@ -10,6 +10,7 @@ import (
 
 type ArgsFind struct {
 	FieldList       string
+	Offset          int
 	Limit           int
 	WhereExpression string
 	Where           func(any2 any) bool
@@ -178,6 +179,52 @@ func (d *DataTable) ForEach(fn func(offset uint64, size uint32) bool) {
 	}
 }
 
+func (d *DataTable) Count(args ArgsFind) int {
+	// Lock table
+	d.rwLock.RLock()
+	defer d.rwLock.RUnlock()
+
+	// Create mapper for capturing values from bytes
+	mapperContainer := reflect.New(d.Type).Interface()
+	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
+
+	// Compile expression
+	if args.WhereExpression != "" {
+		expr, _ := ml_expression.Parse(args.WhereExpression)
+		expr.Bind(mapperContainer)
+		args.Where = func(any2 any) bool {
+			return expr.Execute().(bool)
+		}
+	}
+
+	offsetCounter := args.Offset
+	counter := 0
+
+	// Go through each record
+	d.ForEach(func(offset uint64, size uint32) bool {
+		mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
+
+		// Collect values
+		if args.Where(mapperContainer) {
+			if offsetCounter > 0 {
+				offsetCounter -= 1
+				return true
+			}
+
+			counter += 1
+
+			// Check limit
+			if args.Limit > 0 && counter >= args.Limit {
+				return false
+			}
+		}
+
+		return true
+	})
+
+	return counter
+}
+
 func (d *DataTable) FindBy(args ArgsFind) SearchResult {
 	// Lock table
 	d.rwLock.RLock()
@@ -199,12 +246,19 @@ func (d *DataTable) FindBy(args ArgsFind) SearchResult {
 		}
 	}
 
+	offsetCounter := args.Offset
+
 	// Go through each record
 	d.ForEach(func(offset uint64, size uint32) bool {
 		mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
 
 		// Collect values
 		if args.Where(mapperContainer) {
+			if offsetCounter > 0 {
+				offsetCounter -= 1
+				return true
+			}
+
 			searchResult.table = d
 			searchResult.IsFound = true
 			record := Record{
@@ -260,9 +314,9 @@ func (d *DataTable) FindBy(args ArgsFind) SearchResult {
 
 		return true
 	})
-}
+}*/
 
-func (d *DataTable) UpdateBy(args ArgsUpdate[T]) {
+/*func (d *DataTable) UpdateBy(args ArgsUpdate[T]) {
 	// Lock table
 	d.rwLock.Lock()
 	defer d.rwLock.Unlock()

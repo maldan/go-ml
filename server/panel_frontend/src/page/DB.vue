@@ -17,11 +17,23 @@
         style="margin-top: 10px"
         @change="dbStore.getSearch"
       />
+
+      <!-- Pagination -->
+      <div style="display: flex; align-items: center; margin-top: 10px">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="dbStore.search.total"
+          :page-size="dbStore.search.perPage"
+          @current-change="changePage"
+        />
+        <div style="margin-left: 10px">{{ dbStore.search.total }}</div>
+      </div>
     </div>
 
     <!-- Body -->
     <div :class="$style.recordList">
-      <div :class="$style.record" v-for="x in dbStore.recordList" :key="x">
+      <div :class="$style.record" v-for="x in dbStore.search.result" :key="x">
         <div :class="$style.field" v-for="(v, k) in x">
           <div :class="$style.name">{{ k }}</div>
           <div :class="$style.string" v-if="typeof v === 'string'">
@@ -51,6 +63,11 @@ onMounted(async () => {
 });
 
 // Methods
+async function changePage(page: number) {
+  dbStore.page = page - 1;
+  dbStore.search.result = [];
+  await dbStore.getSearch();
+}
 </script>
 
 <style module lang="scss">
@@ -65,7 +82,7 @@ onMounted(async () => {
 
   .recordList {
     overflow-y: auto;
-    height: calc(100% - 40px);
+    height: calc(100% - 125px);
 
     .record {
       display: flex;
@@ -80,16 +97,18 @@ onMounted(async () => {
         border-radius: 4px;
         margin-right: 10px;
         display: flex;
+        flex-direction: column;
         font-size: 14px;
 
         .name {
           // font-weight: bold;
           color: #ffc46a;
-          margin-right: 10px;
+          margin-bottom: 5px;
         }
 
         .string {
           color: #3ad81c;
+          word-break: break-all;
         }
         .number {
           color: #63a3f2;

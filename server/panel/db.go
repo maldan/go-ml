@@ -12,6 +12,7 @@ type DB struct {
 }
 
 type ArgsDBSearch struct {
+	Page  int    `json:"page"`
 	Table string `json:"table"`
 	Where string `json:"where"`
 }
@@ -20,7 +21,7 @@ func (d DB) GetList() []string {
 	return ml_slice.GetKeys(*d.DataBase)
 }
 
-func (d DB) GetSearch(args ArgsDBSearch) any {
+func (d DB) GetSearch(args ArgsDBSearch) mdb.SearchResult {
 	table, ok := (*d.DataBase)[args.Table]
 	ms_error.FatalIf(!ok, ms_error.Error{Code: 404})
 
@@ -30,7 +31,15 @@ func (d DB) GetSearch(args ArgsDBSearch) any {
 		where = "1 == 1"
 	}
 
-	return table.FindBy(mdb.ArgsFind{
+	res := table.FindBy(mdb.ArgsFind{
+		Offset:          args.Page * 20,
+		Limit:           20,
 		WhereExpression: where,
-	}).Result
+	})
+
+	res.Total = table.Count(mdb.ArgsFind{WhereExpression: where})
+	res.PerPage = 20
+	res.Count = len(res.Result)
+
+	return res
 }

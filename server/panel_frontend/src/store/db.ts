@@ -10,9 +10,16 @@ export interface DB {
 
 export interface DBState {
   list: string[];
-  recordList: any[];
+  page: number;
   selectedTable: string;
   where: string;
+  search: {
+    total: number;
+    count: number;
+    page: number;
+    perPage: number;
+    result: any[];
+  };
 }
 
 export const useDBStore = defineStore({
@@ -20,7 +27,14 @@ export const useDBStore = defineStore({
   state: () =>
     ({
       list: [],
-      recordList: [],
+      page: 0,
+      search: {
+        total: 0,
+        count: 0,
+        page: 0,
+        perPage: 0,
+        result: [],
+      },
       selectedTable: "",
       where: "",
     } as DBState),
@@ -30,15 +44,15 @@ export const useDBStore = defineStore({
     },
     async getSearch() {
       try {
-        this.recordList = (
+        this.search = (
           await Axios.get(
             `${HOST}/debug/api/db/search?table=${
               this.selectedTable
-            }&where=${btoa(this.where)}`
+            }&where=${btoa(this.where)}&page=${this.page}`
           )
         ).data;
       } catch {
-        this.recordList = [];
+        this.search.result = [];
       }
     },
     async selectTable(table: string) {

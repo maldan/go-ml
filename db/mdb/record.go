@@ -24,6 +24,10 @@ type SearchResult struct {
 	IsFound bool  `json:"isFound"`
 	Count   int   `json:"count"`
 	Result  []any `json:"result"`
+
+	Page    int `json:"page"`
+	Total   int `json:"total"`
+	PerPage int `json:"perPage"`
 	// recordList []Record[T]
 	table *DataTable
 }

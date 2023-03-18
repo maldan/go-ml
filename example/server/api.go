@@ -56,6 +56,9 @@ func (u User) GetIndex2() Gasofeal {
 func (u User) GetIndex3() any {
 	return DataBase["tags"].FindBy(mdb.ArgsFind{
 		WhereExpression: "Width == 820",
+		Where: func(any2 any) bool {
+			return any2.(*ImageDescription).Width == 820
+		},
 	}).Result
 }
 
