@@ -14,6 +14,9 @@ export interface RouterState {
   selectedController: string;
   controllerList: string[];
   methodList: any[];
+  typeMap: any;
+  responseData: any;
+  methodShowDetailed: any;
 }
 
 export const useRouterStore = defineStore({
@@ -25,6 +28,9 @@ export const useRouterStore = defineStore({
       selectedController: "",
       controllerList: [],
       methodList: [],
+      typeMap: {},
+      responseData: {},
+      methodShowDetailed: {},
     } as RouterState),
   actions: {
     async getList() {
@@ -45,13 +51,74 @@ export const useRouterStore = defineStore({
       ).data;
       console.log(this.methodList);
     },
+    async getTypeList() {
+      const list = (
+        await Axios.get(
+          `${HOST}/debug/api/router/typeList?path=${this.selectedRouter.path}&controller=${this.selectedController}`
+        )
+      ).data;
+      for (let i = 0; i < list.length; i++) {
+        this.typeMap[list[i].name] = list[i];
+      }
+    },
     async selectRouter(x: Router) {
       this.selectedRouter = x;
       await this.getControllerList();
     },
     async selectController(x: string) {
       this.selectedController = x;
+      await this.getTypeList();
       await this.getMethodList();
+    },
+    async executeMethod(
+      id: string,
+      httpMethod: string,
+      url: string,
+      args: any
+    ) {
+      Axios.defaults.headers.common["Authorization"] =
+        localStorage.getItem("debug__accessToken") || "";
+
+      url = `${HOST}${url}`;
+      console.log(url);
+
+      try {
+        let time = new Date().getTime();
+        let response = null;
+        if (httpMethod === "GET") {
+          response = await Axios.get(url, {
+            params: args,
+          });
+        }
+        if (httpMethod === "DELETE") {
+          response = await Axios.delete(url, {
+            params: args,
+          });
+        }
+        if (httpMethod === "POST") {
+          response = await Axios.post(url, args);
+        }
+        if (httpMethod === "PUT") {
+          response = await Axios.put(url, args);
+        }
+        if (httpMethod === "PATCH") {
+          response = await Axios.patch(url, args);
+        }
+        if (response) {
+          this.responseData[id] = {
+            headers: response.headers,
+            status: response.status,
+            body: response.data,
+            time: new Date().getTime() - time,
+          };
+          //this.responseInfo[uid].status = response.status;
+          //this.responseInfo[uid].time = new Date().getTime() - time;
+        }
+      } catch (e: any) {
+        console.log(e);
+        //this.response[uid] = e.response?.data || {};
+        //this.responseInfo[uid].status = e.response.status;
+      }
     },
   },
 });

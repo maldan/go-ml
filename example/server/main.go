@@ -32,10 +32,10 @@ func main() {
 					ContentPath: "example",
 				},
 			},
-			{
+			/*{
 				Path:    "/",
 				Handler: ms_handler.EmbedFS{},
-			},
+			},*/
 		},
 		Panel: ms.PanelConfig{},
 		DataBase: ms.DataBaseConfig{

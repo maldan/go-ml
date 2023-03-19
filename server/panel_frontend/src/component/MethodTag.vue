@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.main">
     <!-- Get -->
-    <el-tag v-if="props.tag === 'GET'" effect="plain" style="font-size: 14px">{{
+    <el-tag v-if="props.tag === 'GET'" effect="plain" :class="$style.get">{{
       tag
     }}</el-tag>
 
@@ -9,8 +9,8 @@
     <el-tag
       v-else-if="props.tag === 'POST' || props.tag === 'PUT'"
       effect="plain"
-      type="warning"
-      style="font-size: 14px"
+      type="success"
+      :class="$style.post"
       >{{ tag }}</el-tag
     >
 
@@ -53,5 +53,17 @@ onMounted(async () => {});
 <style module lang="scss">
 .main {
   user-select: none;
+
+  .get,
+  .post {
+    font-size: 14px;
+    color: #41c3ff;
+    border-color: #41c3ff;
+  }
+
+  .post {
+    color: #80df22;
+    border-color: #80df22;
+  }
 }
 </style>

@@ -34,29 +34,80 @@
     </div>
 
     <!-- Method list -->
-    <div>
-      <div :class="$style.method" v-for="x in routerStore.methodList" :key="x">
-        <MethodTag :class="$style.httpMethod" :tag="x.httpMethod" />
-        <div :class="$style.url">{{ x.url }}</div>
-        <el-button
-          v-for="y in x.args"
-          :key="y"
-          plain
-          type="success"
-          size="small"
-          style="font-size: 14px"
-          >{{ y }}</el-button
-        >
+    <div :class="$style.methodList">
+      <div
+        :class="[$style.method, $style[x.httpMethod]]"
+        v-for="x in routerStore.methodList"
+        :key="x"
+      >
+        <div :class="$style.header">
+          <div :class="$style.httpMethod">{{ x.httpMethod }}</div>
+          <div :class="$style.url">{{ x.url }}</div>
 
-        <el-button
-          v-for="y in x.return"
-          :key="y"
-          plain
-          type="warning"
-          size="small"
-          style="font-size: 14px"
-          >{{ y }}</el-button
-        >
+          <!-- Args -->
+          <el-popover
+            v-for="y in x.args"
+            :key="y"
+            placement="bottom"
+            trigger="click"
+          >
+            <template #reference>
+              <el-button
+                plain
+                type="success"
+                size="small"
+                style="font-size: 14px"
+                >{{ y }}</el-button
+              >
+            </template>
+            <TypeInfo :type="routerStore.typeMap[y]" />
+          </el-popover>
+
+          <!--          <el-button
+            v-for="y in x.args"
+            :key="y"
+            plain
+            type="success"
+            size="small"
+            style="font-size: 14px"
+            >{{ y }}</el-button
+          >-->
+
+          <el-button
+            v-for="y in x.return"
+            :key="y"
+            plain
+            type="warning"
+            size="small"
+            style="font-size: 14px"
+            >{{ y }}</el-button
+          >
+
+          <el-button
+            @click="
+              routerStore.methodShowDetailed[x.id] =
+                !routerStore.methodShowDetailed[x.id]
+            "
+            style="margin-left: auto"
+            >O</el-button
+          >
+        </div>
+
+        <div v-if="routerStore.methodShowDetailed[x.id]" :class="$style.body">
+          <pre
+            v-if="
+              routerStore.responseData[x.id]?.headers?.['content-type'] ===
+              'application/json'
+            "
+            v-html="
+              formatHighlight(
+                routerStore.responseData[x.id]?.body,
+                customColorOptions
+              )
+            "
+          ></pre>
+          <el-button @click="execute(x)">Execute</el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -65,12 +116,21 @@
 <script setup lang="ts">
 import { h, onMounted, ref } from "vue";
 import { useRouterStore } from "@/store/router";
-import MethodTag from "@/component/MethodTag.vue";
+import formatHighlight from "json-format-highlight";
+import TypeInfo from "@/component/router/TypeInfo.vue";
 
 // Stores
 const routerStore = useRouterStore();
 
 // Vars
+const customColorOptions = ref({
+  keyColor: "#af6ed1",
+  numberColor: "#77b0fc",
+  stringColor: "#57ab51",
+  trueColor: "#ff8080",
+  falseColor: "#ff8080",
+  nullColor: "#e54b4b",
+});
 
 // Hooks
 onMounted(async () => {
@@ -78,33 +138,88 @@ onMounted(async () => {
 });
 
 // Methods
+async function execute(x: any) {
+  await routerStore.executeMethod(x.id, x.httpMethod, x.url, {});
+}
 </script>
 
 <style module lang="scss">
+$httpGet: rgba(52, 186, 241, 0.85);
+$httpPost: rgba(109, 241, 52, 0.85);
+
 .main {
   padding: 10px;
   display: flex;
   flex-direction: column;
+  height: calc(100% - 80px);
 
   .list {
     display: flex;
     margin-bottom: 10px;
   }
 
-  .method {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    padding: 10px;
+  .methodList {
+    overflow-y: auto;
+    height: calc(100% - 85px);
 
-    .httpMethod {
-      width: 80px;
-    }
+    .method {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 10px;
+      margin-bottom: 10px;
 
-    .url {
-      width: 240px;
-      font-size: 14px;
+      .header {
+        display: flex;
+        align-items: center;
+
+        .httpMethod {
+          width: max-content;
+          margin-right: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          padding: 2px 8px;
+          font-size: 14px;
+          border-radius: 4px;
+        }
+
+        .url {
+          width: 240px;
+          font-size: 16px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 2px 8px;
+          border-radius: 4px;
+          margin-right: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+      }
+
+      .body {
+        margin-top: 10px;
+
+        pre {
+          word-break: break-all;
+          white-space: pre-wrap;
+          padding: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 4px;
+        }
+      }
+
+      &.GET {
+        border: 1px solid $httpGet;
+
+        .httpMethod {
+          border: 1px solid $httpGet;
+          color: $httpGet;
+        }
+      }
+
+      &.POST {
+        border: 1px solid $httpPost;
+
+        .httpMethod {
+          border: 1px solid $httpPost;
+          color: $httpPost;
+        }
+      }
     }
   }
 }
