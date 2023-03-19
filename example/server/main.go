@@ -29,7 +29,7 @@ func main() {
 			{
 				Path: "/data",
 				Handler: ms_handler.FS{
-					ContentPath: "example",
+					ContentPath: "db",
 				},
 			},
 			/*{

@@ -4,6 +4,7 @@ import (
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
 	ml_hash "github.com/maldan/go-ml/util/hash"
+	ml_fs "github.com/maldan/go-ml/util/io/fs"
 	ml_slice "github.com/maldan/go-ml/util/slice"
 	ml_string "github.com/maldan/go-ml/util/string"
 	"reflect"
@@ -14,27 +15,6 @@ type Router struct {
 	List []ms_handler.RouteHandler
 }
 
-/*type MethodInput struct {
-	Name      string         `json:"name"`
-	Type      string         `json:"type"`
-	Kind      string         `json:"kind"`
-	FieldList []*MethodInput `json:"fieldList"`
-}
-
-type MethodInfo struct {
-	Uid string `json:"uid"`
-
-	FullPath string `json:"fullPath"`
-	Url      string `json:"url"`
-
-	Controller  string `json:"controller"`
-	HttpMethod  string `json:"httpMethod"`
-	Name        string `json:"name"`
-	InputMethod string `json:"inputMethod"`
-
-	Input *MethodInput `json:"input"`
-}*/
-
 type RouterInfo struct {
 	Path string `json:"path"`
 	Type string `json:"type"`
@@ -44,10 +24,6 @@ type ArgsRouterMethodList struct {
 	Path       string
 	Controller string
 }
-
-/*type MethodArgument struct {
-	Type string `json:"type"`
-}*/
 
 type MethodInfo struct {
 	Id         string   `json:"id"`
@@ -63,6 +39,26 @@ type TypeInfo struct {
 	FieldList []TypeInfo `json:"fieldList"`
 }
 
+func GetFieldInfo(t reflect.Type) []TypeInfo {
+	if t.Kind() != reflect.Struct {
+		return make([]TypeInfo, 0)
+	}
+	out := make([]TypeInfo, 0)
+	for i := 0; i < t.NumField(); i++ {
+		name := t.Field(i).Name
+		if t.Field(i).Tag.Get("json") != "" {
+			name = t.Field(i).Tag.Get("json")
+		}
+		out = append(out, TypeInfo{
+			Name:      name,
+			Kind:      t.Field(i).Type.Kind().String(),
+			FieldList: GetFieldInfo(t.Field(i).Type),
+		})
+	}
+	return out
+}
+
+// GetList of routers
 func (r Router) GetList() []RouterInfo {
 	out := make([]RouterInfo, 0)
 
@@ -211,21 +207,14 @@ func (r Router) GetTypeList(args ArgsRouterMethodList) []TypeInfo {
 	return out
 }
 
-func GetFieldInfo(t reflect.Type) []TypeInfo {
-	if t.Kind() != reflect.Struct {
-		return make([]TypeInfo, 0)
-	}
-	out := make([]TypeInfo, 0)
-	for i := 0; i < t.NumField(); i++ {
-		name := t.Field(i).Name
-		if t.Field(i).Tag.Get("json") != "" {
-			name = t.Field(i).Tag.Get("json")
-		}
-		out = append(out, TypeInfo{
-			Name:      name,
-			Kind:      t.Field(i).Type.Kind().String(),
-			FieldList: GetFieldInfo(t.Field(i).Type),
-		})
-	}
-	return out
+func (r Router) GetFileList(args ArgsRouterMethodList) []ml_fs.FileInfo {
+	rr, ok := ml_slice.Find(r.List, func(x *ms_handler.RouteHandler) bool {
+		return x.Path == args.Path
+	})
+	ms_error.FatalIf(!ok, ms_error.Error{Code: 404})
+	handler := rr.Handler.(ms_handler.FS)
+
+	files, err := ml_fs.List(handler.ContentPath)
+	ms_error.FatalIfError(err)
+	return files
 }

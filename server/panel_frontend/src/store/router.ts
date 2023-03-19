@@ -14,6 +14,7 @@ export interface RouterState {
   selectedController: string;
   controllerList: string[];
   methodList: any[];
+  fileList: any[];
   typeMap: any;
   responseData: any;
   methodShowDetailed: any;
@@ -28,6 +29,7 @@ export const useRouterStore = defineStore({
       selectedController: "",
       controllerList: [],
       methodList: [],
+      fileList: [],
       typeMap: {},
       responseData: {},
       methodShowDetailed: {},
@@ -61,9 +63,20 @@ export const useRouterStore = defineStore({
         this.typeMap[list[i].name] = list[i];
       }
     },
+    async getFileList() {
+      this.fileList = (
+        await Axios.get(
+          `${HOST}/debug/api/router/fileList?path=${this.selectedRouter.path}`
+        )
+      ).data;
+    },
     async selectRouter(x: Router) {
       this.selectedRouter = x;
-      await this.getControllerList();
+      if (x.type == "API") {
+        await this.getControllerList();
+      } else {
+        await this.getFileList();
+      }
     },
     async selectController(x: string) {
       this.selectedController = x;

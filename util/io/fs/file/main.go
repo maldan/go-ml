@@ -18,7 +18,7 @@ import (
 )
 
 type File struct {
-	Path      string
+	Path      string `json:"path"`
 	isVirtual bool
 	mime      string
 	content   []byte

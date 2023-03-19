@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 /*type FileInfo struct {
@@ -16,6 +17,17 @@ import (
 	Dir          string
 	IsDir        bool
 }*/
+
+type FileInfo struct {
+	RelativePath string    `json:"relativePath"`
+	FullPath     string    `json:"fullPath"`
+	Name         string    `json:"name"`
+	Ext          string    `json:"ext"`
+	Dir          string    `json:"dir"`
+	IsDir        bool      `json:"isDir"`
+	Size         int64     `json:"size"`
+	Created      time.Time `json:"created"`
+}
 
 func Mkdir(path string) error {
 	// Create path for file
@@ -80,35 +92,37 @@ func Rename(src string, dst string) error {
 	return os.Rename(src, dst)
 }
 
-func List(path string) ([]ml_file.File, error) {
+func List(path string) ([]FileInfo, error) {
 	// Get list of files and dirs
 	list, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
 
-	out := make([]ml_file.File, 0)
+	out := make([]FileInfo, 0)
 	for _, f := range list {
 		absPath, _ := filepath.Abs(path + "/" + f.Name())
 		absPath = strings.ReplaceAll(absPath, "\\", "/")
+		ext := strings.Split(f.Name(), ".")
 
-		// ext := strings.Split(f.Name(), ".")
+		info, _ := f.Info()
 
-		out = append(out, ml_file.File{
-			Path: absPath,
-			/*RelativePath: f.Name(),
+		out = append(out, FileInfo{
+			RelativePath: f.Name(),
 			FullPath:     absPath,
 			Name:         f.Name(),
 			Ext:          ext[len(ext)-1],
 			Dir:          strings.ReplaceAll(filepath.Dir(absPath), "\\", "/"),
-			IsDir:        f.IsDir(),*/
+			IsDir:        f.IsDir(),
+			Size:         info.Size(),
+			Created:      info.ModTime(),
 		})
 	}
 	return out, nil
 }
 
-func ListAll(path string) ([]ml_file.File, error) {
-	list := make([]ml_file.File, 0)
+func ListAll(path string) ([]FileInfo, error) {
+	list := make([]FileInfo, 0)
 
 	curAbsPath, _ := filepath.Abs(path)
 	curAbsPath = strings.ReplaceAll(curAbsPath, "\\", "/")
@@ -127,12 +141,15 @@ func ListAll(path string) ([]ml_file.File, error) {
 			absPath, _ := filepath.Abs(path)
 			absPath = strings.ReplaceAll(absPath, "\\", "/")
 
-			list = append(list, ml_file.File{
-				Path: absPath,
-				//FullPath:     absPath,
-				//RelativePath: strings.Replace(absPath, curAbsPath, "", 1),
-				//Dir:          strings.ReplaceAll(filepath.Dir(absPath), "\\", "/"),
-				//Name:         info.Name(),
+			ext := strings.Split(info.Name(), ".")
+
+			list = append(list, FileInfo{
+				FullPath:     absPath,
+				RelativePath: strings.Replace(absPath, curAbsPath, "", 1),
+				Name:         info.Name(),
+				Ext:          ext[len(ext)-1],
+				Dir:          strings.ReplaceAll(filepath.Dir(absPath), "\\", "/"),
+				IsDir:        info.IsDir(),
 			})
 
 			return nil

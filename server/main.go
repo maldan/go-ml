@@ -78,6 +78,10 @@ func getHandler(url string, routers []ms_handler.RouteHandler) (string, ms_handl
 }
 
 func initDb(config *Config) {
+	/*if config.DataBase.DataBase == nil {
+		return
+	}*/
+
 	if *config.DataBase.DataBase == nil {
 		*config.DataBase.DataBase = map[string]*mdb.DataTable{}
 	}
@@ -140,6 +144,10 @@ func Start(config Config) {
 	// defer globalPanicHandler()
 	initDb(&config)
 	injectDebug(&config)
+
+	/*	for i := 0; i < len(config.Router); i++ {
+		fmt.Printf("%v\n", config.Router[i].Path)
+	}*/
 
 	// Entry point
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {

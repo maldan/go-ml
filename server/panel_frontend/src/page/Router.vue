@@ -21,7 +21,7 @@
     </div>
 
     <!-- Controller list -->
-    <div :class="$style.list">
+    <div v-if="routerStore.selectedRouter.type === 'API'" :class="$style.list">
       <el-button
         @click="routerStore.selectController(x)"
         v-for="x in routerStore.controllerList"
@@ -34,7 +34,10 @@
     </div>
 
     <!-- Method list -->
-    <div :class="$style.methodList">
+    <div
+      v-if="routerStore.selectedRouter.type === 'API'"
+      :class="$style.methodList"
+    >
       <div
         :class="[$style.method, $style[x.httpMethod]]"
         v-for="x in routerStore.methodList"
@@ -110,6 +113,11 @@
         </div>
       </div>
     </div>
+
+    <FileSystem
+      :file-list="routerStore.fileList"
+      v-if="routerStore.selectedRouter.type === 'FS'"
+    />
   </div>
 </template>
 
@@ -118,6 +126,7 @@ import { h, onMounted, ref } from "vue";
 import { useRouterStore } from "@/store/router";
 import formatHighlight from "json-format-highlight";
 import TypeInfo from "@/component/router/TypeInfo.vue";
+import FileSystem from "@/component/router/FileSystem.vue";
 
 // Stores
 const routerStore = useRouterStore();
