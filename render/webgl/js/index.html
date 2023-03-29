@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="./wasm_exec.js"></script>
+
+</head>
+<body>
+<style>
+    body {
+        background: #2b2b2b;
+    }
+</style>
+<button id="myButton">myButton</button>
+<canvas id="glcanvas" width="640" height="480"></canvas>
+
+<script>
+    (async () => {
+        const memory = new WebAssembly.Memory({
+            initial: 10,
+            maximum: 100,
+        });
+
+        const go = new Go();
+        const b = await fetch("./hello.wasm");
+        const bytes = await b.blob();
+        const wasmModule = await WebAssembly.instantiate(await bytes.arrayBuffer(), {...go.importObject, js: { mem: memory }});
+        go.run(wasmModule.instance);
+
+        //console.log(go.importObject);
+        console.log(wasmModule.instance);
+        // First, let's have wasm write to our buffer
+        // wasmModule.instance.exports.storeValueInWasmMemoryBufferIndexZero(24);
+
+        // Next, let's create a Uint8Array of our wasm memory
+        // let wasmMemory = new Uint8Array(wasmModule.instance.exports.memory.buffer);
+        const pointer = getpointer();
+        const nn = new Uint8Array(wasmModule.instance.exports.mem.buffer);
+        const jj = new Float32Array(wasmModule.instance.exports.mem.buffer);
+
+        setInterval(() => {
+            console.log(jj[pointer/4]);
+        }, 1000);
+
+        // const tt = nn.slice(pointer, pointer+32*4);
+
+        //const ff = new Float32Array(tt);
+        //console.log(ff);
+
+        /*for (let i = 0; i < 2; i++) {
+            console.log(ff[0]);
+        }*/
+        //console.log(nn[pointer], nn[pointer+1]);
+    })()
+</script>
+<script src="engine.js"></script>
+</body>
+</html>

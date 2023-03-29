@@ -66,8 +66,12 @@ func RandInt(min int, max int) int {
 	return min + rand.Intn(max-min+1)
 }
 
-func RandFloat(min float64, max float64) float64 {
+func RandFloat64(min float64, max float64) float64 {
 	return Remap(rand.Float64(), 0, 1, min, max)
+}
+
+func RandFloat32(min float32, max float32) float32 {
+	return Remap(rand.Float32(), 0, 1, min, max)
 }
 
 func Remap[T constraints.Float | constraints.Integer](value T, low1 T, high1 T, low2 T, high2 T) T {

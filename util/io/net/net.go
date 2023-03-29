@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	net_url "net/url"
+	p_url "net/url"
 )
 
 type RequestOptions struct {
@@ -105,18 +106,30 @@ func Request(url string, method string, options *RequestOptions) Response {
 	// Prepare data
 	inputData := make([]byte, 0)
 	if method == "POST" || method == "PATCH" || method == "PUT" {
-		switch opts.Data.(type) {
-		case []byte:
-			inputData = opts.Data.([]byte)
-		default:
-			out, err := json.Marshal(opts.Data)
-			if err != nil {
-				response.Error = err
-				return response
+		// JSON by default
+		if options.Headers["Content-Type"] == "" {
+			switch opts.Data.(type) {
+			case []byte:
+				inputData = opts.Data.([]byte)
+			default:
+				out, err := json.Marshal(opts.Data)
+				if err != nil {
+					response.Error = err
+					return response
+				}
+				opts.Headers["Content-Type"] = "application/json"
+				inputData = out
+				break
 			}
-			opts.Headers["Content-Type"] = "application/json"
-			inputData = out
-			break
+		}
+
+		// Url Encoded
+		if opts.Headers["Content-Type"] == "application/x-www-form-urlencoded" {
+			values := p_url.Values{}
+			for k, v := range opts.Data.(map[string]any) {
+				values[k] = []string{fmt.Sprintf("%v", v)}
+			}
+			inputData = []byte(values.Encode())
 		}
 	}
 

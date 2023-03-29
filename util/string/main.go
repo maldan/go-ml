@@ -1,6 +1,7 @@
 package ml_string
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -46,4 +47,11 @@ func Only(str string, allowList string) string {
 		}
 		return -1
 	}, str)
+}
+
+func NonNull(str any) string {
+	if str == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", str)
 }
