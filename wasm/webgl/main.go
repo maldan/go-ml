@@ -23,6 +23,8 @@ func Init() {
 
 			"indexArrayLength":  state.IndexAmount,
 			"indexArrayPointer": indexHeader.Data,
+
+			"projectionMatrixPointer": uintptr(unsafe.Pointer(&state.ProjectionMatrix.Raw)),
 		}
 	}))
 	js.Global().Set("__webglEngineRender", js.FuncOf(func(this js.Value, args []js.Value) any {
@@ -41,6 +43,8 @@ type RenderEngine struct {
 	IndexList    []uint16
 	VertexAmount int
 	IndexAmount  int
+
+	ProjectionMatrix ml_geom.Matrix4x4[float32]
 }
 
 var state RenderEngine = RenderEngine{}
@@ -50,11 +54,11 @@ func AddMesh(mesh *ml_render.Mesh) {
 }
 
 func Render() {
-	projectionMatrix := ml_geom.Matrix4x4[float32]{}
-	projectionMatrix.Identity()
-	projectionMatrix.Perspective((45*3.14)/180, 1, 0.1, 100.0)
-	projectionMatrix.Translate(ml_geom.Vector3[float32]{0, 0, -1.5})
-	projectionMatrix.Scale(ml_geom.Vector3[float32]{0.1, 0.1, 0.1})
+	// projectionMatrix := ml_geom.Matrix4x4[float32]{}
+	state.ProjectionMatrix.Identity()
+	state.ProjectionMatrix.Perspective((45*3.14)/180, 1, 0.1, 100.0)
+	state.ProjectionMatrix.Translate(ml_geom.Vector3[float32]{0, 0, -1.5})
+	state.ProjectionMatrix.Scale(ml_geom.Vector3[float32]{0.1, 0.1, 0.1})
 
 	state.VertexAmount = 0
 	state.IndexAmount = 0
@@ -63,41 +67,16 @@ func Render() {
 	indexId := 0
 	lastMaxIndex := uint16(0)
 	for i := 0; i < len(state.MeshList); i++ {
-		finalMx := ml_geom.Matrix4x4[float32]{}
-		finalMx.Identity()
-
 		state.MeshList[i].ApplyMatrix()
-
-		finalMx.Multiply(projectionMatrix)
-		finalMx.Multiply(state.MeshList[i].Matrix)
 
 		// Copy vertex
 		for j := 0; j < len(state.MeshList[i].Vertices); j++ {
 			newVertices := state.MeshList[i].Vertices[j].Clone()
-			newVertices.TransformMatrix4x4(finalMx)
+			newVertices.TransformMatrix4x4(state.MeshList[i].Matrix)
 
 			state.VertexList[vertexId] = newVertices.X
 			state.VertexList[vertexId+1] = newVertices.Y
 			state.VertexList[vertexId+2] = newVertices.Z
-			/*newVertices := state.MeshList[i].Vertices[j].Clone()
-
-			finalMx := ml_geom.Matrix4x4[float32]{}
-			finalMx.Identity()
-
-			mx := ml_geom.Matrix4x4[float32]{}
-			mx.Identity()
-			mx.Translate(state.MeshList[i].Position)
-			mx.RotateX(state.MeshList[i].Rotation.X)
-			mx.RotateY(state.MeshList[i].Rotation.Y)
-			mx.RotateZ(state.MeshList[i].Rotation.Z)
-
-			finalMx.Multiply(projectionMatrix)
-			finalMx.Multiply(mx)
-			newVertices.TransformMatrix4x4(finalMx)
-
-			state.VertexList[vertexId] = newVertices.X
-			state.VertexList[vertexId+1] = newVertices.Y
-			state.VertexList[vertexId+2] = newVertices.Z*/
 			vertexId += 3
 		}
 		state.VertexAmount += len(state.MeshList[i].Vertices) * 3

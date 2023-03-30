@@ -4,9 +4,10 @@ const vsSource = `
     attribute vec3 aVertexColor;
     
     varying lowp vec3 vColor;
+    uniform mat4 uProjectionMatrix;
       
     void main() {
-      gl_Position = vec4(aVertexPosition, 1.0);
+      gl_Position = uProjectionMatrix * vec4(aVertexPosition, 1.0);
       vColor = gl_Position.xyz;
     }
 `;
@@ -144,6 +145,11 @@ function drawScene(gl, programInfo, buffer, indexBuffer, colorBuffer) {
 
   /*vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
   gl.enableVertexAttribArray(vertexColorAttribute);*/
+  gl.uniformMatrix4fv(
+    programInfo.uniformLocations.projectionMatrix,
+    false,
+    GLOBAL_PROJ_MATRIX
+  );
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
   gl.useProgram(programInfo.program);
@@ -174,6 +180,12 @@ function main() {
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
       colorPosition: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+    },
+    uniformLocations: {
+      projectionMatrix: gl.getUniformLocation(
+        shaderProgram,
+        "uProjectionMatrix"
+      ),
     },
   };
 
