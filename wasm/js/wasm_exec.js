@@ -6,7 +6,7 @@
 
 (() => {
 	const enosys = () => {
-		const err = new Error("not implemented");
+		const err = new Error("sex not implemented");
 		err.code = "ENOSYS";
 		return err;
 	};
@@ -32,29 +32,29 @@
 				const n = this.writeSync(fd, buf);
 				callback(null, n);
 			},
-			chmod(path, mode, callback) { callback(enosys()); },
-			chown(path, uid, gid, callback) { callback(enosys()); },
-			close(fd, callback) { callback(enosys()); },
-			fchmod(fd, mode, callback) { callback(enosys()); },
-			fchown(fd, uid, gid, callback) { callback(enosys()); },
-			fstat(fd, callback) { callback(enosys()); },
-			fsync(fd, callback) { callback(null); },
-			ftruncate(fd, length, callback) { callback(enosys()); },
-			lchown(path, uid, gid, callback) { callback(enosys()); },
-			link(path, link, callback) { callback(enosys()); },
-			lstat(path, callback) { callback(enosys()); },
-			mkdir(path, perm, callback) { callback(enosys()); },
-			open(path, flags, mode, callback) { callback(enosys()); },
-			read(fd, buffer, offset, length, position, callback) { callback(enosys()); },
-			readdir(path, callback) { callback(enosys()); },
-			readlink(path, callback) { callback(enosys()); },
-			rename(from, to, callback) { callback(enosys()); },
-			rmdir(path, callback) { callback(enosys()); },
-			stat(path, callback) { callback(enosys()); },
-			symlink(path, link, callback) { callback(enosys()); },
-			truncate(path, length, callback) { callback(enosys()); },
-			unlink(path, callback) { callback(enosys()); },
-			utimes(path, atime, mtime, callback) { callback(enosys()); },
+			chmod(path, mode, callback) { console.log("chmod"); callback(enosys()); },
+			chown(path, uid, gid, callback) { console.log("chown"); callback(enosys()); },
+			close(fd, callback) { console.log("close"); callback(enosys()); },
+			fchmod(fd, mode, callback) { console.log("fchmod"); callback(enosys()); },
+			fchown(fd, uid, gid, callback) { console.log("fchown"); callback(enosys()); },
+			fstat(fd, callback) { console.log("fstat"); callback(enosys()); },
+			fsync(fd, callback) { console.log("fsync"); callback(null); },
+			ftruncate(fd, length, callback) {  console.log("fsync");callback(enosys()); },
+			lchown(path, uid, gid, callback) {  console.log("fsync");callback(enosys()); },
+			link(path, link, callback) {  console.log("fsync");callback(enosys()); },
+			lstat(path, callback) {  console.log("fsync");callback(enosys()); },
+			mkdir(path, perm, callback) {  console.log("fsync");callback(enosys()); },
+			open(path, flags, mode, callback) {  console.log("fsync");callback(enosys()); },
+			read(fd, buffer, offset, length, position, callback) {  console.log("fsync");callback(enosys()); },
+			readdir(path, callback) {  console.log("fsync"); callback(enosys()); },
+			readlink(path, callback) {  console.log("fsync"); callback(enosys()); },
+			rename(from, to, callback) {  console.log("fsync"); callback(enosys()); },
+			rmdir(path, callback) {  console.log("fsync"); callback(enosys()); },
+			stat(path, callback) {  console.log("fsync"); callback(enosys()); },
+			symlink(path, link, callback) {  console.log("fsync"); callback(enosys()); },
+			truncate(path, length, callback) {  console.log("fsync"); callback(enosys()); },
+			unlink(path, callback) {  console.log("fsync"); callback(enosys()); },
+			utimes(path, atime, mtime, callback) {  console.log("fsync"); callback(enosys()); },
 		};
 	}
 
@@ -67,9 +67,9 @@
 			getgroups() { throw enosys(); },
 			pid: -1,
 			ppid: -1,
-			umask() { throw enosys(); },
-			cwd() { throw enosys(); },
-			chdir() { throw enosys(); },
+			umask() { console.log('umask'); throw enosys(); },
+			cwd() { console.log('cwd'); throw enosys(); },
+			chdir() { console.log('chdir'); throw enosys(); },
 		}
 	}
 
