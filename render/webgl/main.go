@@ -39,7 +39,7 @@ func Init() {
 		pointHeader := (*reflect.SliceHeader)(unsafe.Pointer(&State.PointVertexList))
 
 		return map[string]any{
-			"vertexArrayLength":    State.VertexAmount,
+			/*"vertexArrayLength":    State.VertexAmount,
 			"vertexArrayPointer":   vertexHeader.Data,
 			"positionArrayPointer": positionHeader.Data,
 			"rotationArrayPointer": rotationHeader.Data,
@@ -50,7 +50,24 @@ func Init() {
 			"projectionMatrixPointer": uintptr(unsafe.Pointer(&State.ProjectionMatrix.Raw)),
 
 			"pointArrayLength":  State.PointAmount * 3,
-			"pointArrayPointer": pointHeader.Data,
+			"pointArrayPointer": pointHeader.Data,*/
+
+			"mainLayer": map[string]any{
+				"vertexPointer": vertexHeader.Data,
+				"vertexAmount":  State.VertexAmount,
+				"indexPointer":  indexHeader.Data,
+				"indexAmount":   State.IndexAmount,
+
+				"positionPointer": positionHeader.Data,
+				"rotationPointer": rotationHeader.Data,
+				"scalePointer":    0,
+
+				"projectionMatrixPointer": uintptr(unsafe.Pointer(&State.ProjectionMatrix.Raw)),
+			},
+			"pointLayer": map[string]any{
+				"vertexPointer": pointHeader.Data,
+				"vertexAmount":  State.PointAmount * 3,
+			},
 		}
 	}))
 
