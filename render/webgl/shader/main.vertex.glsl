@@ -1,5 +1,5 @@
 // Attributes
-attribute vec4 aVertex;
+attribute vec3 aVertex;
 attribute vec4 aPosition;
 
 varying lowp vec3 vColor;
@@ -17,6 +17,6 @@ void main() {
     modelMatrix = translate(modelMatrix, aPosition);
 
     // Set position
-    gl_Position = uProjectionMatrix * modelMatrix * aVertex;
+    gl_Position = uProjectionMatrix * modelMatrix * vec4(aVertex, 1.0);
     vColor = gl_Position.xyz;
 }

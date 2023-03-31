@@ -64,40 +64,9 @@ class GoRenderLayer {
     let float32Array = new Float32Array(memory);
 
     this.setDataArray("vertex", state, float32Array);
+    this.setDataArray("position", state, float32Array);
     this.setDataArray("index", state, shortArray);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
-
-    // this.setDataArray("main", "index", state, shortArray);
-
-    /*GoRender.data.mainLayer.vertexList = float32Array.subarray(
-      state.mainLayer.vertexPointer / 4,
-      state.mainLayer.vertexPointer / 4 + state.mainLayer.vertexAmount
-    );
-    GoRender.data.mainLayer.indexList = float32Array.subarray(
-      state.mainLayer.indexPointer / 4,
-      state.mainLayer.indexPointer / 4 + state.mainLayer.indexAmount
-    );*/
-
-    /*GoRender.data.positionList = float32Array.subarray(
-      state.positionArrayPointer / 4,
-      state.positionArrayPointer / 4 + state.vertexArrayLength
-    );
-    GoRender.data.vertexList = float32Array.subarray(
-      state.vertexArrayPointer / 4,
-      state.vertexArrayPointer / 4 + state.vertexArrayLength
-    );
-    GoRender.data.indexList = shortArray.subarray(
-      state.indexArrayPointer / 2,
-      state.indexArrayPointer / 2 + state.indexArrayLength
-    );
-    GoRender.data.projectionMatrix = float32Array.subarray(
-      state.projectionMatrixPointer / 4,
-      state.projectionMatrixPointer / 4 + 16
-    );
-    GoRender.data.pointList = float32Array.subarray(
-      state.pointArrayPointer / 4,
-      state.pointArrayPointer / 4 + state.pointArrayLength
-    );*/
   }
 
   setDataArray(name, state, array, length = 0) {
@@ -107,7 +76,8 @@ class GoRenderLayer {
 
     this.dataList[name] = array.subarray(
       state[name + "Pointer"] / offsetSize,
-      state[name + "Pointer"] / offsetSize + (length ?? state[name + "Amount"])
+      state[name + "Pointer"] / offsetSize +
+        (length || ~~state[name + "Amount"])
     );
   }
 
@@ -117,14 +87,14 @@ class GoRenderLayer {
       this._gl.bufferData(
         this._gl.ELEMENT_ARRAY_BUFFER,
         this.dataList[name],
-        this._gl.STATIC_DRAW
+        this._gl.DYNAMIC_DRAW
       );
     } else {
       this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.bufferList[name]);
       this._gl.bufferData(
         this._gl.ARRAY_BUFFER,
         this.dataList[name],
-        this._gl.STATIC_DRAW
+        this._gl.DYNAMIC_DRAW
       );
     }
 
@@ -134,12 +104,18 @@ class GoRenderLayer {
 
   enableAttribute(name) {
     this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.bufferList[name]);
-    let attr = this._gl.getAttribLocation(
-      this.shader,
-      this.attributeList["a" + name[0].toUpperCase() + name.slice(1)]
+
+    let attributeName = "a" + name[0].toUpperCase() + name.slice(1);
+
+    this._gl.vertexAttribPointer(
+      this.attributeList[attributeName],
+      3,
+      this._gl.FLOAT,
+      false,
+      0,
+      0
     );
-    this._gl.vertexAttribPointer(attr, 3, this._gl.FLOAT, false, 0, 0);
-    this._gl.enableVertexAttribArray(attr);
+    this._gl.enableVertexAttribArray(this.attributeList[attributeName]);
   }
 
   setUniform(name) {
@@ -152,6 +128,9 @@ class GoRenderLayer {
   }
 
   draw() {
+    // Set program
+    this._gl.useProgram(this.shader);
+
     // Put main data
     this.uploadData("element", "index");
     this.uploadData("any", "vertex");
@@ -161,8 +140,7 @@ class GoRenderLayer {
     this.enableAttribute("vertex");
     this.enableAttribute("position");
 
-    this._gl.useProgram(this.shader);
-
+    // Set projection
     this.setUniform("projectionMatrix");
 
     this._gl.bindBuffer(
@@ -448,13 +426,13 @@ class GoRender {
     this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
 
     this.layerList[0].draw();
-
-    // this.drawMain();
-    // this.drawPoints();
   }
 }
 
 class GoRenderWasmLayer {
+  static wasmTime = [];
+  static jsTime = [];
+
   static async init(wasmModuleUrl) {
     const go = new Go();
     const b = await fetch(wasmModuleUrl);
@@ -464,6 +442,7 @@ class GoRenderWasmLayer {
       go.importObject
     );
     go.run(wasmModule.instance);
+    console.log(wasmModule.instance);
 
     // Init webgl render
     await GoRender.init();
@@ -476,25 +455,49 @@ class GoRenderWasmLayer {
       const elapsed = timestamp - start;
 
       // Calculate scene in golang
+      let pp = performance.now();
       goWasmRenderFrame();
+      GoRenderWasmLayer.wasmTime.push(performance.now() - pp);
 
       // Get state
       let state = goWasmRenderState();
 
       // Send golang data to webgl render
       GoRender.layerList.forEach((x) => {
-        x.setWasmData(
-          wasmModule.instance.exports.mem.buffer,
-          state[x.name + "Layer"]
-        );
+        if (wasmModule.instance.exports.mem) {
+          x.setWasmData(
+            wasmModule.instance.exports.mem.buffer,
+            state[x.name + "Layer"]
+          );
+        } else {
+          x.setWasmData(
+            wasmModule.instance.exports.memory.buffer,
+            state[x.name + "Layer"]
+          );
+        }
       });
 
       // Draw scene
+      pp = performance.now();
       GoRender.draw();
+      GoRenderWasmLayer.jsTime.push(performance.now() - pp);
 
       window.requestAnimationFrame(step);
     }
 
     window.requestAnimationFrame(step);
+
+    // Timers
+    const avg = (x) => x.reduce((a, b) => a + b) / x.length;
+    setInterval(() => {
+      document.getElementById("wasm").innerHTML = `${avg(
+        GoRenderWasmLayer.wasmTime
+      ).toFixed(2)}`;
+      document.getElementById("js").innerHTML = `${avg(
+        GoRenderWasmLayer.jsTime
+      ).toFixed(2)}`;
+      GoRenderWasmLayer.wasmTime.length = 0;
+      GoRenderWasmLayer.jsTime.length = 0;
+    }, 1000);
   }
 }

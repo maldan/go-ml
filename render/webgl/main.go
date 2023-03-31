@@ -53,14 +53,17 @@ func Init() {
 			"pointArrayPointer": pointHeader.Data,*/
 
 			"mainLayer": map[string]any{
-				"vertexPointer": vertexHeader.Data,
-				"vertexAmount":  State.VertexAmount,
-				"indexPointer":  indexHeader.Data,
-				"indexAmount":   State.IndexAmount,
-
+				"vertexPointer":   vertexHeader.Data,
+				"indexPointer":    indexHeader.Data,
 				"positionPointer": positionHeader.Data,
 				"rotationPointer": rotationHeader.Data,
 				"scalePointer":    0,
+
+				"vertexAmount":   State.VertexAmount,
+				"positionAmount": State.VertexAmount,
+				"rotationAmount": State.VertexAmount,
+				"scaleAmount":    State.VertexAmount,
+				"indexAmount":    State.IndexAmount,
 
 				"projectionMatrixPointer": uintptr(unsafe.Pointer(&State.ProjectionMatrix.Raw)),
 			},
