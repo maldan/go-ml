@@ -2,21 +2,24 @@ package mr_layer
 
 import (
 	mr_camera "github.com/maldan/go-ml/render/camera"
+	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	ml_geom "github.com/maldan/go-ml/util/math/geom"
 	"reflect"
 	"unsafe"
 )
 
 type LineLayer struct {
-	LineList     []ml_geom.Line[float32, ml_geom.Vector3[float32]]
+	LineList     []mr_mesh.Line
 	VertexList   []float32
 	VertexAmount int
+	ColorList    []float32
 	Camera       mr_camera.PerspectiveCamera
 }
 
 func (l *LineLayer) Init() {
+	l.ColorList = make([]float32, 65536*3)
 	l.VertexList = make([]float32, 65536*3)
-	l.LineList = make([]ml_geom.Line[float32, ml_geom.Vector3[float32]], 0, 1024)
+	l.LineList = make([]mr_mesh.Line, 0, 1024)
 }
 
 func (l *LineLayer) Render() {
@@ -37,6 +40,14 @@ func (l *LineLayer) Render() {
 		l.VertexList[vertexId+3] = line.To.X
 		l.VertexList[vertexId+4] = line.To.Y
 		l.VertexList[vertexId+5] = line.To.Z
+
+		l.ColorList[vertexId] = line.Color.R
+		l.ColorList[vertexId+1] = line.Color.G
+		l.ColorList[vertexId+2] = line.Color.B
+		l.ColorList[vertexId+3] = line.Color.R
+		l.ColorList[vertexId+4] = line.Color.G
+		l.ColorList[vertexId+5] = line.Color.B
+
 		vertexId += 6
 	}
 	l.VertexAmount = vertexId
@@ -48,10 +59,13 @@ func (l *LineLayer) Render() {
 
 func (l *LineLayer) GetState() map[string]any {
 	vertexHeader := (*reflect.SliceHeader)(unsafe.Pointer(&l.VertexList))
+	colorHeader := (*reflect.SliceHeader)(unsafe.Pointer(&l.ColorList))
 
 	return map[string]any{
 		"vertexPointer": vertexHeader.Data,
 		"vertexAmount":  l.VertexAmount,
+		"colorPointer":  colorHeader.Data,
+		"colorAmount":   l.VertexAmount,
 
 		"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 	}

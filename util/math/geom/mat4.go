@@ -66,10 +66,12 @@ func (m *Matrix4x4[T]) Scale(v Vector3[T]) {
 	m.Raw[1] *= v.X
 	m.Raw[2] *= v.X
 	m.Raw[3] *= v.X
+
 	m.Raw[4] *= v.Y
 	m.Raw[5] *= v.Y
 	m.Raw[6] *= v.Y
 	m.Raw[7] *= v.Y
+
 	m.Raw[8] *= v.Z
 	m.Raw[9] *= v.Z
 	m.Raw[10] *= v.Z

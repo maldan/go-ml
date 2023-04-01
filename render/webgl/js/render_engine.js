@@ -301,10 +301,11 @@ class GoRenderWasm {
 
     const step = (timestamp) => {
       if (start === undefined) start = timestamp;
-      const elapsed = timestamp - start;
+      let delta = (timestamp - start) / 1000;
+      if (delta <= 0) delta = 1 / 1000;
 
-      this.beforeFrame(elapsed);
-      goWasmGameTick();
+      this.beforeFrame(delta);
+      goWasmGameTick(delta);
 
       // Calculate scene in golang
       let pp = performance.now();
@@ -336,8 +337,9 @@ class GoRenderWasm {
       GoRender.draw();
       this.jsTime.push(performance.now() - pp);
 
-      this.afterFrame(elapsed);
+      this.afterFrame(delta);
 
+      start = timestamp;
       window.requestAnimationFrame(step);
     };
 

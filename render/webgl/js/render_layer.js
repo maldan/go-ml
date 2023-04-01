@@ -17,10 +17,10 @@ class GoRenderLayer {
   init(vertex, fragment) {
     this.shader = this.compileShader(vertex, fragment);
 
-    ["vertex", "index", "position"].forEach((x) => {
+    ["vertex", "index", "position", "rotation"].forEach((x) => {
       this.bufferList[x] = this._gl.createBuffer();
     });
-    ["aVertex", "aPosition"].forEach((x) => {
+    ["aVertex", "aPosition", "aRotation"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
     ["uProjectionMatrix"].forEach((x) => {
@@ -67,6 +67,7 @@ class GoRenderLayer {
 
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("position", state, float32Array);
+    this.setDataArray("rotation", state, float32Array);
     this.setDataArray("index", state, shortArray);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
   }
@@ -77,8 +78,8 @@ class GoRenderLayer {
     if (array instanceof Float32Array) offsetSize = 4;
 
     this.dataList[name] = array.subarray(
-      state[name + "Pointer"] / offsetSize,
-      state[name + "Pointer"] / offsetSize +
+      ~~state[name + "Pointer"] / offsetSize,
+      ~~state[name + "Pointer"] / offsetSize +
         (length || ~~state[name + "Amount"])
     );
   }
@@ -137,10 +138,12 @@ class GoRenderLayer {
     this.uploadData("element", "index");
     this.uploadData("any", "vertex");
     this.uploadData("any", "position");
+    this.uploadData("any", "rotation");
 
     // Enable attributes
     this.enableAttribute("vertex");
     this.enableAttribute("position");
+    this.enableAttribute("rotation");
 
     // Set projection
     this.setUniform("projectionMatrix");
@@ -201,10 +204,10 @@ class GoRenderLineLayer extends GoRenderLayer {
   init(vertex, fragment) {
     this.shader = this.compileShader(vertex, fragment);
 
-    ["vertex"].forEach((x) => {
+    ["vertex", "color"].forEach((x) => {
       this.bufferList[x] = this._gl.createBuffer();
     });
-    ["aVertex"].forEach((x) => {
+    ["aVertex", "aColor"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
     ["uProjectionMatrix"].forEach((x) => {
@@ -216,6 +219,7 @@ class GoRenderLineLayer extends GoRenderLayer {
     let float32Array = new Float32Array(memory);
 
     this.setDataArray("vertex", state, float32Array);
+    this.setDataArray("color", state, float32Array);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
   }
 
@@ -225,7 +229,9 @@ class GoRenderLineLayer extends GoRenderLayer {
 
     // Draw points
     this.uploadData("any", "vertex");
+    this.uploadData("any", "color");
     this.enableAttribute("vertex");
+    this.enableAttribute("color");
 
     // Set projection
     this.setUniform("projectionMatrix");

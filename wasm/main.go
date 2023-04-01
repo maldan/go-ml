@@ -16,9 +16,9 @@ func BindKeyboard() {
 	}))
 }
 
-func ExportFunction(name string, fn func()) {
+func ExportFunction(name string, fn func(args []js.Value)) {
 	js.Global().Set(name, js.FuncOf(func(this js.Value, args []js.Value) any {
-		fn()
+		fn(args)
 		return nil
 	}))
 }

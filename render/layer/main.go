@@ -52,6 +52,7 @@ func (l *MainLayer) Render() {
 		// Copy vertex
 		for j := 0; j < len(mesh.Vertices); j++ {
 			v := mesh.Vertices[j]
+
 			l.VertexList[vertexId] = v.X
 			l.VertexList[vertexId+1] = v.Y
 			l.VertexList[vertexId+2] = v.Z
@@ -61,10 +62,10 @@ func (l *MainLayer) Render() {
 			l.PositionList[vertexId+1] = p.Y
 			l.PositionList[vertexId+2] = p.Z
 
-			p = mesh.Rotation
-			l.RotationList[vertexId] = p.X
-			l.RotationList[vertexId+1] = p.Y
-			l.RotationList[vertexId+2] = p.Z
+			r := mesh.Rotation
+			l.RotationList[vertexId] = r.X
+			l.RotationList[vertexId+1] = r.Y
+			l.RotationList[vertexId+2] = r.Z
 
 			p = mesh.Scale
 			l.ScaleList[vertexId] = p.X
@@ -103,10 +104,10 @@ func (l *MainLayer) GetState() map[string]any {
 		"scalePointer":    0,
 
 		"vertexAmount":   l.VertexAmount,
+		"indexAmount":    l.IndexAmount,
 		"positionAmount": l.VertexAmount,
 		"rotationAmount": l.VertexAmount,
 		"scaleAmount":    l.VertexAmount,
-		"indexAmount":    l.IndexAmount,
 
 		"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 	}

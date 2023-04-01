@@ -4,6 +4,7 @@ import (
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	ml_geom "github.com/maldan/go-ml/util/math/geom"
+	ml_image "github.com/maldan/go-ml/util/media/image"
 )
 
 type RenderEngine struct {
@@ -24,22 +25,41 @@ func Init() {
 	State.Line.Init()
 }
 
-type Color32 struct {
-	R float32
-	G float32
-	B float32
-	A float32
-}
-
-type Line struct {
-	From ml_geom.Vector3[float32]
-	To   ml_geom.Vector3[float32]
-}
-
-func DebugLine(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32]) {
-	State.Line.LineList = append(State.Line.LineList, ml_geom.Line[float32, ml_geom.Vector3[float32]]{
-		from, to,
+func DrawLine(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_image.ColorRGB[float32]) {
+	State.Line.LineList = append(State.Line.LineList, mr_mesh.Line{
+		From:  from,
+		To:    to,
+		Color: color,
 	})
+}
+
+func DrawRectangle(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_image.ColorRGB[float32]) {
+	tFrom := from
+	tTo := to
+	tFrom.Z = to.Z
+
+	// Top line
+	tFrom.Y = from.Y
+	tTo.Y = from.Y
+	DrawLine(tFrom, tTo, color)
+
+	// Bottom line
+	tFrom.Y = to.Y
+	tTo.Y = to.Y
+	DrawLine(tFrom, tTo, color)
+
+	tFrom = from
+	tTo = to
+
+	// Left line
+	tFrom.X = from.X
+	tTo.X = from.X
+	DrawLine(tFrom, tTo, color)
+
+	// To line
+	tFrom.X = to.X
+	tTo.X = to.X
+	DrawLine(tFrom, tTo, color)
 }
 
 func DebugPoint(to ml_geom.Vector3[float32]) {
