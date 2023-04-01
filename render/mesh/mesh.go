@@ -1,11 +1,15 @@
 package mr_mesh
 
-import ml_geom "github.com/maldan/go-ml/util/math/geom"
+import (
+	ml_geom "github.com/maldan/go-ml/util/math/geom"
+	ml_number "github.com/maldan/go-ml/util/number"
+)
 
 type Mesh struct {
 	Vertices []ml_geom.Vector3[float32]
 	Indices  []uint16
 	UV       []ml_geom.Vector2[float32]
+	Normal   []ml_geom.Vector3[float32]
 
 	Matrix ml_geom.Matrix4x4[float32]
 
@@ -22,87 +26,103 @@ func (m *Mesh) ApplyMatrix() {
 	m.Matrix.RotateZ(m.Rotation.Z)
 }
 
-func (m *Mesh) MakeCube(position ml_geom.Vector3[float32], size float32) {
-	m.Vertices = []ml_geom.Vector3[float32]{
-		// Front
-		{-1.0, -1.0, 1.0},
-		{1.0, -1.0, 1.0},
-		{1.0, 1.0, 1.0},
-		{-1.0, 1.0, 1.0},
+// MakeCube 0b11_11_11_00 [Front, Back, Top, Bottom, Right, Left]
+func (m *Mesh) MakeCube(size ml_geom.Vector3[float32], side uint8) {
+	sideAmount := ml_number.CountSetBits(side)
 
-		// Back
-		{-1.0, -1.0, -1.0},
-		{-1.0, 1.0, -1.0},
-		{1.0, 1.0, -1.0},
-		{1.0, -1.0, -1.0},
+	m.Vertices = make([]ml_geom.Vector3[float32], 0, 4*sideAmount)
+	m.Normal = make([]ml_geom.Vector3[float32], 0, 4*sideAmount)
 
-		// Top
-		{-1.0, 1.0, -1.0},
-		{-1.0, 1.0, 1.0},
-		{1.0, 1.0, 1.0},
-		{1.0, 1.0, -1.0},
+	// Front
+	if side&0b1000_0000 == 0b1000_0000 {
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, -1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, -1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, 1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, 1.0, 1.0})
 
-		// Bottom
-		{-1.0, -1.0, -1.0},
-		{1.0, -1.0, -1.0},
-		{1.0, -1.0, 1.0},
-		{-1.0, -1.0, 1.0},
-
-		// Right
-		{1.0, -1.0, -1.0},
-		{1.0, 1.0, -1.0},
-		{1.0, 1.0, 1.0},
-		{1.0, -1.0, 1.0},
-
-		// Left
-		{-1.0, -1.0, -1.0},
-		{-1.0, -1.0, 1.0},
-		{-1.0, 1.0, 1.0},
-		{-1.0, 1.0, -1.0},
+		for i := 0; i < 4; i++ {
+			m.Normal = append(m.Normal, ml_geom.Vector3[float32]{0.0, 0.0, 1.0})
+		}
 	}
 
-	/*for i := 0; i < len(m.Vertices); i++ {
-		m.Vertices[i].X *= size
-		m.Vertices[i].Y *= size
-		m.Vertices[i].Z *= size
-	}*/
+	// Back
+	if side&0b0100_0000 == 0b0100_0000 {
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, -1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, 1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, 1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, -1.0, -1.0})
 
-	m.Indices = []uint16{
-		0,
-		1,
-		2,
-		0,
-		2,
-		3, // front
-		4,
-		5,
-		6,
-		4,
-		6,
-		7, // back
-		8,
-		9,
-		10,
-		8,
-		10,
-		11, // top
-		12,
-		13,
-		14,
-		12,
-		14,
-		15, // bottom
-		16,
-		17,
-		18,
-		16,
-		18,
-		19, // right
-		20,
-		21,
-		22,
-		20,
-		22,
-		23, // left
+		for i := 0; i < 4; i++ {
+			m.Normal = append(m.Normal, ml_geom.Vector3[float32]{0.0, 0.0, -1.0})
+		}
+	}
+
+	// Top
+	if side&0b0010_0000 == 0b0010_0000 {
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, 1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, 1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, 1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, 1.0, -1.0})
+
+		for i := 0; i < 4; i++ {
+			m.Normal = append(m.Normal, ml_geom.Vector3[float32]{0.0, 1.0, 0.0})
+		}
+	}
+
+	// Bottom
+	if side&0b0001_0000 == 0b0001_0000 {
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, -1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, -1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, -1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, -1.0, 1.0})
+
+		for i := 0; i < 4; i++ {
+			m.Normal = append(m.Normal, ml_geom.Vector3[float32]{0.0, -1.0, 0.0})
+		}
+	}
+
+	// Right
+	if side&0b0000_1000 == 0b0000_1000 {
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, -1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, 1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, 1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{1.0, -1.0, 1.0})
+
+		for i := 0; i < 4; i++ {
+			m.Normal = append(m.Normal, ml_geom.Vector3[float32]{1.0, 0.0, 0.0})
+		}
+	}
+
+	// Left
+	if side&0b0000_1000 == 0b0000_1000 {
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, -1.0, -1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, -1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, 1.0, 1.0})
+		m.Vertices = append(m.Vertices, ml_geom.Vector3[float32]{-1.0, 1.0, -1.0})
+
+		for i := 0; i < 4; i++ {
+			m.Normal = append(m.Normal, ml_geom.Vector3[float32]{-1.0, 0.0, 0.0})
+		}
+	}
+
+	// UV
+	m.UV = make([]ml_geom.Vector2[float32], 0, 4*sideAmount)
+	for i := 0; i < int(sideAmount); i++ {
+		m.UV = append(m.UV, ml_geom.Vector2[float32]{0.0, 0.0})
+		m.UV = append(m.UV, ml_geom.Vector2[float32]{1.0, 0.0})
+		m.UV = append(m.UV, ml_geom.Vector2[float32]{1.0, 1.0})
+		m.UV = append(m.UV, ml_geom.Vector2[float32]{0.0, 1.0})
+	}
+
+	for i := 0; i < len(m.Vertices); i++ {
+		m.Vertices[i].X *= size.X
+		m.Vertices[i].Y *= size.Y
+		m.Vertices[i].Z *= size.Z
+	}
+
+	m.Indices = make([]uint16, 0, 6*sideAmount)
+	for i := 0; i < int(sideAmount); i++ {
+		next := uint16(i * 4)
+		m.Indices = append(m.Indices, next, 1+next, 2+next, next, 2+next, 3+next)
 	}
 }

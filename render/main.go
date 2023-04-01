@@ -1,6 +1,7 @@
 package mr
 
 import (
+	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	ml_geom "github.com/maldan/go-ml/util/math/geom"
@@ -11,6 +12,8 @@ type RenderEngine struct {
 	Main  mr_layer.MainLayer
 	Point mr_layer.PointLayer
 	Line  mr_layer.LineLayer
+
+	GlobalCamera mr_camera.PerspectiveCamera
 }
 
 var State RenderEngine = RenderEngine{}
@@ -67,6 +70,11 @@ func DebugPoint(to ml_geom.Vector3[float32]) {
 }
 
 func (r *RenderEngine) Render() {
+	r.GlobalCamera.ApplyMatrix()
+	r.Main.Camera = r.GlobalCamera
+	r.Point.Camera = r.GlobalCamera
+	r.Line.Camera = r.GlobalCamera
+
 	r.Main.Render()
 	r.Point.Render()
 	r.Line.Render()

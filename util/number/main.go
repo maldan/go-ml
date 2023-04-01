@@ -77,3 +77,12 @@ func RandFloat32(min float32, max float32) float32 {
 func Remap[T constraints.Float | constraints.Integer](value T, low1 T, high1 T, low2 T, high2 T) T {
 	return low2 + (high2-low2)*(value-low1)/(high1-low1)
 }
+
+var NIBBLE_LOOKUP = []uint8{
+	0, 1, 1, 2, 1, 2, 2, 3,
+	1, 2, 2, 3, 2, 3, 3, 4,
+}
+
+func CountSetBits(byte uint8) uint8 {
+	return NIBBLE_LOOKUP[byte&0x0F] + NIBBLE_LOOKUP[byte>>4]
+}

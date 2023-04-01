@@ -8,6 +8,7 @@ class GoRenderLayer {
   dataList = {};
   name = "";
   state = {};
+  texture = null;
 
   constructor(name, gl) {
     this.name = name;
@@ -17,13 +18,23 @@ class GoRenderLayer {
   init(vertex, fragment) {
     this.shader = this.compileShader(vertex, fragment);
 
-    ["vertex", "index", "position", "rotation"].forEach((x) => {
+    [
+      "vertex",
+      "index",
+      "position",
+      "rotation",
+      "uv",
+      "normal",
+      "scale",
+    ].forEach((x) => {
       this.bufferList[x] = this._gl.createBuffer();
     });
-    ["aVertex", "aPosition", "aRotation"].forEach((x) => {
-      this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
-    });
-    ["uProjectionMatrix"].forEach((x) => {
+    ["aVertex", "aPosition", "aRotation", "aScale", "aUv", "aNormal"].forEach(
+      (x) => {
+        this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
+      }
+    );
+    ["uProjectionMatrix", "uTexture"].forEach((x) => {
       this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
     });
   }
@@ -66,8 +77,11 @@ class GoRenderLayer {
     let float32Array = new Float32Array(memory);
 
     this.setDataArray("vertex", state, float32Array);
+    this.setDataArray("normal", state, float32Array);
+    this.setDataArray("uv", state, float32Array);
     this.setDataArray("position", state, float32Array);
     this.setDataArray("rotation", state, float32Array);
+    this.setDataArray("scale", state, float32Array);
     this.setDataArray("index", state, shortArray);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
   }
@@ -105,14 +119,14 @@ class GoRenderLayer {
     this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
   }
 
-  enableAttribute(name) {
+  enableAttribute(name, size = 3) {
     this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.bufferList[name]);
 
     let attributeName = "a" + name[0].toUpperCase() + name.slice(1);
 
     this._gl.vertexAttribPointer(
       this.attributeList[attributeName],
-      3,
+      size,
       this._gl.FLOAT,
       false,
       0,
@@ -130,6 +144,12 @@ class GoRenderLayer {
     );
   }
 
+  setTexture() {
+    this._gl.activeTexture(this._gl.TEXTURE0);
+    this._gl.bindTexture(this._gl.TEXTURE_2D, this.texture);
+    this._gl.uniform1i(this.uniformList["uTexture"], 0);
+  }
+
   draw() {
     // Set program
     this._gl.useProgram(this.shader);
@@ -137,16 +157,25 @@ class GoRenderLayer {
     // Put main data
     this.uploadData("element", "index");
     this.uploadData("any", "vertex");
+    this.uploadData("any", "normal");
+    this.uploadData("any", "uv");
     this.uploadData("any", "position");
     this.uploadData("any", "rotation");
+    this.uploadData("any", "scale");
 
     // Enable attributes
     this.enableAttribute("vertex");
+    this.enableAttribute("normal");
+    this.enableAttribute("uv", 2);
     this.enableAttribute("position");
     this.enableAttribute("rotation");
+    this.enableAttribute("scale");
 
     // Set projection
     this.setUniform("projectionMatrix");
+
+    // Set texture
+    this.setTexture();
 
     this._gl.bindBuffer(
       this._gl.ELEMENT_ARRAY_BUFFER,

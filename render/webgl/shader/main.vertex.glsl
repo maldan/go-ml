@@ -1,31 +1,37 @@
 // LIB
 
 // Attributes
-attribute vec4 aVertex;
-attribute vec4 aPosition;
-attribute vec4 aRotation;
+attribute vec3 aVertex;
+attribute vec3 aNormal;
+attribute vec2 aUv;
 
-varying lowp vec4 vColor;
+attribute vec3 aPosition;
+attribute vec3 aRotation;
+attribute vec3 aScale;
+
+varying lowp vec2 vUv;
+varying highp vec3 vLighting;
+
 uniform mat4 uProjectionMatrix;
 
 void main() {
-    mat4 modelMatrix = mat4(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0
-    );
-
-    modelMatrix = translate2(modelMatrix, aPosition);
-
-    /*modelMatrix = rotateZ(modelMatrix, aRotation.z);
-    modelMatrix = rotateY(modelMatrix, aRotation.y);
-    modelMatrix = rotateX(modelMatrix, aRotation.x);*/
-    // modelMatrix = rotateZ(modelMatrix, aRotation.z);
+    mat4 rotationMatrix = rotate(aRotation);
 
     // Set position
-    gl_Position = uProjectionMatrix * modelMatrix * (aVertex * rotateX(aRotation.x) * rotateY(aRotation.y) * rotateZ(aRotation.z));
-    // gl_Position = uProjectionMatrix * modelMatrix * (aVertex);
+    gl_Position = uProjectionMatrix * translate(aPosition) * rotationMatrix * scale(aScale) * vec4(aVertex, 1.0);
+    vUv = aUv;
 
-    vColor = gl_Position;
+    // Apply lighting effect
+    highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
+    highp vec3 directionalLightColor = vec3(1, 1, 1);
+    highp vec3 directionalVector = normalize(vec3(1.0, 0.0, 0.0));
+
+    // Prepare normal matrix
+    mat4 normalMatrix = identity();
+    normalMatrix = inverse(rotationMatrix);
+
+    // Calculate light
+    highp vec4 transformedNormal = normalMatrix * vec4(aNormal.xyz, 1.0);
+    highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
+    vLighting = ambientLight + (directionalLightColor * directional);
 }

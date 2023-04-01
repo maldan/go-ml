@@ -3,7 +3,6 @@ package mr_layer
 import (
 	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
-	ml_geom "github.com/maldan/go-ml/util/math/geom"
 	"reflect"
 	"unsafe"
 )
@@ -23,10 +22,6 @@ func (l *LineLayer) Init() {
 }
 
 func (l *LineLayer) Render() {
-	l.Camera.Fov = 45
-	l.Camera.AspectRatio = 1
-	l.Camera.Position = ml_geom.Vector3[float32]{0, 0, -1.5}
-	l.Camera.Scale = ml_geom.Vector3[float32]{0.1, 0.1, 0.1}
 	l.Camera.ApplyMatrix()
 
 	// Fill points
