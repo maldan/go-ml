@@ -1,162 +1,3 @@
-class GoRenderLayer {
-  _gl = null;
-
-  shader = null;
-  attributeList = {};
-  uniformList = {};
-  bufferList = {};
-  dataList = {};
-  name = "";
-
-  constructor(gl) {
-    this._gl = gl;
-  }
-
-  init(vertex, fragment) {
-    this.shader = this.compileShader(vertex, fragment);
-
-    ["vertex", "index", "position"].forEach((x) => {
-      this.bufferList[x] = this._gl.createBuffer();
-    });
-    ["aVertex", "aPosition"].forEach((x) => {
-      this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
-    });
-    ["uProjectionMatrix"].forEach((x) => {
-      this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
-    });
-  }
-
-  loadShader(type, source) {
-    const shader = this._gl.createShader(type);
-    this._gl.shaderSource(shader, source);
-    this._gl.compileShader(shader);
-
-    if (!this._gl.getShaderParameter(shader, this._gl.COMPILE_STATUS)) {
-      const info = this._gl.getShaderInfoLog(shader);
-      this._gl.deleteShader(shader);
-      throw new Error(`An error occurred compiling the shaders: ${info}`);
-    }
-
-    return shader;
-  }
-
-  compileShader(vertex, fragment) {
-    const vertexShader = this.loadShader(this._gl.VERTEX_SHADER, vertex);
-    const fragmentShader = this.loadShader(this._gl.FRAGMENT_SHADER, fragment);
-
-    const shaderProgram = this._gl.createProgram();
-    this._gl.attachShader(shaderProgram, vertexShader);
-    this._gl.attachShader(shaderProgram, fragmentShader);
-    this._gl.linkProgram(shaderProgram);
-
-    if (!this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS)) {
-      const info = this._gl.getProgramInfoLog(shaderProgram);
-      console.log(info);
-      throw new Error(`Unable to initialize the shader program: ${info}`);
-    }
-
-    return shaderProgram;
-  }
-
-  setWasmData(memory, state) {
-    let byteArray = new Uint8Array(memory);
-    let shortArray = new Uint16Array(memory);
-    let float32Array = new Float32Array(memory);
-
-    this.setDataArray("vertex", state, float32Array);
-    this.setDataArray("position", state, float32Array);
-    this.setDataArray("index", state, shortArray);
-    this.setDataArray("projectionMatrix", state, float32Array, 16);
-  }
-
-  setDataArray(name, state, array, length = 0) {
-    let offsetSize = 1;
-    if (array instanceof Uint16Array) offsetSize = 2;
-    if (array instanceof Float32Array) offsetSize = 4;
-
-    this.dataList[name] = array.subarray(
-      state[name + "Pointer"] / offsetSize,
-      state[name + "Pointer"] / offsetSize +
-        (length || ~~state[name + "Amount"])
-    );
-  }
-
-  uploadData(type, name) {
-    if (type === "element") {
-      this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this.bufferList[name]);
-      this._gl.bufferData(
-        this._gl.ELEMENT_ARRAY_BUFFER,
-        this.dataList[name],
-        this._gl.DYNAMIC_DRAW
-      );
-    } else {
-      this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.bufferList[name]);
-      this._gl.bufferData(
-        this._gl.ARRAY_BUFFER,
-        this.dataList[name],
-        this._gl.DYNAMIC_DRAW
-      );
-    }
-
-    // Unbind the buffer
-    this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
-  }
-
-  enableAttribute(name) {
-    this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.bufferList[name]);
-
-    let attributeName = "a" + name[0].toUpperCase() + name.slice(1);
-
-    this._gl.vertexAttribPointer(
-      this.attributeList[attributeName],
-      3,
-      this._gl.FLOAT,
-      false,
-      0,
-      0
-    );
-    this._gl.enableVertexAttribArray(this.attributeList[attributeName]);
-  }
-
-  setUniform(name) {
-    let uniformName = "u" + name[0].toUpperCase() + name.slice(1);
-    this._gl.uniformMatrix4fv(
-      this.uniformList[uniformName],
-      false,
-      this.dataList[name]
-    );
-  }
-
-  draw() {
-    // Set program
-    this._gl.useProgram(this.shader);
-
-    // Put main data
-    this.uploadData("element", "index");
-    this.uploadData("any", "vertex");
-    this.uploadData("any", "position");
-
-    // Enable attributes
-    this.enableAttribute("vertex");
-    this.enableAttribute("position");
-
-    // Set projection
-    this.setUniform("projectionMatrix");
-
-    this._gl.bindBuffer(
-      this._gl.ELEMENT_ARRAY_BUFFER,
-      this.bufferList["index"]
-    );
-
-    this._gl.drawElements(
-      this._gl.TRIANGLES,
-      this.dataList["index"].length,
-      this._gl.UNSIGNED_SHORT,
-      0
-    );
-  }
-}
-
 class GoRender {
   static _gl = null;
 
@@ -242,13 +83,12 @@ class GoRender {
     if (this._gl === null) throw new Error("WebGL is not supported");
 
     // Load shaders
-    const shaderList = [
-      "matrix.glsl",
-      "main.vertex.glsl",
-      "main.fragment.glsl",
-      "point.vertex.glsl",
-      "point.fragment.glsl",
-    ];
+    const shaderList = ["matrix.glsl"];
+    shaderList.push(
+      ...["main", "point", "line"]
+        .map((x) => [`${x}.vertex.glsl`, `${x}.fragment.glsl`])
+        .flat()
+    );
     for (let i = 0; i < shaderList.length; i++) {
       await this.loadShaderSourceCode(`./shader/${shaderList[i]}`);
     }
@@ -261,12 +101,17 @@ class GoRender {
     });
 
     // Compile shaders
-    this.layerList = [new GoRenderLayer(this._gl)];
-    this.layerList[0].name = "main";
-    this.layerList[0].init(
-      this.shaderSource["./shader/main.vertex.glsl"],
-      this.shaderSource["./shader/main.fragment.glsl"]
-    );
+    this.layerList = [
+      new GoRenderLayer("main", this._gl),
+      new GoRenderPointLayer("point", this._gl),
+      new GoRenderLineLayer("line", this._gl),
+    ].map((x) => {
+      x.init(
+        this.shaderSource[`./shader/${x.name}.vertex.glsl`],
+        this.shaderSource[`./shader/${x.name}.fragment.glsl`]
+      );
+      return x;
+    });
 
     /*const mainShader = this.compileShader(
       this.shaderSource["./shader/main.vertex.glsl"],
@@ -425,13 +270,18 @@ class GoRender {
     this._gl.depthFunc(this._gl.LEQUAL);
     this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
 
-    this.layerList[0].draw();
+    this.layerList.forEach((layer) => {
+      layer.draw();
+    });
   }
 }
 
-class GoRenderWasmLayer {
+class GoRenderWasm {
   static wasmTime = [];
   static jsTime = [];
+
+  static beforeFrame = () => {};
+  static afterFrame = () => {};
 
   static async init(wasmModuleUrl) {
     const go = new Go();
@@ -449,30 +299,34 @@ class GoRenderWasmLayer {
 
     let start;
 
-    function step(timestamp) {
+    const step = (timestamp) => {
       if (start === undefined) start = timestamp;
-
       const elapsed = timestamp - start;
+
+      this.beforeFrame(elapsed);
+      goWasmGameTick();
 
       // Calculate scene in golang
       let pp = performance.now();
       goWasmRenderFrame();
-      GoRenderWasmLayer.wasmTime.push(performance.now() - pp);
+      this.wasmTime.push(performance.now() - pp);
 
       // Get state
       let state = goWasmRenderState();
 
       // Send golang data to webgl render
-      GoRender.layerList.forEach((x) => {
+      GoRender.layerList.forEach((layer) => {
+        layer.state = state;
+
         if (wasmModule.instance.exports.mem) {
-          x.setWasmData(
+          layer.setWasmData(
             wasmModule.instance.exports.mem.buffer,
-            state[x.name + "Layer"]
+            state[layer.name + "Layer"]
           );
         } else {
-          x.setWasmData(
+          layer.setWasmData(
             wasmModule.instance.exports.memory.buffer,
-            state[x.name + "Layer"]
+            state[layer.name + "Layer"]
           );
         }
       });
@@ -480,24 +334,26 @@ class GoRenderWasmLayer {
       // Draw scene
       pp = performance.now();
       GoRender.draw();
-      GoRenderWasmLayer.jsTime.push(performance.now() - pp);
+      this.jsTime.push(performance.now() - pp);
+
+      this.afterFrame(elapsed);
 
       window.requestAnimationFrame(step);
-    }
+    };
 
     window.requestAnimationFrame(step);
 
     // Timers
     const avg = (x) => x.reduce((a, b) => a + b) / x.length;
     setInterval(() => {
-      document.getElementById("wasm").innerHTML = `${avg(
-        GoRenderWasmLayer.wasmTime
-      ).toFixed(2)}`;
-      document.getElementById("js").innerHTML = `${avg(
-        GoRenderWasmLayer.jsTime
-      ).toFixed(2)}`;
-      GoRenderWasmLayer.wasmTime.length = 0;
-      GoRenderWasmLayer.jsTime.length = 0;
+      document.getElementById("wasm").innerHTML = `${avg(this.wasmTime).toFixed(
+        2
+      )}`;
+      document.getElementById("js").innerHTML = `${avg(this.jsTime).toFixed(
+        2
+      )}`;
+      this.wasmTime.length = 0;
+      this.jsTime.length = 0;
     }, 1000);
   }
 }

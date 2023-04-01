@@ -5,5 +5,4 @@ uniform mat4 uProjectionMatrix;
 
 void main() {
     gl_Position = uProjectionMatrix * vec4(aVertex, 1.0);
-    gl_PointSize = 3.0;
 }
