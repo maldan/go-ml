@@ -86,3 +86,7 @@ var NIBBLE_LOOKUP = []uint8{
 func CountSetBits(byte uint8) uint8 {
 	return NIBBLE_LOOKUP[byte&0x0F] + NIBBLE_LOOKUP[byte>>4]
 }
+
+func CheckBitMask[T constraints.Integer](v T, mask T) bool {
+	return v&mask == mask
+}

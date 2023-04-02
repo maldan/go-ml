@@ -11,8 +11,7 @@ class GoRender {
 
   static async init() {
     const canvas = document.querySelector("#glcanvas");
-    this._gl = canvas.getContext("webgl");
-
+    this._gl = canvas.getContext("webgl", { antialias: false });
     if (this._gl === null) throw new Error("WebGL is not supported");
 
     // Load shaders
@@ -34,7 +33,7 @@ class GoRender {
     });
 
     // Main texture
-    const texture = loadTexture(this._gl, "./cubetexture.png");
+    const texture = loadTexture(this._gl, "./texture.png");
 
     // Compile shaders
     this.layerList = [
@@ -184,7 +183,14 @@ function loadTexture(gl, url) {
       image
     );
 
-    gl.generateMipmap(gl.TEXTURE_2D);
+    // gl.generateMipmap(gl.TEXTURE_2D);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   };
   image.src = url;

@@ -16,6 +16,15 @@ type Mesh struct {
 	Position ml_geom.Vector3[float32]
 	Rotation ml_geom.Vector3[float32]
 	Scale    ml_geom.Vector3[float32]
+
+	IsVisible bool
+}
+
+func New() *Mesh {
+	return &Mesh{
+		Scale:     ml_geom.Vector3[float32]{1, 1, 1},
+		IsVisible: true,
+	}
 }
 
 func (m *Mesh) ApplyMatrix() {

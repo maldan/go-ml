@@ -1,6 +1,9 @@
 package ml_geom
 
-import "golang.org/x/exp/constraints"
+import (
+	"golang.org/x/exp/constraints"
+	"math"
+)
 
 type Vector3[T constraints.Float] struct {
 	X T
@@ -23,4 +26,12 @@ func (v *Vector3[T]) TransformMatrix4x4(mx Matrix4x4[T]) {
 
 func (v *Vector3[T]) Clone() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, v.Z}
+}
+
+func (v *Vector3[T]) DistanceTo(to Vector3[T]) T {
+	a := float64(v.X - to.X)
+	b := float64(v.Y - to.Y)
+	c := float64(v.Z - to.Z)
+
+	return T(math.Sqrt(a*a + b*b + c*c))
 }

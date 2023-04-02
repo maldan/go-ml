@@ -65,7 +65,7 @@ func DrawRectangle(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], c
 	DrawLine(tFrom, tTo, color)
 }
 
-func DebugPoint(to ml_geom.Vector3[float32]) {
+func DrawPoint(to ml_geom.Vector3[float32]) {
 	State.Point.PointList = append(State.Point.PointList, to)
 }
 

@@ -55,6 +55,10 @@ func (l *MainLayer) Render() {
 	for i := 0; i < len(l.MeshList); i++ {
 		mesh := l.MeshList[i]
 
+		if !mesh.IsVisible {
+			continue
+		}
+
 		// Copy vertex
 		for j := 0; j < len(mesh.Vertices); j++ {
 			v := mesh.Vertices[j]

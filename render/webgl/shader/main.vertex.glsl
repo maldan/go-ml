@@ -9,7 +9,7 @@ attribute vec3 aPosition;
 attribute vec3 aRotation;
 attribute vec3 aScale;
 
-varying lowp vec2 vUv;
+varying highp vec2 vUv;
 varying highp vec3 vLighting;
 
 uniform mat4 uProjectionMatrix;
@@ -24,7 +24,7 @@ void main() {
     // Apply lighting effect
     highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
     highp vec3 directionalLightColor = vec3(1, 1, 1);
-    highp vec3 directionalVector = normalize(vec3(1.0, 0.0, 0.0));
+    highp vec3 directionalVector = normalize(vec3(0.0, 0.0, 0.6));
 
     // Prepare normal matrix
     mat4 normalMatrix = identity();
