@@ -26,14 +26,21 @@ class GoRenderLayer {
       "uv",
       "normal",
       "scale",
+      "color",
     ].forEach((x) => {
       this.bufferList[x] = this._gl.createBuffer();
     });
-    ["aVertex", "aPosition", "aRotation", "aScale", "aUv", "aNormal"].forEach(
-      (x) => {
-        this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
-      }
-    );
+    [
+      "aVertex",
+      "aPosition",
+      "aRotation",
+      "aScale",
+      "aUv",
+      "aNormal",
+      "aColor",
+    ].forEach((x) => {
+      this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
+    });
     ["uProjectionMatrix", "uTexture"].forEach((x) => {
       this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
     });
@@ -47,7 +54,9 @@ class GoRenderLayer {
     if (!this._gl.getShaderParameter(shader, this._gl.COMPILE_STATUS)) {
       const info = this._gl.getShaderInfoLog(shader);
       this._gl.deleteShader(shader);
-      throw new Error(`An error occurred compiling the shaders: ${info}`);
+      throw new Error(
+        `An error occurred compiling the shaders: ${info}\n${source}`
+      );
     }
 
     return shader;
@@ -82,6 +91,7 @@ class GoRenderLayer {
     this.setDataArray("position", state, float32Array);
     this.setDataArray("rotation", state, float32Array);
     this.setDataArray("scale", state, float32Array);
+    this.setDataArray("color", state, float32Array);
     this.setDataArray("index", state, shortArray);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
   }
@@ -162,6 +172,7 @@ class GoRenderLayer {
     this.uploadData("any", "position");
     this.uploadData("any", "rotation");
     this.uploadData("any", "scale");
+    this.uploadData("any", "color");
 
     // Enable attributes
     this.enableAttribute("vertex");
@@ -170,6 +181,7 @@ class GoRenderLayer {
     this.enableAttribute("position");
     this.enableAttribute("rotation");
     this.enableAttribute("scale");
+    this.enableAttribute("color", 4);
 
     // Set projection
     this.setUniform("projectionMatrix");

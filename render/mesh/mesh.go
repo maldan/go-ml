@@ -2,37 +2,76 @@ package mr_mesh
 
 import (
 	ml_geom "github.com/maldan/go-ml/util/math/geom"
+	ml_color "github.com/maldan/go-ml/util/media/color"
 	ml_number "github.com/maldan/go-ml/util/number"
 )
 
 type Mesh struct {
+	Id       int
 	Vertices []ml_geom.Vector3[float32]
 	Indices  []uint16
 	UV       []ml_geom.Vector2[float32]
 	Normal   []ml_geom.Vector3[float32]
 
-	Matrix ml_geom.Matrix4x4[float32]
+	/*Matrix ml_geom.Matrix4x4[float32]
 
 	Position ml_geom.Vector3[float32]
 	Rotation ml_geom.Vector3[float32]
 	Scale    ml_geom.Vector3[float32]
 
+	*/
+}
+
+type MeshInstance struct {
+	Id int
+
+	// Matrix ml_geom.Matrix4x4[float32]
+
+	Position ml_geom.Vector3[float32]
+	Rotation ml_geom.Vector3[float32]
+	Scale    ml_geom.Vector3[float32]
+	UvOffset ml_geom.Vector2[float32]
+	Color    ml_color.ColorRGBA[float32]
+
 	IsVisible bool
+	IsActive  bool
 }
 
 func New() *Mesh {
 	return &Mesh{
+		Id: -1,
+	}
+}
+
+/*func NewInstance() MeshInstance {
+	return MeshInstance{
+		Id:        -1,
 		Scale:     ml_geom.Vector3[float32]{1, 1, 1},
 		IsVisible: true,
 	}
 }
 
-func (m *Mesh) ApplyMatrix() {
+func NewInstanceOf(mesh *Mesh) MeshInstance {
+	return MeshInstance{
+		Id:        mesh.Id,
+		Scale:     ml_geom.Vector3[float32]{1, 1, 1},
+		IsVisible: true,
+	}
+}*/
+
+/*func (m *Mesh) ApplyMatrix() {
 	m.Matrix.Identity()
 	m.Matrix.Translate(m.Position)
 	m.Matrix.RotateX(m.Rotation.X)
 	m.Matrix.RotateY(m.Rotation.Y)
 	m.Matrix.RotateZ(m.Rotation.Z)
+}*/
+
+func (m *Mesh) ScaleUV(size ml_geom.Vector2[float32]) {
+	for i := 0; i < len(m.UV); i++ {
+		m.UV[i].X *= size.X
+		m.UV[i].Y *= size.Y
+	}
 }
 
 // MakeCube 0b11_11_11_00 [Front, Back, Top, Bottom, Right, Left]

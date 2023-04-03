@@ -3,7 +3,7 @@ package ml_image
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/exp/constraints"
+	ml_color "github.com/maldan/go-ml/util/media/color"
 	"golang.org/x/image/webp"
 	"image"
 	"image/jpeg"
@@ -12,23 +12,10 @@ import (
 	"os"
 )
 
-type ColorRGB[T constraints.Integer | constraints.Float] struct {
-	R T
-	G T
-	B T
-}
-
-type ColorRGBA[T constraints.Integer | constraints.Float] struct {
-	R T
-	G T
-	B T
-	A T
-}
-
 type Image struct {
 	Width  int
 	Height int
-	Pixels [][]ColorRGBA[uint8]
+	Pixels [][]ml_color.ColorRGBA[uint8]
 }
 
 type ImageOptions struct {
@@ -47,9 +34,9 @@ func (i *Image) ResizeWidth(width int) Image {
 		Height: int(float64(i.Height) * aspectX),
 	}
 
-	outImage.Pixels = make([][]ColorRGBA[uint8], width)
+	outImage.Pixels = make([][]ml_color.ColorRGBA[uint8], width)
 	for ii := 0; ii < outImage.Width; ii++ {
-		outImage.Pixels[ii] = make([]ColorRGBA[uint8], outImage.Height)
+		outImage.Pixels[ii] = make([]ml_color.ColorRGBA[uint8], outImage.Height)
 	}
 
 	for y := 0; y < outImage.Height; y++ {
@@ -70,9 +57,9 @@ func (i *Image) Resize(width int, height int) Image {
 		Width:  width,
 		Height: height,
 	}
-	outImage.Pixels = make([][]ColorRGBA[uint8], width)
+	outImage.Pixels = make([][]ml_color.ColorRGBA[uint8], width)
 	for ii := 0; ii < outImage.Width; ii++ {
-		outImage.Pixels[ii] = make([]ColorRGBA[uint8], height)
+		outImage.Pixels[ii] = make([]ml_color.ColorRGBA[uint8], height)
 	}
 
 	for y := 0; y < height; y++ {
@@ -84,7 +71,7 @@ func (i *Image) Resize(width int, height int) Image {
 	return outImage
 }
 
-func (i *Image) GetPixel(x int, y int) ColorRGBA[uint8] {
+func (i *Image) GetPixel(x int, y int) ml_color.ColorRGBA[uint8] {
 	if x < 0 {
 		x = 0
 	}
@@ -94,7 +81,7 @@ func (i *Image) GetPixel(x int, y int) ColorRGBA[uint8] {
 	return i.Pixels[x][y]
 }
 
-func (i *Image) SetPixel(x int, y int, color ColorRGBA[uint8]) {
+func (i *Image) SetPixel(x int, y int, color ml_color.ColorRGBA[uint8]) {
 	if x < 0 {
 		x = 0
 	}
@@ -104,7 +91,7 @@ func (i *Image) SetPixel(x int, y int, color ColorRGBA[uint8]) {
 	i.Pixels[x][y] = color
 }
 
-func (i *Image) ForEach(fn func(x int, y int, color ColorRGBA[uint8])) {
+func (i *Image) ForEach(fn func(x int, y int, color ml_color.ColorRGBA[uint8])) {
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
 			fn(x, y, i.Pixels[x][y])
@@ -112,7 +99,7 @@ func (i *Image) ForEach(fn func(x int, y int, color ColorRGBA[uint8])) {
 	}
 }
 
-func (i *Image) Map(fn func(x int, y int, color ColorRGBA[uint8]) ColorRGBA[uint8]) {
+func (i *Image) Map(fn func(x int, y int, color ml_color.ColorRGBA[uint8]) ml_color.ColorRGBA[uint8]) {
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
 			i.Pixels[x][y] = fn(x, y, i.Pixels[x][y])
@@ -203,10 +190,10 @@ func FromFile(path string) (Image, error) {
 	imageOut := Image{}
 	imageOut.Width = img.Bounds().Size().X
 	imageOut.Height = img.Bounds().Size().Y
-	imageOut.Pixels = make([][]ColorRGBA[uint8], imageOut.Width)
+	imageOut.Pixels = make([][]ml_color.ColorRGBA[uint8], imageOut.Width)
 
 	for i := 0; i < imageOut.Width; i++ {
-		imageOut.Pixels[i] = make([]ColorRGBA[uint8], imageOut.Height)
+		imageOut.Pixels[i] = make([]ml_color.ColorRGBA[uint8], imageOut.Height)
 		for j := 0; j < imageOut.Height; j++ {
 			r, g, b, a := img.At(i, j).RGBA()
 			if r > 255 {
@@ -222,7 +209,7 @@ func FromFile(path string) (Image, error) {
 				a = a >> 8
 			}
 
-			imageOut.Pixels[i][j] = ColorRGBA[uint8]{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
+			imageOut.Pixels[i][j] = ml_color.ColorRGBA[uint8]{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
 		}
 	}
 

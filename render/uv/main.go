@@ -15,3 +15,10 @@ func GetArea(x float32, y float32, sizeX float32, sizeY float32, textureWidth fl
 		{x1, y2},
 	}
 }
+
+func GetOffset(x float32, y float32, textureWidth float32, textureHeight float32) ml_geom.Vector2[float32] {
+	return ml_geom.Vector2[float32]{
+		x / textureWidth,
+		y / textureHeight,
+	}
+}

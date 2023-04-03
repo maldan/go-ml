@@ -5,7 +5,7 @@ import (
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	ml_geom "github.com/maldan/go-ml/util/math/geom"
-	ml_image "github.com/maldan/go-ml/util/media/image"
+	ml_color "github.com/maldan/go-ml/util/media/color"
 )
 
 type RenderEngine struct {
@@ -18,8 +18,32 @@ type RenderEngine struct {
 
 var State RenderEngine = RenderEngine{}
 
-func AddMesh(mesh *mr_mesh.Mesh) {
-	State.Main.MeshList = append(State.Main.MeshList, mesh)
+func AllocateMesh(mesh *mr_mesh.Mesh) *mr_mesh.Mesh {
+	mesh.Id = len(State.Main.AllocatedMesh)
+	State.Main.AllocatedMesh = append(State.Main.AllocatedMesh, mesh)
+	return mesh
+}
+
+func InstanceMesh(mesh *mr_mesh.Mesh) *mr_mesh.MeshInstance {
+	instance := mr_mesh.MeshInstance{
+		Id:        mesh.Id,
+		Scale:     ml_geom.Vector3[float32]{1, 1, 1},
+		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
+		IsVisible: true,
+		IsActive:  true,
+	}
+
+	// Find free instance cell
+	for i := 0; i < len(State.Main.MeshInstanceList); i++ {
+		if State.Main.MeshInstanceList[i].IsActive {
+			continue
+		}
+
+		State.Main.MeshInstanceList[i] = instance
+		return &State.Main.MeshInstanceList[i]
+	}
+
+	panic("mesh instance overflow")
 }
 
 func Init() {
@@ -28,7 +52,7 @@ func Init() {
 	State.Line.Init()
 }
 
-func DrawLine(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_image.ColorRGB[float32]) {
+func DrawLine(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_color.ColorRGB[float32]) {
 	State.Line.LineList = append(State.Line.LineList, mr_mesh.Line{
 		From:  from,
 		To:    to,
@@ -36,7 +60,7 @@ func DrawLine(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color 
 	})
 }
 
-func DrawRectangle(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_image.ColorRGB[float32]) {
+func DrawRectangle(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_color.ColorRGB[float32]) {
 	tFrom := from
 	tTo := to
 	tFrom.Z = to.Z

@@ -66,6 +66,7 @@ class GoRender {
 class GoRenderWasm {
   static wasmTime = [];
   static jsTime = [];
+  static calculateTime = [];
 
   static beforeFrame = () => {};
   static afterFrame = () => {};
@@ -78,6 +79,7 @@ class GoRenderWasm {
       await bytes.arrayBuffer(),
       go.importObject
     );
+    let memory = new ArrayBuffer(0);
     go.run(wasmModule.instance);
     console.log(wasmModule.instance);
 
@@ -92,10 +94,13 @@ class GoRenderWasm {
       if (delta <= 0) delta = 1 / 1000;
 
       this.beforeFrame(delta);
-      goWasmGameTick(delta);
 
       // Calculate scene in golang
       let pp = performance.now();
+      goWasmGameTick(delta);
+      this.calculateTime.push(performance.now() - pp);
+
+      pp = performance.now();
       goWasmRenderFrame();
       this.wasmTime.push(performance.now() - pp);
 
@@ -107,11 +112,13 @@ class GoRenderWasm {
         layer.state = state;
 
         if (wasmModule.instance.exports.mem) {
+          memory = wasmModule.instance.exports.mem.buffer;
           layer.setWasmData(
             wasmModule.instance.exports.mem.buffer,
             state[layer.name + "Layer"]
           );
         } else {
+          memory = wasmModule.instance.exports.memory.buffer;
           layer.setWasmData(
             wasmModule.instance.exports.memory.buffer,
             state[layer.name + "Layer"]
@@ -135,14 +142,23 @@ class GoRenderWasm {
     // Timers
     const avg = (x) => x.reduce((a, b) => a + b) / x.length;
     setInterval(() => {
-      document.getElementById("wasm").innerHTML = `${avg(this.wasmTime).toFixed(
-        2
-      )}`;
-      document.getElementById("js").innerHTML = `${avg(this.jsTime).toFixed(
-        2
-      )}`;
+      document.getElementById("wasm").innerHTML = `render calculate: ${avg(
+        this.wasmTime
+      ).toFixed(2)}`;
+      document.getElementById("js").innerHTML = `render draw: ${avg(
+        this.jsTime
+      ).toFixed(2)}`;
+      document.getElementById("calculate").innerHTML = `game calculate: ${avg(
+        this.calculateTime
+      ).toFixed(2)}`;
+
+      document.getElementById("mem").innerHTML = `mem: ${(
+        memory.byteLength / 1048576
+      ).toFixed(3)} mb`;
+
       this.wasmTime.length = 0;
       this.jsTime.length = 0;
+      this.calculateTime.length = 0;
     }, 1000);
   }
 }

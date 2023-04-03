@@ -28,6 +28,10 @@ func (v *Vector3[T]) Clone() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, v.Z}
 }
 
+func (v *Vector3[T]) ToVector2() Vector2[T] {
+	return Vector2[T]{v.X, v.Y}
+}
+
 func (v *Vector3[T]) DistanceTo(to Vector3[T]) T {
 	a := float64(v.X - to.X)
 	b := float64(v.Y - to.Y)

@@ -90,3 +90,7 @@ func CountSetBits(byte uint8) uint8 {
 func CheckBitMask[T constraints.Integer](v T, mask T) bool {
 	return v&mask == mask
 }
+
+func Lerp[T constraints.Integer | constraints.Float](start T, end T, t T) T {
+	return (1-t)*start + t*end
+}
