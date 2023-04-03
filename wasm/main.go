@@ -1,4 +1,4 @@
-package ml_wasm
+package mwasm
 
 import (
 	ml_keyboard "github.com/maldan/go-ml/util/io/keyboard"
@@ -7,15 +7,6 @@ import (
 )
 
 func BindKeyboard() {
-	/*js.Global().Set("__golangWebglKeyboardBind_KeyDown", js.FuncOf(func(this js.Value, args []js.Value) any {
-		ml_keyboard.State[args[0].Int()] = true
-		return nil
-	}))
-	js.Global().Set("__golangWebglKeyboardBind_KeyUp", js.FuncOf(func(this js.Value, args []js.Value) any {
-		ml_keyboard.State[args[0].Int()] = false
-		return nil
-	}))*/
-
 	cb := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		ml_keyboard.State[args[0].Get("code").String()] = true
 		return nil

@@ -1,4 +1,4 @@
-package ml_geom
+package mgeom
 
 import (
 	"golang.org/x/exp/constraints"

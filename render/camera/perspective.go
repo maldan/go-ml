@@ -1,4 +1,4 @@
-package mr_camera
+package mrender_camera
 
 import ml_geom "github.com/maldan/go-ml/util/math/geom"
 

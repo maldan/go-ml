@@ -1,4 +1,4 @@
-package mr_uv
+package mrender_uv
 
 import ml_geom "github.com/maldan/go-ml/util/math/geom"
 

@@ -1,9 +1,9 @@
 package ml_mouse
 
-import ml_geom "github.com/maldan/go-ml/util/math/geom"
+import mgeom "github.com/maldan/go-ml/math/geom"
 
 var State = map[int]bool{}
-var Position = ml_geom.Vector2[float32]{}
+var Position = mgeom.Vector2[float32]{}
 
 const (
 	LeftButton   int = 0
@@ -15,6 +15,6 @@ func IsMouseDown(key int) bool {
 	return State[key]
 }
 
-func GetPosition() ml_geom.Vector2[float32] {
+func GetPosition() mgeom.Vector2[float32] {
 	return Position
 }

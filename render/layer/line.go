@@ -1,4 +1,4 @@
-package mr_layer
+package mrender_layer
 
 import (
 	mr_camera "github.com/maldan/go-ml/render/camera"

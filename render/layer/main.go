@@ -1,4 +1,4 @@
-package mr_layer
+package mrender_layer
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package ml_webgl
+package mrender_webgl
 
 import (
 	_ "embed"

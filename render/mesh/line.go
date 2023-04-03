@@ -1,4 +1,4 @@
-package mr_mesh
+package mrender_mesh
 
 import (
 	ml_geom "github.com/maldan/go-ml/util/math/geom"

@@ -1,8 +1,8 @@
-package ml_geom_test
+package mgeom_test
 
 import (
 	"fmt"
-	ml_geom "github.com/maldan/go-ml/util/math/geom"
+	mgeom "github.com/maldan/go-ml/math/geom"
 	"testing"
 	"time"
 )
@@ -10,8 +10,8 @@ import (
 func TestName(t *testing.T) {
 	tt := time.Now()
 
-	vx := ml_geom.Vector3[float32]{}
-	mx := ml_geom.Matrix4x4[float32]{}
+	vx := mgeom.Vector3[float32]{}
+	mx := mgeom.Matrix4x4[float32]{}
 
 	for i := 0; i < 1_000_000; i++ {
 		vx.TransformMatrix4x4(mx)
