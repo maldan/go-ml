@@ -1,15 +1,15 @@
 package ml_keyboard
 
-var State = map[int]bool{}
+var State = map[string]bool{}
 
 const (
-	KeyA  int = 65
-	KeyD      = 68
-	KeyW      = 87
-	KeyS      = 83
-	Space     = 32
+	KeyA  string = "KeyA"
+	KeyD         = "KeyD"
+	KeyW         = "KeyW"
+	KeyS         = "KeyS"
+	Space        = "Space"
 )
 
-func IsKeyDown(key int) bool {
+func IsKeyDown(key string) bool {
 	return State[key]
 }

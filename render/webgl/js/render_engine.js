@@ -54,6 +54,10 @@ class GoRender {
     this._gl.clearColor(0.0, 0.0, 0.0, 1.0);
     this._gl.clearDepth(1.0);
     this._gl.enable(this._gl.DEPTH_TEST);
+
+    this._gl.enable(this._gl.CULL_FACE);
+    this._gl.cullFace(this._gl.BACK);
+
     this._gl.depthFunc(this._gl.LEQUAL);
     this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
 
@@ -198,6 +202,7 @@ function loadTexture(gl, url) {
       srcType,
       image
     );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
     // gl.generateMipmap(gl.TEXTURE_2D);
 
@@ -206,8 +211,6 @@ function loadTexture(gl, url) {
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   };
   image.src = url;
 

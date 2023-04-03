@@ -28,7 +28,39 @@ func (v *Vector3[T]) Clone() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, v.Z}
 }
 
-func (v *Vector3[T]) ToVector2() Vector2[T] {
+func (v *Vector3[T]) Length() T {
+	ax := float64(v.X)
+	ay := float64(v.Y)
+	az := float64(v.Z)
+	return T(math.Sqrt((ax * ax) + (ay * ay) + (az * az)))
+}
+
+func (v *Vector3[T]) Normalize() {
+	l := v.Length()
+	v.X /= l
+	v.Y /= l
+	v.Z /= l
+}
+
+func (v *Vector3[T]) Scale(v2 T) {
+	v.X *= v2
+	v.Y *= v2
+	v.Z *= v2
+}
+
+func (v *Vector3[T]) Add(v2 Vector3[T]) {
+	v.X += v2.X
+	v.Y += v2.Y
+	v.Z += v2.Z
+}
+
+func (v *Vector3[T]) Sub(v2 Vector3[T]) {
+	v.X -= v2.X
+	v.Y -= v2.Y
+	v.Z -= v2.Z
+}
+
+func (v Vector3[T]) ToVector2() Vector2[T] {
 	return Vector2[T]{v.X, v.Y}
 }
 
@@ -39,3 +71,8 @@ func (v *Vector3[T]) DistanceTo(to Vector3[T]) T {
 
 	return T(math.Sqrt(a*a + b*b + c*c))
 }
+
+/*func AngleBetweenPoints[T constraints.Float](p1 Vector2[T], p2 T) T {
+	rad := math.Atan2(p2.Y-p1.Y, p2.X-p1.X)
+	return T(rad)
+}*/
