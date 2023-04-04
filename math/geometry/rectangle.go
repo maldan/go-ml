@@ -1,4 +1,4 @@
-package mgeom
+package mmath_geom
 
 import "golang.org/x/exp/constraints"
 
@@ -9,11 +9,11 @@ type Rectangle[T constraints.Float] struct {
 	Bottom T
 }
 
-func (r *Rectangle[T]) Add(v Vector2[T]) {
-	r.Left += v.X
-	r.Right += v.X
-	r.Top += v.Y
-	r.Bottom += v.Y
+func (r *Rectangle[T]) Offset(x T, y T) {
+	r.Left += x
+	r.Right += x
+	r.Top += y
+	r.Bottom += y
 }
 
 func (r Rectangle[T]) Intersect(r2 Rectangle[T]) bool {

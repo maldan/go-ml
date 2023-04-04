@@ -1,6 +1,7 @@
 package mwasm
 
 import (
+	mrender "github.com/maldan/go-ml/render"
 	ml_keyboard "github.com/maldan/go-ml/util/io/keyboard"
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
 	"syscall/js"
@@ -46,6 +47,21 @@ func BindMouse() {
 func ExportFunction(name string, fn func(args []js.Value)) {
 	js.Global().Set(name, js.FuncOf(func(this js.Value, args []js.Value) any {
 		fn(args)
+		return nil
+	}))
+}
+
+func InitRender(engine *mrender.RenderEngine) {
+	js.Global().Set("goWasmRenderState", js.FuncOf(func(this js.Value, args []js.Value) any {
+		return map[string]any{
+			"mainLayer":  engine.Main.GetState(),
+			"pointLayer": engine.Point.GetState(),
+			"lineLayer":  engine.Line.GetState(),
+		}
+	}))
+
+	js.Global().Set("goWasmRenderFrame", js.FuncOf(func(this js.Value, args []js.Value) any {
+		engine.Render()
 		return nil
 	}))
 }

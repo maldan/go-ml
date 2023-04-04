@@ -1,14 +1,16 @@
 package mrender_camera
 
-import ml_geom "github.com/maldan/go-ml/util/math/geom"
+import (
+	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
+)
 
 type PerspectiveCamera struct {
 	Fov         float32
 	AspectRatio float32
-	Position    ml_geom.Vector3[float32]
-	Rotation    ml_geom.Vector3[float32]
-	Scale       ml_geom.Vector3[float32]
-	Matrix      ml_geom.Matrix4x4[float32]
+	Position    mmath_la.Vector3[float32]
+	Rotation    mmath_la.Vector3[float32]
+	Scale       mmath_la.Vector3[float32]
+	Matrix      mmath_la.Matrix4x4[float32]
 }
 
 func (p *PerspectiveCamera) ApplyMatrix() {

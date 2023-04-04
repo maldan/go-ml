@@ -1,14 +1,14 @@
 package mrender_layer
 
 import (
+	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	mr_camera "github.com/maldan/go-ml/render/camera"
-	ml_geom "github.com/maldan/go-ml/util/math/geom"
 	"reflect"
 	"unsafe"
 )
 
 type PointLayer struct {
-	PointList    []ml_geom.Vector3[float32]
+	PointList    []mmath_la.Vector3[float32]
 	VertexList   []float32
 	VertexAmount int
 	Camera       mr_camera.PerspectiveCamera
@@ -16,7 +16,7 @@ type PointLayer struct {
 
 func (l *PointLayer) Init() {
 	l.VertexList = make([]float32, 65536*3)
-	l.PointList = make([]ml_geom.Vector3[float32], 0, 1024)
+	l.PointList = make([]mmath_la.Vector3[float32], 0, 1024)
 }
 
 func (l *PointLayer) Render() {

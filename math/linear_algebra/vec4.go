@@ -1,4 +1,4 @@
-package mgeom
+package mmath_la
 
 import "golang.org/x/exp/constraints"
 

@@ -1,10 +1,10 @@
 package mrender
 
 import (
+	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
-	ml_geom "github.com/maldan/go-ml/util/math/geom"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 )
 
@@ -27,7 +27,7 @@ func AllocateMesh(mesh *mr_mesh.Mesh) *mr_mesh.Mesh {
 func InstanceMesh(mesh *mr_mesh.Mesh) *mr_mesh.MeshInstance {
 	instance := mr_mesh.MeshInstance{
 		Id:        mesh.Id,
-		Scale:     ml_geom.Vector3[float32]{1, 1, 1},
+		Scale:     mmath_la.Vector3[float32]{1, 1, 1},
 		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
 		IsVisible: true,
 		IsActive:  true,
@@ -52,7 +52,7 @@ func Init() {
 	State.Line.Init()
 }
 
-func DrawLine(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_color.ColorRGB[float32]) {
+func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
 	State.Line.LineList = append(State.Line.LineList, mr_mesh.Line{
 		From:  from,
 		To:    to,
@@ -60,7 +60,7 @@ func DrawLine(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color 
 	})
 }
 
-func DrawRectangle(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], color ml_color.ColorRGB[float32]) {
+func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
 	tFrom := from
 	tTo := to
 	tFrom.Z = to.Z
@@ -89,7 +89,7 @@ func DrawRectangle(from ml_geom.Vector3[float32], to ml_geom.Vector3[float32], c
 	DrawLine(tFrom, tTo, color)
 }
 
-func DrawPoint(to ml_geom.Vector3[float32]) {
+func DrawPoint(to mmath_la.Vector3[float32]) {
 	State.Point.PointList = append(State.Point.PointList, to)
 }
 

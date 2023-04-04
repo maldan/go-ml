@@ -1,12 +1,12 @@
 package mrender_mesh
 
 import (
-	ml_geom "github.com/maldan/go-ml/util/math/geom"
+	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 )
 
 type Line struct {
-	From  ml_geom.Vector3[float32]
-	To    ml_geom.Vector3[float32]
+	From  mmath_la.Vector3[float32]
+	To    mmath_la.Vector3[float32]
 	Color ml_color.ColorRGB[float32]
 }

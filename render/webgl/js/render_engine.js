@@ -67,6 +67,36 @@ class GoRender {
   }
 }
 
+class GoSound {
+  static _audioContext;
+  static _audioBuffer;
+  static _sampleRate = 44100 / 4;
+  static _source;
+
+  static init() {
+    this._audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
+    this._audioBuffer = this._audioContext.createBuffer(
+      1,
+      this._sampleRate,
+      this._sampleRate
+    );
+
+    this._source = this._audioContext.createBufferSource();
+    this._source.buffer = this._audioBuffer;
+    this._source.connect(this._audioContext.destination);
+  }
+
+  static fill(array) {
+    const nowBuffering = this._audioBuffer.getChannelData(0);
+    for (let i = 0; i < array.length; i++) nowBuffering[i] = array[i];
+  }
+
+  static play() {
+    this._source.play();
+  }
+}
+
 class GoRenderWasm {
   static wasmTime = [];
   static jsTime = [];
@@ -89,6 +119,9 @@ class GoRenderWasm {
 
     // Init webgl render
     await GoRender.init();
+
+    // Init sound
+    GoSound.init();
 
     let start;
 
@@ -135,8 +168,9 @@ class GoRenderWasm {
       GoRender.draw();
       this.jsTime.push(performance.now() - pp);
 
-      this.afterFrame(delta);
+      if (goWasmSoundTick) goWasmSoundTick();
 
+      // Request next frame
       start = timestamp;
       window.requestAnimationFrame(step);
     };
