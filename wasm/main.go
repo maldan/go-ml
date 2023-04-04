@@ -1,6 +1,7 @@
 package mwasm
 
 import (
+	maudio "github.com/maldan/go-ml/audio"
 	mrender "github.com/maldan/go-ml/render"
 	ml_keyboard "github.com/maldan/go-ml/util/io/keyboard"
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
@@ -62,6 +63,17 @@ func InitRender(engine *mrender.RenderEngine) {
 
 	js.Global().Set("goWasmRenderFrame", js.FuncOf(func(this js.Value, args []js.Value) any {
 		engine.Render()
+		return nil
+	}))
+}
+
+func InitSound() {
+	js.Global().Set("goWasmSoundState", js.FuncOf(func(this js.Value, args []js.Value) any {
+		return maudio.GetState()
+	}))
+
+	js.Global().Set("goWasmSoundTick", js.FuncOf(func(this js.Value, args []js.Value) any {
+		maudio.Tick(float32(args[0].Float()))
 		return nil
 	}))
 }

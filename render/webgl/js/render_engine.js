@@ -69,14 +69,59 @@ class GoRender {
 
 class GoSound {
   static _audioContext;
-  static _audioBuffer;
-  static _sampleRate = 44100 / 4;
-  static _source;
+  static _time = -1;
+  static _bigBuffer = [];
+  // static _privateData = [];
 
-  static init() {
-    this._audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
-    this._audioBuffer = this._audioContext.createBuffer(
+  static init(wasmInstance, getState, tick) {
+    this._audioContext = new (window.AudioContext || window.webkitAudioContext)(
+      {
+        latencyHint: "interactive",
+        sampleRate: 44100 / 4,
+      }
+    );
+
+    const script_processor = this._audioContext.createScriptProcessor(
+      256,
+      0,
+      1
+    );
+    script_processor.onaudioprocess = (event) => {
+      const dst = event.outputBuffer;
+      const dst_l = dst.getChannelData(0);
+
+      if (this._bigBuffer.length < 256) {
+        tick(32 / 1000);
+        this.capture(wasmInstance, getState);
+      }
+
+      const arr = this._bigBuffer.slice(0, 256);
+      for (let i = 0; i < arr.length; i++) {
+        dst_l[i] = arr[i];
+      }
+      this._bigBuffer.splice(0, 256);
+    };
+    script_processor.connect(this._audioContext.destination);
+
+    // tick(16 / 1000);
+    setInterval(() => {
+      /* const state = getState();
+      let memory = null;
+      if (wasmInstance.exports.mem) memory = wasmInstance.exports.mem.buffer;
+      if (wasmInstance.exports.memory)
+        memory = wasmInstance.exports.memory.buffer;
+
+      const float32Array = new Float32Array(memory);
+      const sampleData = float32Array.subarray(
+        state.bufferPointer / 4,
+        state.bufferPointer / 4 + state.bufferPosition
+      );*/
+      tick(32 / 1000);
+      this.capture(wasmInstance, getState);
+      // this.play(wasmInstance, getState);
+    }, 32);
+
+    /*this._audioBuffer = this._audioContext.createBuffer(
       1,
       this._sampleRate,
       this._sampleRate
@@ -84,23 +129,94 @@ class GoSound {
 
     this._source = this._audioContext.createBufferSource();
     this._source.buffer = this._audioBuffer;
-    this._source.connect(this._audioContext.destination);
+    this._source.loop = true;
+
+    this._source.addEventListener("ended", () => {
+      console.log("gas");
+    });
+
+    document.addEventListener("click", () => {
+      this._source.connect(this._audioContext.destination);
+    });*/
+
+    /*document.addEventListener("click", () => {
+      this.isPlay = false;
+      this.play([0, 1, 2]);
+    });*/
+    /*tick();
+    const soundState = goWasmSoundState();
+
+    const float32Array = new Float32Array(memory);
+    const audioBufferData = float32Array.subarray(
+        soundState.bufferPointer / 4,
+        soundState.bufferPointer / 4 + soundState.bufferLength
+    );
+
+    GoSound.play(audioBufferData);*/
+    // this.play();
   }
 
-  static fill(array) {
-    const nowBuffering = this._audioBuffer.getChannelData(0);
-    for (let i = 0; i < array.length; i++) nowBuffering[i] = array[i];
+  static capture(wasmInstance, getState) {
+    const state = getState();
+    let memory = null;
+    if (wasmInstance.exports.mem) memory = wasmInstance.exports.mem.buffer;
+    if (wasmInstance.exports.memory)
+      memory = wasmInstance.exports.memory.buffer;
+
+    const float32Array = new Float32Array(memory);
+    const sampleData = float32Array.subarray(
+      state.bufferPointer / 4,
+      state.bufferPointer / 4 + state.bufferPosition
+    );
+    // console.log(sampleData.length);
+    this._bigBuffer.push(...sampleData);
+
+    return sampleData;
   }
 
-  static play() {
-    this._source.play();
-  }
+  /*static play(wasmInstance, getState) {
+    if (this._time === -1) this._time = this._audioContext.currentTime;
+    const state = getState();
+    let memory = null;
+    if (wasmInstance.exports.mem) memory = wasmInstance.exports.mem.buffer;
+    if (wasmInstance.exports.memory)
+      memory = wasmInstance.exports.memory.buffer;
+
+    const float32Array = new Float32Array(memory);
+    const sampleData = float32Array.subarray(
+      state.bufferPointer / 4,
+      state.bufferPointer / 4 + state.bufferPosition
+    );
+
+    // Create buffer
+    const audioBuffer = this._audioContext.createBuffer(
+      1,
+      sampleData.length + 100,
+      state.sampleRate
+    );
+
+    // Copy sound
+    audioBuffer.getChannelData(0).set(sampleData);
+
+    const source = this._audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(this._audioContext.destination);
+    source.start(this._time, 0, audioBuffer.duration);
+
+    this._time += source.buffer.duration;
+  }*/
 }
 
 class GoRenderWasm {
   static wasmTime = [];
   static jsTime = [];
   static calculateTime = [];
+  static soundTime = [];
+
+  static stats = {
+    requestAnimationFramePerSecond: 0,
+    avgDelta: [],
+  };
 
   static beforeFrame = () => {};
   static afterFrame = () => {};
@@ -115,22 +231,22 @@ class GoRenderWasm {
     );
     let memory = new ArrayBuffer(0);
     go.run(wasmModule.instance);
-    console.log(wasmModule.instance);
 
     // Init webgl render
     await GoRender.init();
 
     // Init sound
-    GoSound.init();
+    GoSound.init(wasmModule.instance, goWasmSoundState, goWasmSoundTick);
 
     let start;
+    let audioTick = 0;
 
     const step = (timestamp) => {
       if (start === undefined) start = timestamp;
       let delta = (timestamp - start) / 1000;
       if (delta <= 0) delta = 1 / 1000;
 
-      this.beforeFrame(delta);
+      this.stats.avgDelta.push(delta);
 
       // Calculate scene in golang
       let pp = performance.now();
@@ -168,7 +284,35 @@ class GoRenderWasm {
       GoRender.draw();
       this.jsTime.push(performance.now() - pp);
 
-      if (goWasmSoundTick) goWasmSoundTick();
+      /*pp = performance.now();
+      if (!GoSound.isPlay) {
+        if (goWasmSoundTick) {
+          goWasmSoundTick();
+        }
+        if (goWasmSoundState) {
+          const soundState = goWasmSoundState();
+
+          const float32Array = new Float32Array(memory);
+          const audioBufferData = float32Array.subarray(
+            soundState.bufferPointer / 4,
+            soundState.bufferPointer / 4 + soundState.bufferLength
+          );
+
+          GoSound.play(audioBufferData);
+        }
+      }
+      this.soundTime.push(performance.now() - pp);*/
+
+      // GoSound._wasmMemory = memory;
+
+      this.stats.requestAnimationFramePerSecond += 1;
+
+      /*audioTick += 1;
+      if (audioTick > 5) {
+        audioTick = 0;
+
+        GoSound.play(wasmModule.instance, goWasmSoundState);
+      }*/
 
       // Request next frame
       start = timestamp;
@@ -180,23 +324,32 @@ class GoRenderWasm {
     // Timers
     const avg = (x) => x.reduce((a, b) => a + b) / x.length;
     setInterval(() => {
-      document.getElementById("wasm").innerHTML = `render calculate: ${avg(
-        this.wasmTime
-      ).toFixed(2)}`;
-      document.getElementById("js").innerHTML = `render draw: ${avg(
-        this.jsTime
-      ).toFixed(2)}`;
-      document.getElementById("calculate").innerHTML = `game calculate: ${avg(
-        this.calculateTime
-      ).toFixed(2)}`;
+      const gameCalculate = avg(this.calculateTime);
+      const renderCalculate = avg(this.wasmTime);
+      const renderDraw = avg(this.jsTime);
+      const avgDelta = avg(this.stats.avgDelta);
+      // const soundTime = avg(this.soundTime);
 
-      document.getElementById("mem").innerHTML = `mem: ${(
-        memory.byteLength / 1048576
-      ).toFixed(3)} mb`;
+      document.getElementById("stats").innerHTML = `
+        <div>game calculate: ${gameCalculate.toFixed(2)}</div>
+        <div>render calculate: ${renderCalculate.toFixed(2)}</div>
+        <div>render draw: ${renderDraw.toFixed(2)}</div> 
+        
+        <div>total: ${(gameCalculate + renderCalculate + renderDraw).toFixed(
+          2
+        )}</div>
+        <div>mem usage: ${(memory.byteLength / 1048576).toFixed(3)} mb</div>
+        
+        <div>fps: ${this.stats.requestAnimationFramePerSecond}</div>
+        <div>delta: ${avgDelta.toFixed(4)}</div>
+      `;
 
+      this.stats.avgDelta.length = 0;
+      this.stats.requestAnimationFramePerSecond = 0;
       this.wasmTime.length = 0;
       this.jsTime.length = 0;
       this.calculateTime.length = 0;
+      this.soundTime.length = 0;
     }, 1000);
   }
 }
