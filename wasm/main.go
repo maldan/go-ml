@@ -73,7 +73,7 @@ func InitSound() {
 	}))
 
 	js.Global().Set("goWasmSoundTick", js.FuncOf(func(this js.Value, args []js.Value) any {
-		maudio.Tick(float32(args[0].Float()))
+		maudio.Tick(args[0].Int())
 		return nil
 	}))
 }

@@ -1,36 +1,57 @@
 package maudio
 
 import (
-	"math"
 	"reflect"
 	"unsafe"
 )
 
+type AudioEffect struct {
+	FromF float32
+	ToF   float32
+	Time  float32
+}
+
 type AudioState struct {
-	SampleRate int
-	Position   int
-	Length     int
+	SampleRate float32
 
-	P             int
-	Buffer        []float32
-	DurationError float32
-	Frequency     float32
-	Volume        float32
+	T      float32
+	Buffer []float32
+	Volume float32
 
-	Time float32
+	Effect AudioEffect
+
+	Ch0 AudioChannel
+	Ch1 AudioChannel
 }
 
 var State AudioState = AudioState{}
 
-func Init(sampleRate int) {
+func Init(sampleRate float32) {
 	State.SampleRate = sampleRate
 
 	// Buffer size is one second
-	State.Buffer = make([]float32, sampleRate*10)
+	State.Buffer = make([]float32, int(sampleRate*2))
+
+	State.Ch0.SampleRate = sampleRate
+	State.Ch0.Frequency = 440
+	State.Ch0.Volume = 1.0
 }
 
-func Tick(delta float32) {
-	// State.DurationError =
+func SetEffect(fromF float32, toF float32, time float32) {
+	State.Effect.FromF = fromF
+	State.Effect.ToF = toF
+	State.Effect.Time = time
+}
+
+func Tick(samples int) {
+	for i := 0; i < samples; i++ {
+		ch0 := State.Ch0.Do(float32(i) + State.T)
+		ch1 := State.Ch1.Do(float32(i) + State.T)
+		State.Buffer[i] = (ch0 + ch1)
+	}
+	State.T += float32(samples)
+
+	/*// State.DurationError =
 	sampleAmountF := float32(State.SampleRate) * delta
 	sampleAmountI := int(sampleAmountF)
 	State.DurationError += sampleAmountF - float32(sampleAmountI)
@@ -40,10 +61,21 @@ func Tick(delta float32) {
 		sampleAmountI += 1
 	}
 
+	if State.Effect.Time > 0 {
+		State.Effect.Time -= delta
+		State.Frequency = ml_number.Lerp(State.Effect.FromF, State.Effect.ToF, State.Effect.Time)
+	}
+
 	// Generate data
 	for i := 0; i < sampleAmountI; i++ {
 		val := math.Sin((float64(State.P) / float64(State.SampleRate)) * math.Pi * 2.0 * float64(State.Frequency))
+		if val > 0 {
+			val = 1
+		} else {
+			val = -1
+		}
 		State.Buffer[State.Position] = float32(val) * State.Volume
+
 		// State.Buffer[State.Position] = ml_number.RandFloat32(-0.1, 0.1)
 
 		// Offset position
@@ -54,26 +86,18 @@ func Tick(delta float32) {
 		}
 	}
 
-	State.Length += sampleAmountI
-
-	State.Time += delta
-
 	if State.Volume > 0 {
 		State.Volume -= delta
-	}
+	} else {
+		State.Volume = 0
+	}*/
 }
 
 func GetState() map[string]any {
 	bufferHeader := (*reflect.SliceHeader)(unsafe.Pointer(&State.Buffer))
-	position := State.Position
-	State.Position = 0
 
 	return map[string]any{
-		"bufferPointer":  bufferHeader.Data,
-		"bufferPosition": position,
-		//"bufferLength":  len(State.Buffer),
-
-		"time":       State.Time,
-		"sampleRate": State.SampleRate,
+		"bufferPointer": bufferHeader.Data,
+		"sampleRate":    State.SampleRate,
 	}
 }

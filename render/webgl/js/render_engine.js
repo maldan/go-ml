@@ -69,91 +69,28 @@ class GoRender {
 
 class GoSound {
   static _audioContext;
-  static _time = -1;
-  static _bigBuffer = [];
-  // static _privateData = [];
 
   static init(wasmInstance, getState, tick) {
     this._audioContext = new (window.AudioContext || window.webkitAudioContext)(
       {
         latencyHint: "interactive",
-        sampleRate: 44100 / 4,
+        sampleRate: 44100 / 2,
       }
     );
 
     const script_processor = this._audioContext.createScriptProcessor(
-      256,
+      512,
       0,
       1
     );
     script_processor.onaudioprocess = (event) => {
       const dst = event.outputBuffer;
       const dst_l = dst.getChannelData(0);
-
-      if (this._bigBuffer.length < 256) {
-        tick(32 / 1000);
-        this.capture(wasmInstance, getState);
-      }
-
-      const arr = this._bigBuffer.slice(0, 256);
-      for (let i = 0; i < arr.length; i++) {
-        dst_l[i] = arr[i];
-      }
-      this._bigBuffer.splice(0, 256);
+      tick(512);
+      const sampleData = this.capture(wasmInstance, getState);
+      dst_l.set(sampleData);
     };
     script_processor.connect(this._audioContext.destination);
-
-    // tick(16 / 1000);
-    setInterval(() => {
-      /* const state = getState();
-      let memory = null;
-      if (wasmInstance.exports.mem) memory = wasmInstance.exports.mem.buffer;
-      if (wasmInstance.exports.memory)
-        memory = wasmInstance.exports.memory.buffer;
-
-      const float32Array = new Float32Array(memory);
-      const sampleData = float32Array.subarray(
-        state.bufferPointer / 4,
-        state.bufferPointer / 4 + state.bufferPosition
-      );*/
-      tick(32 / 1000);
-      this.capture(wasmInstance, getState);
-      // this.play(wasmInstance, getState);
-    }, 32);
-
-    /*this._audioBuffer = this._audioContext.createBuffer(
-      1,
-      this._sampleRate,
-      this._sampleRate
-    );
-
-    this._source = this._audioContext.createBufferSource();
-    this._source.buffer = this._audioBuffer;
-    this._source.loop = true;
-
-    this._source.addEventListener("ended", () => {
-      console.log("gas");
-    });
-
-    document.addEventListener("click", () => {
-      this._source.connect(this._audioContext.destination);
-    });*/
-
-    /*document.addEventListener("click", () => {
-      this.isPlay = false;
-      this.play([0, 1, 2]);
-    });*/
-    /*tick();
-    const soundState = goWasmSoundState();
-
-    const float32Array = new Float32Array(memory);
-    const audioBufferData = float32Array.subarray(
-        soundState.bufferPointer / 4,
-        soundState.bufferPointer / 4 + soundState.bufferLength
-    );
-
-    GoSound.play(audioBufferData);*/
-    // this.play();
   }
 
   static capture(wasmInstance, getState) {
@@ -163,15 +100,10 @@ class GoSound {
     if (wasmInstance.exports.memory)
       memory = wasmInstance.exports.memory.buffer;
 
-    const float32Array = new Float32Array(memory);
-    const sampleData = float32Array.subarray(
+    return new Float32Array(memory).subarray(
       state.bufferPointer / 4,
-      state.bufferPointer / 4 + state.bufferPosition
+      state.bufferPointer / 4 + 512
     );
-    // console.log(sampleData.length);
-    this._bigBuffer.push(...sampleData);
-
-    return sampleData;
   }
 
   /*static play(wasmInstance, getState) {
