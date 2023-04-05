@@ -13,6 +13,8 @@ type LineLayer struct {
 	VertexAmount int
 	ColorList    []float32
 	Camera       mr_camera.PerspectiveCamera
+
+	state map[string]any
 }
 
 func (l *LineLayer) Init() {
@@ -56,12 +58,18 @@ func (l *LineLayer) GetState() map[string]any {
 	vertexHeader := (*reflect.SliceHeader)(unsafe.Pointer(&l.VertexList))
 	colorHeader := (*reflect.SliceHeader)(unsafe.Pointer(&l.ColorList))
 
-	return map[string]any{
-		"vertexPointer": vertexHeader.Data,
-		"vertexAmount":  l.VertexAmount,
-		"colorPointer":  colorHeader.Data,
-		"colorAmount":   l.VertexAmount,
-
-		"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+	if l.state == nil {
+		l.state = map[string]any{
+			"vertexPointer":           vertexHeader.Data,
+			"vertexAmount":            l.VertexAmount,
+			"colorPointer":            colorHeader.Data,
+			"colorAmount":             l.VertexAmount,
+			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+		}
+	} else {
+		l.state["vertexAmount"] = l.VertexAmount
+		l.state["colorAmount"] = l.VertexAmount
 	}
+
+	return l.state
 }

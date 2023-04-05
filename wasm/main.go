@@ -45,35 +45,41 @@ func BindMouse() {
 	js.Global().Get("document").Call("addEventListener", "mouseup", mouseup)
 }
 
-func ExportFunction(name string, fn func(args []js.Value)) {
-	js.Global().Set(name, js.FuncOf(func(this js.Value, args []js.Value) any {
-		fn(args)
-		return nil
+func ExportFunction(name string, fn func(args []js.Value) any) {
+	if js.Global().Get("window").Get("go").IsUndefined() {
+		js.Global().Get("window").Set("go", map[string]any{})
+	}
+
+	js.Global().Get("window").Get("go").Set(name, js.FuncOf(func(this js.Value, args []js.Value) any {
+		return fn(args)
 	}))
 }
 
 func InitRender(engine *mrender.RenderEngine) {
-	js.Global().Set("goWasmRenderState", js.FuncOf(func(this js.Value, args []js.Value) any {
-		return map[string]any{
-			"mainLayer":  engine.Main.GetState(),
-			"pointLayer": engine.Point.GetState(),
-			"lineLayer":  engine.Line.GetState(),
-		}
-	}))
+	state := map[string]any{
+		"mainLayer":  engine.Main.GetState(),
+		"pointLayer": engine.Point.GetState(),
+		"lineLayer":  engine.Line.GetState(),
+	}
+	ExportFunction("renderState", func(args []js.Value) any {
+		state["mainLayer"] = engine.Main.GetState()
+		state["pointLayer"] = engine.Point.GetState()
+		state["lineLayer"] = engine.Line.GetState()
+		return state
+	})
 
-	js.Global().Set("goWasmRenderFrame", js.FuncOf(func(this js.Value, args []js.Value) any {
+	ExportFunction("renderFrame", func(args []js.Value) any {
 		engine.Render()
 		return nil
-	}))
+	})
 }
 
 func InitSound() {
-	js.Global().Set("goWasmSoundState", js.FuncOf(func(this js.Value, args []js.Value) any {
+	ExportFunction("soundState", func(args []js.Value) any {
 		return maudio.GetState()
-	}))
-
-	js.Global().Set("goWasmSoundTick", js.FuncOf(func(this js.Value, args []js.Value) any {
+	})
+	ExportFunction("soundTick", func(args []js.Value) any {
 		maudio.Tick(args[0].Int())
 		return nil
-	}))
+	})
 }

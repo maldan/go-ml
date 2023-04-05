@@ -70,7 +70,7 @@ class GoRender {
 class GoSound {
   static _audioContext;
 
-  static init(wasmInstance, getState, tick) {
+  static init(wasmInstance) {
     this._audioContext = new (window.AudioContext || window.webkitAudioContext)(
       {
         latencyHint: "interactive",
@@ -86,8 +86,8 @@ class GoSound {
     script_processor.onaudioprocess = (event) => {
       const dst = event.outputBuffer;
       const dst_l = dst.getChannelData(0);
-      tick(512);
-      const sampleData = this.capture(wasmInstance, getState);
+      window.go.soundTick(512);
+      const sampleData = this.capture(wasmInstance, window.go.soundState);
       dst_l.set(sampleData);
     };
     script_processor.connect(this._audioContext.destination);
@@ -168,7 +168,7 @@ class GoRenderWasm {
     await GoRender.init();
 
     // Init sound
-    GoSound.init(wasmModule.instance, goWasmSoundState, goWasmSoundTick);
+    GoSound.init(wasmModule.instance);
 
     let start;
     let audioTick = 0;
@@ -182,15 +182,15 @@ class GoRenderWasm {
 
       // Calculate scene in golang
       let pp = performance.now();
-      goWasmGameTick(delta);
+      window.go.gameTick(delta);
       this.calculateTime.push(performance.now() - pp);
 
       pp = performance.now();
-      goWasmRenderFrame();
+      window.go.renderFrame();
       this.wasmTime.push(performance.now() - pp);
 
       // Get state
-      let state = goWasmRenderState();
+      let state = window.go.renderState();
 
       // Send golang data to webgl render
       GoRender.layerList.forEach((layer) => {

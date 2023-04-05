@@ -12,6 +12,8 @@ type PointLayer struct {
 	VertexList   []float32
 	VertexAmount int
 	Camera       mr_camera.PerspectiveCamera
+
+	state map[string]any
 }
 
 func (l *PointLayer) Init() {
@@ -42,10 +44,15 @@ func (l *PointLayer) Render() {
 func (l *PointLayer) GetState() map[string]any {
 	vertexHeader := (*reflect.SliceHeader)(unsafe.Pointer(&l.VertexList))
 
-	return map[string]any{
-		"vertexPointer": vertexHeader.Data,
-		"vertexAmount":  l.VertexAmount,
-
-		"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+	if l.state == nil {
+		l.state = map[string]any{
+			"vertexPointer":           vertexHeader.Data,
+			"vertexAmount":            l.VertexAmount,
+			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+		}
+	} else {
+		l.state["vertexAmount"] = l.VertexAmount
 	}
+
+	return l.state
 }

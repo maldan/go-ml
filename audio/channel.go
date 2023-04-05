@@ -5,11 +5,19 @@ import (
 	"math"
 )
 
+const (
+	WaveSin      uint32 = 1
+	WaveSquare   uint32 = 2
+	WaveTriangle uint32 = 4
+	WaveNoise    uint32 = 8
+)
+
 type AudioChannel struct {
-	WaveType   string
-	Frequency  float32
-	SampleRate float32
-	Volume     float32
+	WaveType     uint32
+	Frequency    float32
+	SampleRate   float32
+	Volume       float32
+	SquareOffset float32
 }
 
 func (c *AudioChannel) DoNoise(t float32) float32 {
@@ -23,20 +31,23 @@ func (c *AudioChannel) DoSin(t float32) float32 {
 	return final
 }
 
+/*func (c *AudioChannel) DoSaw(t float32) float32 {
+	f1 := 3.1415926535
+	f2 := (2 * 3.1415926535 * c.Frequency) * (t / c.SampleRate)
+	f2s := math.Asin(math.Sin(float64(f2)))
+	return float32(f1 * f2s)
+}
+*/
 func (c *AudioChannel) DoTriangle(t float32) float32 {
-	p := float64(3.1415926535/2) * float64(c.Frequency/c.SampleRate)
-
-	tt := float64(math.Mod(float64(t), 2*p))
-
-	y := (1.0 / p) * (p - math.Abs(tt-p))
-
-	// final := math.Abs(hh-1)*1 - 1
-	return float32(y)
+	f1 := 2 / 3.1415926535
+	f2 := (2 * 3.1415926535 * c.Frequency) * (t / c.SampleRate)
+	f2s := math.Asin(math.Sin(float64(f2)))
+	return float32(f1 * f2s)
 }
 
 func (c *AudioChannel) DoSquare(t float32) float32 {
 	v := c.DoSin(t)
-	if v > 0 {
+	if v >= c.SquareOffset {
 		return 1
 	} else {
 		return -1
@@ -47,14 +58,19 @@ func (c *AudioChannel) Do(t float32) float32 {
 	if c.Volume <= 0 {
 		return 0
 	}
-	if c.WaveType == "triangle" {
+
+	if c.WaveType&WaveTriangle == WaveTriangle {
 		return c.DoTriangle(t) * c.Volume
 	}
-	if c.WaveType == "noise" {
+	if c.WaveType&WaveNoise == WaveNoise {
 		return c.DoNoise(t) * c.Volume
 	}
-	if c.WaveType == "square" {
+	if c.WaveType&WaveSquare == WaveSquare {
 		return c.DoSquare(t) * c.Volume
 	}
-	return c.DoSin(t) * c.Volume
+	if c.WaveType&WaveSin == WaveSin {
+		return c.DoSin(t) * c.Volume
+	}
+
+	return 0
 }
