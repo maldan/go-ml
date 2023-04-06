@@ -48,6 +48,13 @@ func (m *Mesh) ScaleUV(size mmath_la.Vector2[float32]) {
 	}
 }
 
+func (m *Mesh) OffsetUv(offset mmath_la.Vector2[float32]) {
+	for i := 0; i < len(m.UV); i++ {
+		m.UV[i].X += offset.X
+		m.UV[i].Y += offset.Y
+	}
+}
+
 // MakeCube 0b11_11_11_00 [Front, Back, Top, Bottom, Right, Left]
 func (m *Mesh) MakeCube(size mmath_la.Vector3[float32], side uint8) {
 	sideAmount := ml_number.CountSetBits(side)

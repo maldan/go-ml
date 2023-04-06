@@ -72,6 +72,11 @@ func InitRender(engine *mrender.RenderEngine) {
 		engine.Render()
 		return nil
 	})
+
+	ExportFunction("renderResize", func(args []js.Value) any {
+		engine.GlobalCamera.AspectRatio = float32(args[0].Float() / args[1].Float())
+		return nil
+	})
 }
 
 func InitSound() {

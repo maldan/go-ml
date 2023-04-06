@@ -134,7 +134,7 @@ func (l *MainLayer) Render() {
 
 			if instance.UvOffset.X != 0 || instance.UvOffset.Y != 0 {
 				l.UvList[uvIndex] += instance.UvOffset.X
-				l.UvList[uvIndex+1] += instance.UvOffset.Y
+				l.UvList[uvIndex+1] -= instance.UvOffset.Y
 			}
 
 			uvIndex += 2

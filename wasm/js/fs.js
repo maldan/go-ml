@@ -1,15 +1,14 @@
 var gas = {};
+var __fdCounter = 10;
 
 globalThis.fs.open = async function (path, flags, mode, callback) {
   const p = await fetch(path);
   const b = await p.blob();
   const body = await b.arrayBuffer();
-  // console.log(callback);
-  // console.log(path, flags, mode);
-  // console.log(path);
-  // console.log(callback);
-  gas[10] = new Uint8Array(body);
-  callback(null, 10);
+
+  gas[__fdCounter] = new Uint8Array(body);
+  callback(null, __fdCounter);
+  __fdCounter += 1;
 };
 
 globalThis.fs.read = async function (

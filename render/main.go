@@ -20,6 +20,18 @@ var State RenderEngine = RenderEngine{}
 
 func AllocateMesh(mesh *mr_mesh.Mesh) *mr_mesh.Mesh {
 	mesh.Id = len(State.Main.AllocatedMesh)
+
+	if mesh.Normal == nil {
+		for i := 0; i < len(mesh.Vertices); i++ {
+			mesh.Normal = append(mesh.Normal, mmath_la.Vector3[float32]{0, 0, 0})
+		}
+	}
+	if mesh.UV == nil {
+		for i := 0; i < len(mesh.Vertices); i++ {
+			mesh.UV = append(mesh.UV, mmath_la.Vector2[float32]{0, 0})
+		}
+	}
+
 	State.Main.AllocatedMesh = append(State.Main.AllocatedMesh, mesh)
 	return mesh
 }

@@ -1,8 +1,11 @@
 class GoRender {
   static _gl = null;
+  static _canvas = null;
 
   static shaderSource = {};
   static layerList = [];
+
+  static downscale = 4;
 
   static async loadShaderSourceCode(url) {
     const x = await fetch(url);
@@ -10,8 +13,8 @@ class GoRender {
   }
 
   static async init() {
-    const canvas = document.querySelector("#glcanvas");
-    this._gl = canvas.getContext("webgl", { antialias: false });
+    this._canvas = document.querySelector("#glcanvas");
+    this._gl = this._canvas.getContext("webgl", { antialias: false });
     if (this._gl === null) throw new Error("WebGL is not supported");
 
     // Load shaders
@@ -48,6 +51,34 @@ class GoRender {
       x.texture = texture;
       return x;
     });
+
+    window.addEventListener("resize", () => {
+      this.onResize();
+    });
+    this.onResize();
+  }
+
+  static onResize() {
+    this._canvas.setAttribute(
+      "width",
+      window.innerWidth / this.downscale + "px"
+    );
+    this._canvas.setAttribute(
+      "height",
+      window.innerHeight / this.downscale + "px"
+    );
+    this._gl.viewport(
+      0,
+      0,
+      window.innerWidth / this.downscale,
+      window.innerHeight / this.downscale
+    );
+
+    if (window.go)
+      window.go.renderResize(
+        window.innerWidth / this.downscale,
+        window.innerHeight / this.downscale
+      );
   }
 
   static draw() {
@@ -55,8 +86,8 @@ class GoRender {
     this._gl.clearDepth(1.0);
     this._gl.enable(this._gl.DEPTH_TEST);
 
-    this._gl.enable(this._gl.CULL_FACE);
-    this._gl.cullFace(this._gl.BACK);
+    //this._gl.enable(this._gl.CULL_FACE);
+    //this._gl.cullFace(this._gl.BACK);
 
     this._gl.depthFunc(this._gl.LEQUAL);
     this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
@@ -313,6 +344,7 @@ function loadTexture(gl, url) {
   const image = new Image();
   image.onload = () => {
     gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D(
       gl.TEXTURE_2D,
       level,
@@ -321,7 +353,7 @@ function loadTexture(gl, url) {
       srcType,
       image
     );
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    //
 
     // gl.generateMipmap(gl.TEXTURE_2D);
 
