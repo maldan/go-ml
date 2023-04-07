@@ -105,8 +105,12 @@ func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32],
 	DrawLine(tFrom, tTo, color)
 }
 
-func DrawPoint(to mmath_la.Vector3[float32]) {
-	State.Point.PointList = append(State.Point.PointList, to)
+func DrawPoint(to mmath_la.Vector3[float32], size float32, color ml_color.ColorRGBA[float32]) {
+	State.Point.PointList = append(State.Point.PointList, mr_layer.Point{
+		Position: to,
+		Size:     size,
+		Color:    color,
+	})
 }
 
 func LoadFont(name string, charMap map[uint8]mmath_geom.Rectangle[float32]) {
@@ -117,13 +121,13 @@ func LoadFont(name string, charMap map[uint8]mmath_geom.Rectangle[float32]) {
 	for c, r := range charMap {
 		State.Text.FontMap[name].Symbol[c] = mrender_uv.GetArea(r.Left, r.Top, r.Right, r.Bottom, 1024, 1024)
 	}
-	// State.Text.FontMap[name]
 }
 
-func DrawText(font string, text string, pos mmath_la.Vector3[float32]) {
+func DrawText(font string, text string, size float32, pos mmath_la.Vector3[float32]) {
 	State.Text.TextList = append(State.Text.TextList, mr_layer.Text{
 		Font:     font,
 		Content:  text,
+		Size:     size,
 		Position: pos,
 	})
 }

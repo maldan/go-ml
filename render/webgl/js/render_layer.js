@@ -207,10 +207,10 @@ class GoRenderPointLayer extends GoRenderLayer {
   init(vertex, fragment) {
     this.shader = this.compileShader(vertex, fragment);
 
-    ["vertex"].forEach((x) => {
+    ["vertex", "color"].forEach((x) => {
       this.bufferList[x] = this._gl.createBuffer();
     });
-    ["aVertex"].forEach((x) => {
+    ["aVertex", "aColor"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
     ["uProjectionMatrix"].forEach((x) => {
@@ -222,6 +222,7 @@ class GoRenderPointLayer extends GoRenderLayer {
     let float32Array = new Float32Array(memory);
 
     this.setDataArray("vertex", state, float32Array);
+    this.setDataArray("color", state, float32Array);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
   }
 
@@ -231,13 +232,16 @@ class GoRenderPointLayer extends GoRenderLayer {
 
     // Draw points
     this.uploadData("any", "vertex");
-    this.enableAttribute("vertex");
+    this.uploadData("any", "color");
+
+    this.enableAttribute("vertex", 4);
+    this.enableAttribute("color", 4);
 
     // Set projection
     this.setUniform("projectionMatrix");
 
     this._gl.disable(this._gl.DEPTH_TEST);
-    this._gl.drawArrays(this._gl.POINTS, 0, this.dataList["vertex"].length / 3);
+    this._gl.drawArrays(this._gl.POINTS, 0, this.dataList["vertex"].length / 4);
   }
 }
 

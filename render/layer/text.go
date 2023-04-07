@@ -11,6 +11,7 @@ import (
 type Text struct {
 	Font     string
 	Content  string
+	Size     float32
 	Position mmath_la.Vector3[float32]
 }
 
@@ -71,20 +72,20 @@ func (l *TextLayer) Render() {
 
 		// Vertex
 		for j := 0; j < len(text.Content); j++ {
-			l.VertexList[vertexId] = -0.5
-			l.VertexList[vertexId+1] = -0.5
+			l.VertexList[vertexId] = -0.5 * text.Size
+			l.VertexList[vertexId+1] = -0.5 * text.Size
 			l.VertexList[vertexId+2] = 0
 
-			l.VertexList[vertexId+3] = 0.5
-			l.VertexList[vertexId+4] = -0.5
+			l.VertexList[vertexId+3] = 0.5 * text.Size
+			l.VertexList[vertexId+4] = -0.5 * text.Size
 			l.VertexList[vertexId+5] = 0
 
-			l.VertexList[vertexId+6] = 0.5
-			l.VertexList[vertexId+7] = 0.5
+			l.VertexList[vertexId+6] = 0.5 * text.Size
+			l.VertexList[vertexId+7] = 0.5 * text.Size
 			l.VertexList[vertexId+8] = 0
 
-			l.VertexList[vertexId+9] = -0.5
-			l.VertexList[vertexId+10] = 0.5
+			l.VertexList[vertexId+9] = -0.5 * text.Size
+			l.VertexList[vertexId+10] = 0.5 * text.Size
 			l.VertexList[vertexId+11] = 0
 
 			vertexId += 3 * 4
@@ -93,19 +94,19 @@ func (l *TextLayer) Render() {
 
 		// Position list
 		for j := 0; j < len(text.Content); j++ {
-			l.PositionList[positionId] = text.Position.X + float32(j)
+			l.PositionList[positionId] = text.Position.X + float32(j)*text.Size
 			l.PositionList[positionId+1] = text.Position.Y
 			l.PositionList[positionId+2] = text.Position.Z
 
-			l.PositionList[positionId+3] = text.Position.X + float32(j)
+			l.PositionList[positionId+3] = text.Position.X + float32(j)*text.Size
 			l.PositionList[positionId+4] = text.Position.Y
 			l.PositionList[positionId+5] = text.Position.Z
 
-			l.PositionList[positionId+6] = text.Position.X + float32(j)
+			l.PositionList[positionId+6] = text.Position.X + float32(j)*text.Size
 			l.PositionList[positionId+7] = text.Position.Y
 			l.PositionList[positionId+8] = text.Position.Z
 
-			l.PositionList[positionId+9] = text.Position.X + float32(j)
+			l.PositionList[positionId+9] = text.Position.X + float32(j)*text.Size
 			l.PositionList[positionId+10] = text.Position.Y
 			l.PositionList[positionId+11] = text.Position.Z
 

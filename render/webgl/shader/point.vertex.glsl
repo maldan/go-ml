@@ -1,9 +1,15 @@
-attribute vec3 aVertex;
-uniform mat4 uProjectionMatrix;
-
 // LIB
 
+attribute vec4 aVertex;
+attribute vec4 aColor;
+
+uniform mat4 uProjectionMatrix;
+
+varying highp vec4 vColor;
+
 void main() {
-    gl_Position = uProjectionMatrix * vec4(aVertex, 1.0);
-    gl_PointSize = 3.0;
+    gl_Position = uProjectionMatrix * vec4(aVertex.xyz, 1.0);
+    gl_PointSize = aVertex.w;
+
+    vColor = aColor;
 }
