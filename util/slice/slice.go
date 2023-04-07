@@ -212,3 +212,27 @@ func Reverse[T any](slice []T) []T {
 
 	return out
 }
+
+// Permute the values at index i to len(a)-1.
+func perm[T any](slice []T, f func([]T), i int) {
+	if i > len(slice) {
+		f(slice)
+		return
+	}
+	perm(slice, f, i+1)
+	for j := i + 1; j < len(slice); j++ {
+		slice[i], slice[j] = slice[j], slice[i]
+		perm(slice, f, i+1)
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+}
+
+func Permutation[T any](slice []T) [][]T {
+	out := make([][]T, 0, len(slice))
+	perm(slice, func(a []T) {
+		n := make([]T, len(a))
+		copy(n, a)
+		out = append(out, n)
+	}, 0)
+	return out
+}

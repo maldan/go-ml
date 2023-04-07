@@ -20,7 +20,7 @@ class GoRender {
     // Load shaders
     const shaderList = ["matrix.glsl"];
     shaderList.push(
-      ...["main", "point", "line"]
+      ...["main", "point", "line", "text"]
         .map((x) => [`${x}.vertex.glsl`, `${x}.fragment.glsl`])
         .flat()
     );
@@ -43,6 +43,7 @@ class GoRender {
       new GoRenderLayer("main", this._gl),
       new GoRenderPointLayer("point", this._gl),
       new GoRenderLineLayer("line", this._gl),
+      new GoRenderTextLayer("text", this._gl),
     ].map((x) => {
       x.init(
         this.shaderSource[`./shader/${x.name}.vertex.glsl`],
@@ -203,6 +204,21 @@ class GoRenderWasm {
 
     let start;
     let audioTick = 0;
+
+    window.exportWasmMemory = () => {
+      const file = new Blob([memory], { type: "bin" });
+
+      const a = document.createElement("a"),
+        url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = "memory.bin";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
+    };
 
     const step = (timestamp) => {
       if (start === undefined) start = timestamp;

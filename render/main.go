@@ -1,10 +1,12 @@
 package mrender
 
 import (
+	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
+	mrender_uv "github.com/maldan/go-ml/render/uv"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 )
 
@@ -12,13 +14,14 @@ type RenderEngine struct {
 	Main  mr_layer.MainLayer
 	Point mr_layer.PointLayer
 	Line  mr_layer.LineLayer
+	Text  mr_layer.TextLayer
 
 	GlobalCamera mr_camera.PerspectiveCamera
 }
 
 var State RenderEngine = RenderEngine{}
 
-func AllocateMesh(mesh *mr_mesh.Mesh) *mr_mesh.Mesh {
+func AllocateMesh(mesh mr_mesh.Mesh) *mr_mesh.Mesh {
 	mesh.Id = len(State.Main.AllocatedMesh)
 
 	if mesh.Normal == nil {
@@ -33,7 +36,7 @@ func AllocateMesh(mesh *mr_mesh.Mesh) *mr_mesh.Mesh {
 	}
 
 	State.Main.AllocatedMesh = append(State.Main.AllocatedMesh, mesh)
-	return mesh
+	return &State.Main.AllocatedMesh[len(State.Main.AllocatedMesh)-1]
 }
 
 func InstanceMesh(mesh *mr_mesh.Mesh) *mr_mesh.MeshInstance {
@@ -62,6 +65,7 @@ func Init() {
 	State.Main.Init()
 	State.Point.Init()
 	State.Line.Init()
+	State.Text.Init()
 }
 
 func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
@@ -105,13 +109,34 @@ func DrawPoint(to mmath_la.Vector3[float32]) {
 	State.Point.PointList = append(State.Point.PointList, to)
 }
 
+func LoadFont(name string, charMap map[uint8]mmath_geom.Rectangle[float32]) {
+	State.Text.FontMap[name] = mr_layer.TextFont{
+		Symbol: map[uint8]mmath_geom.Rectangle[float32]{},
+	}
+
+	for c, r := range charMap {
+		State.Text.FontMap[name].Symbol[c] = mrender_uv.GetArea(r.Left, r.Top, r.Right, r.Bottom, 1024, 1024)
+	}
+	// State.Text.FontMap[name]
+}
+
+func DrawText(font string, text string, pos mmath_la.Vector3[float32]) {
+	State.Text.TextList = append(State.Text.TextList, mr_layer.Text{
+		Font:     font,
+		Content:  text,
+		Position: pos,
+	})
+}
+
 func (r *RenderEngine) Render() {
 	r.GlobalCamera.ApplyMatrix()
 	r.Main.Camera = r.GlobalCamera
 	r.Point.Camera = r.GlobalCamera
 	r.Line.Camera = r.GlobalCamera
+	r.Text.Camera = r.GlobalCamera
 
 	r.Main.Render()
 	r.Point.Render()
 	r.Line.Render()
+	r.Text.Render()
 }

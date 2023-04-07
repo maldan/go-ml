@@ -281,3 +281,68 @@ class GoRenderLineLayer extends GoRenderLayer {
     this._gl.drawArrays(this._gl.LINES, 0, this.dataList["vertex"].length / 3);
   }
 }
+
+class GoRenderTextLayer extends GoRenderLayer {
+  init(vertex, fragment) {
+    this.shader = this.compileShader(vertex, fragment);
+
+    ["vertex", "index", "position", "uv", "color"].forEach((x) => {
+      this.bufferList[x] = this._gl.createBuffer();
+    });
+    ["aVertex", "aPosition", "aUv", "aColor"].forEach((x) => {
+      this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
+    });
+    ["uProjectionMatrix", "uTexture"].forEach((x) => {
+      this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
+    });
+  }
+
+  setWasmData(memory, state) {
+    let shortArray = new Uint16Array(memory);
+    let float32Array = new Float32Array(memory);
+
+    this.setDataArray("vertex", state, float32Array);
+    this.setDataArray("uv", state, float32Array);
+    this.setDataArray("position", state, float32Array);
+    this.setDataArray("color", state, float32Array);
+
+    this.setDataArray("index", state, shortArray);
+    this.setDataArray("projectionMatrix", state, float32Array, 16);
+  }
+
+  draw() {
+    // Set program
+    this._gl.useProgram(this.shader);
+
+    // Put main data
+    this.uploadData("element", "index");
+    this.uploadData("any", "vertex");
+    this.uploadData("any", "uv");
+    this.uploadData("any", "position");
+    this.uploadData("any", "color");
+
+    // Enable attributes
+    this.enableAttribute("vertex");
+    this.enableAttribute("uv", 2);
+    this.enableAttribute("position");
+    this.enableAttribute("color");
+
+    // Set projection
+    this.setUniform("projectionMatrix");
+
+    // Set texture
+    this.setTexture();
+
+    this._gl.bindBuffer(
+      this._gl.ELEMENT_ARRAY_BUFFER,
+      this.bufferList["index"]
+    );
+
+    this._gl.drawElements(
+      this._gl.TRIANGLES,
+      this.dataList["index"].length,
+      this._gl.UNSIGNED_SHORT,
+      0
+    );
+  }
+}

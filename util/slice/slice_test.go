@@ -7,6 +7,16 @@ import (
 	"testing"
 )
 
+func TestPermutation(t *testing.T) {
+	newArray := []int{1, 2, 3}
+	l := ml_slice.Permutation(newArray)
+	fmt.Printf("%v\n", l)
+
+	newArray2 := []string{"l", "r", "t", "b"}
+	l2 := ml_slice.Permutation(newArray2)
+	fmt.Printf("%v\n", l2)
+}
+
 func TestRemoveAt(t *testing.T) {
 	newArray := []int{1, 2, 3, 4, 5}
 	newArray = ml_slice.RemoveAt(newArray, 1)

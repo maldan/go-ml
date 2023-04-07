@@ -27,8 +27,8 @@ type MeshInstance struct {
 	IsActive  bool
 }
 
-func New() *Mesh {
-	return &Mesh{
+func New() Mesh {
+	return Mesh{
 		Id: -1,
 	}
 }
@@ -55,7 +55,7 @@ func (m *Mesh) OffsetUv(offset mmath_la.Vector2[float32]) {
 	}
 }
 
-// MakeCube 0b11_11_11_00 [Front, Back, Top, Bottom, Right, Left]
+// MakeCube 0b11_11_11_00 [Front, Back, Top, Bottom, Left, Right]
 func (m *Mesh) MakeCube(size mmath_la.Vector3[float32], side uint8) {
 	sideAmount := ml_number.CountSetBits(side)
 
@@ -110,18 +110,6 @@ func (m *Mesh) MakeCube(size mmath_la.Vector3[float32], side uint8) {
 		}
 	}
 
-	// Right
-	if side&0b0000_1000 == 0b0000_1000 {
-		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, -1.0, -1.0})
-		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, 1.0, -1.0})
-		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, 1.0, 1.0})
-		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, -1.0, 1.0})
-
-		for i := 0; i < 4; i++ {
-			m.Normal = append(m.Normal, mmath_la.Vector3[float32]{1.0, 0.0, 0.0})
-		}
-	}
-
 	// Left
 	if side&0b0000_1000 == 0b0000_1000 {
 		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{-1.0, -1.0, -1.0})
@@ -131,6 +119,18 @@ func (m *Mesh) MakeCube(size mmath_la.Vector3[float32], side uint8) {
 
 		for i := 0; i < 4; i++ {
 			m.Normal = append(m.Normal, mmath_la.Vector3[float32]{-1.0, 0.0, 0.0})
+		}
+	}
+
+	// Right
+	if side&0b0000_0100 == 0b0000_0100 {
+		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, -1.0, -1.0})
+		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, 1.0, -1.0})
+		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, 1.0, 1.0})
+		m.Vertices = append(m.Vertices, mmath_la.Vector3[float32]{1.0, -1.0, 1.0})
+
+		for i := 0; i < 4; i++ {
+			m.Normal = append(m.Normal, mmath_la.Vector3[float32]{1.0, 0.0, 0.0})
 		}
 	}
 

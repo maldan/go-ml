@@ -12,7 +12,7 @@ type Layer interface {
 }
 
 type MainLayer struct {
-	AllocatedMesh    []*mr_mesh.Mesh
+	AllocatedMesh    []mr_mesh.Mesh
 	MeshInstanceList []mr_mesh.MeshInstance
 	VertexList       []float32
 	UvList           []float32
@@ -46,7 +46,7 @@ func (l *MainLayer) Init() {
 	l.ScaleList = make([]float32, 65536*3)
 	l.ColorList = make([]float32, 65536*4)
 
-	l.AllocatedMesh = make([]*mr_mesh.Mesh, 0, 1024)
+	l.AllocatedMesh = make([]mr_mesh.Mesh, 0, 1024)
 	l.MeshInstanceList = make([]mr_mesh.MeshInstance, 1024)
 	l.IndexList = make([]uint16, 65536)
 
@@ -62,6 +62,7 @@ func (l *MainLayer) Render() {
 	l.ColorAmount = 0
 
 	vertexId := 0
+	vertexId2 := 0
 	indexId := 0
 	uvIndex := 0
 	colorId := 0
@@ -94,22 +95,26 @@ func (l *MainLayer) Render() {
 			l.NormalList[vertexId+1] = n.Y
 			l.NormalList[vertexId+2] = n.Z
 
+			vertexId += 3
+		}
+
+		for j := 0; j < len(mesh.Vertices); j++ {
 			p := instance.Position
-			l.PositionList[vertexId] = p.X
-			l.PositionList[vertexId+1] = p.Y
-			l.PositionList[vertexId+2] = p.Z
+			l.PositionList[vertexId2] = p.X
+			l.PositionList[vertexId2+1] = p.Y
+			l.PositionList[vertexId2+2] = p.Z
 
 			p = instance.Rotation
-			l.RotationList[vertexId] = p.X
-			l.RotationList[vertexId+1] = p.Y
-			l.RotationList[vertexId+2] = p.Z
+			l.RotationList[vertexId2] = p.X
+			l.RotationList[vertexId2+1] = p.Y
+			l.RotationList[vertexId2+2] = p.Z
 
 			p = instance.Scale
-			l.ScaleList[vertexId] = p.X
-			l.ScaleList[vertexId+1] = p.Y
-			l.ScaleList[vertexId+2] = p.Z
+			l.ScaleList[vertexId2] = p.X
+			l.ScaleList[vertexId2+1] = p.Y
+			l.ScaleList[vertexId2+2] = p.Z
 
-			vertexId += 3
+			vertexId2 += 3
 		}
 		l.VertexAmount += len(mesh.Vertices) * 3
 
