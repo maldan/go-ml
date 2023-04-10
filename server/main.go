@@ -78,9 +78,9 @@ func getHandler(url string, routers []ms_handler.RouteHandler) (string, ms_handl
 }
 
 func initDb(config *Config) {
-	/*if config.DataBase.DataBase == nil {
+	if config.DataBase.DataBase == nil {
 		return
-	}*/
+	}
 
 	if *config.DataBase.DataBase == nil {
 		*config.DataBase.DataBase = map[string]*mdb.DataTable{}
