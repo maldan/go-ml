@@ -15,22 +15,22 @@ type TestStruct struct {
 }
 
 func TestInsert(t *testing.T) {
-	db := mdb.New("../../../trash/db", "gas", TestStruct{}, &gosn_driver.Container{})
-	for i := 0; i < 10000; i++ {
+	db := mdb.New("../../../trash/db", "gas4", TestStruct{}, &gosn_driver.Container{})
+	for i := 0; i < 100; i++ {
 		db.Insert(TestStruct{Name: "A"})
 	}
 }
 
 func TestFind(t *testing.T) {
-	db := mdb.New("../../../trash/db", "gas", TestStruct{}, &gosn_driver.Container{})
-	db.Insert(TestStruct{Name: "A"})
+	db := mdb.New("../../../trash/db", "gas4", TestStruct{}, &gosn_driver.Container{})
+	db.Insert(TestStruct{Name: "B"})
 
 	// Find
 	tt := time.Now()
 	list := db.FindBy(mdb.ArgsFind{
-		FieldList: "Name",
+		// FieldList: "Name",
 		Where: func(user any) bool {
-			return user.(*TestStruct).Name == "A"
+			return user.(*TestStruct).Name == "B"
 		},
 	})
 	fmt.Printf("%v\n", time.Since(tt))

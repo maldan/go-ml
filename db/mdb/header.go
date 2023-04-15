@@ -57,7 +57,7 @@ func (h *Header) FromBytes(bytes []byte) {
 	offset += 8
 
 	// Set header
-	h.table.Container.SetHeader(bytes[offset:])
+	// h.table.Container.SetHeader(bytes[offset:])
 }
 
 func (h *Header) ToBytes() []byte {
@@ -82,8 +82,8 @@ func (h *Header) ToBytes() []byte {
 	offset += 8
 
 	// Get header data
-	data := h.table.Container.GetHeader()
-	copy(bytes[offset:], data)
+	//data := h.table.Container.GetHeader()
+	//copy(bytes[offset:], data)
 
 	return bytes
 }

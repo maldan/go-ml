@@ -1,13 +1,6 @@
 package ml_gosn
 
-import (
-	"fmt"
-	ml_slice "github.com/maldan/go-ml/util/slice"
-
-	"reflect"
-	"strings"
-)
-
+/*
 type NameToId map[string]uint8
 type IdToName map[uint8]string
 
@@ -96,3 +89,4 @@ func NameListToIdList(fieldList string, nameToId NameToId) []uint8 {
 	}
 	return fieldIdList
 }
+*/

@@ -4,14 +4,13 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/maldan/go-ml/util/encode/gosn"
-	"log"
 	"reflect"
 	"unsafe"
 )
 
 type Mapper struct {
 	Container any
-	NameToId  ml_gosn.NameToId
+	// NameToId  ml_gosn.NameToId
 	MapOffset []unsafe.Pointer
 
 	// Copy bytes and parse it and assign to pointer
@@ -26,7 +25,7 @@ type emptyInterface struct {
 	ptr unsafe.Pointer
 }
 
-func NewMapper(nameToId ml_gosn.NameToId, fieldList string, out any) *Mapper {
+/*func NewMapper(nameToId ml_gosn.NameToId, fieldList string, out any) *Mapper {
 	mapper := Mapper{
 		Container:        out,
 		NameToId:         nameToId,
@@ -75,7 +74,7 @@ func NewMapper(nameToId ml_gosn.NameToId, fieldList string, out any) *Mapper {
 	}
 
 	return &mapper
-}
+}*/
 
 func typeSize(bytes []byte) int {
 	switch bytes[0] {
@@ -177,7 +176,7 @@ func handleStruct(v *Mapper, bytes []byte, offset int, searchField uint8) int {
 func (v *Mapper) Map(bytes []byte) {
 	// offset := 0
 
-	ml_gosn.UnmarshallExt(bytes, v.Container, v.NameToId.Invert())
+	ml_gosn.Unmarshall(bytes, v.Container)
 	return
 	// v.Container
 

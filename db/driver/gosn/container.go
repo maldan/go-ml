@@ -5,10 +5,10 @@ import (
 )
 
 type Container struct {
-	NameToId ml_gosn.NameToId
+	// NameToId ml_gosn.NameToId
 }
 
-func (g *Container) GetHeader() []byte {
+/*func (g *Container) GetHeader() []byte {
 	bytes := make([]byte, 0)
 
 	bytes = append(bytes, uint8(len(g.NameToId)))
@@ -49,31 +49,32 @@ func (g *Container) SetHeader(bytes []byte) {
 		g.NameToId[name] = bytes[offset]
 		offset += 1
 	}
-}
+}*/
 
-func (g *Container) Prepare(v any) {
+/*func (g *Container) Prepare(v any) {
 	nid := ml_gosn.NameToId{}
 	nid.FromStruct(v)
 	_ = ml_gosn.MarshalExt(v, nid)
 	g.NameToId = nid
-}
+}*/
 
 func (g *Container) Marshal(v any) []byte {
-	return ml_gosn.MarshalExt(v, g.NameToId)
+	return ml_gosn.Marshal(v)
 }
 
 func (g *Container) Unmarshall(b []byte, out any) {
-	ml_gosn.UnmarshallExt(b, out, g.NameToId.Invert())
+	ml_gosn.Unmarshall(b, out)
 }
 
-func (g *Container) GetMapper(fieldList string, out any) any {
+/*func (g *Container) GetMapper(fieldList string, out any) any {
 	return NewMapper(g.NameToId, fieldList, out)
-}
+}*/
 
-func (g *Container) GetStruct() map[string]string {
+/*func (g *Container) GetStruct() map[string]string {
 	out := map[string]string{}
 	for k, _ := range g.NameToId {
 		out[k] = ""
 	}
 	return out
 }
+*/

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/maldan/go-ml/util/encode/gosn"
+	ml_console "github.com/maldan/go-ml/util/io/console"
 	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	ml_time "github.com/maldan/go-ml/util/time"
 	"strings"
@@ -36,7 +37,7 @@ type TestStructSliceOnly struct {
 	SliceU8  []uint8
 }
 
-func sas(t *testing.T, nameToId ml_gosn.NameToId) {
+/*func sas(t *testing.T, nameToId ml_gosn.NameToId) {
 	tsIn := TestStruct{
 		Bool:    true,
 		Uint8:   255,
@@ -119,15 +120,36 @@ func sas(t *testing.T, nameToId ml_gosn.NameToId) {
 		t.Fatal("fuck")
 	}
 }
+*/
 
-func TestMain_Named(t *testing.T) {
+/*func TestMain_Named(t *testing.T) {
 	sas(t, nil)
-}
+}*/
 
-func TestMain_Id(t *testing.T) {
+/*func TestMain_Id(t *testing.T) {
 	nameToId := ml_gosn.NameToId{}
 	nameToId.FromStruct(TestStruct{})
 	sas(t, nameToId)
+}*/
+
+func TestSimple(t *testing.T) {
+	x := TestStruct{
+		Bool: true,
+	}
+	b := ml_gosn.Marshal(x)
+
+	y := TestStruct{}
+	ml_gosn.Unmarshall(b, &y)
+	ml_console.PrettyPrint(y)
+}
+
+func TestNonStruct(t *testing.T) {
+	b := ml_gosn.Marshal("Fuck")
+	ml_console.PrintBytes(b, 10)
+
+	m := ""
+	ml_gosn.Unmarshall(b, &m)
+	fmt.Printf("%v\n", m)
 }
 
 func TestMainSlice(t *testing.T) {

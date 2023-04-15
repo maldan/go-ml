@@ -9,7 +9,7 @@ import (
 )
 
 type ArgsFind struct {
-	FieldList       string
+	// FieldList       string
 	Offset          int
 	Limit           int
 	WhereExpression string
@@ -186,7 +186,7 @@ func (d *DataTable) Count(args ArgsFind) int {
 
 	// Create mapper for capturing values from bytes
 	mapperContainer := reflect.New(d.Type).Interface()
-	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
+	// mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
 
 	// Compile expression
 	if args.WhereExpression != "" {
@@ -202,7 +202,11 @@ func (d *DataTable) Count(args ArgsFind) int {
 
 	// Go through each record
 	d.ForEach(func(offset uint64, size uint32) bool {
-		mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
+		// mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
+		d.Container.Unmarshall(
+			d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:],
+			mapperContainer,
+		)
 
 		// Collect values
 		if args.Where(mapperContainer) {
@@ -235,7 +239,7 @@ func (d *DataTable) FindBy(args ArgsFind) SearchResult {
 
 	// Create mapper for capturing values from bytes
 	mapperContainer := reflect.New(d.Type).Interface()
-	mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
+	// mapper := d.Container.GetMapper(args.FieldList, mapperContainer).(DBMapper)
 
 	// Compile expression
 	if args.WhereExpression != "" {
@@ -250,7 +254,12 @@ func (d *DataTable) FindBy(args ArgsFind) SearchResult {
 
 	// Go through each record
 	d.ForEach(func(offset uint64, size uint32) bool {
-		mapper.Map(d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:])
+		d.Container.Unmarshall(
+			d.mem[offset+SIZE_OF_RECORD_START+RecordSize+RecordFlags:],
+			mapperContainer,
+		)
+
+		// mapper.Map()
 
 		// Collect values
 		if args.Where(mapperContainer) {

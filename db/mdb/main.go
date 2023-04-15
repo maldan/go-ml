@@ -15,16 +15,16 @@ type DBMapper interface {
 }
 
 type DBContainer interface {
-	Prepare(v any)
+	// Prepare(v any)
 	Marshal(a any) []byte
 	Unmarshall(b []byte, out any)
 
-	GetMapper(fieldList string, tp any) any
+	// GetMapper(fieldList string, tp any) any
 
-	GetHeader() []byte
-	SetHeader([]byte)
+	// GetHeader() []byte
+	// SetHeader([]byte)
 
-	GetStruct() map[string]string
+	// GetStruct() map[string]string
 }
 
 type DataTable struct {
@@ -69,7 +69,7 @@ func New(path string, name string, tp any, container DBContainer) *DataTable {
 
 	table.Type = reflect.TypeOf(tp)
 	table.Container = container
-	table.Container.Prepare(tp)
+	// table.Container.Prepare(tp)
 
 	table.open()
 	table.remap()

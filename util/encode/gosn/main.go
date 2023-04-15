@@ -9,34 +9,36 @@ import (
 
 func Marshal(v any) []byte {
 	ir := IR{}
-	BuildIR(&ir, v, nil)
+	BuildIR(&ir, v)
 	return ir.Build()
 }
 
-func MarshalExt(v any, nameToId NameToId) []byte {
+/*func MarshalExt(v any, nameToId NameToId) []byte {
 	ir := IR{}
 	BuildIR(&ir, v, nameToId)
 	return ir.Build()
-}
+}*/
 
 func Unmarshall(bytes []byte, out any) {
-	UnmarshallExt(bytes, out, nil)
+	valueOf := reflect.ValueOf(out)
+	typeByte := TypeStringToTypeByte(valueOf.Elem().Kind().String())
+	unpack(bytes, valueOf.UnsafePointer(), typeByte, valueOf.Elem().Interface())
 }
 
-func UnmarshallExt(bytes []byte, out any, idToName IdToName) {
+/*func UnmarshallExt(bytes []byte, out any, idToName IdToName) {
 	valueOf := reflect.ValueOf(out)
 	typeByte := TypeStringToTypeByte(valueOf.Elem().Kind().String())
 	unpack(bytes, valueOf.UnsafePointer(), typeByte, valueOf.Elem().Interface(), idToName)
-}
+}*/
 
-func Map(bytes []byte, out any, fieldList string) {
+/*func Map(bytes []byte, out any, fieldList string) {
 	// Only struct possible to map
 	if !(bytes[0] == T_STRUCT || bytes[0] == T_SHORT_STRUCT || bytes[0] == T_BIG_STRUCT) {
 		return
 	}
-}
+}*/
 
-func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToName IdToName) int {
+func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any) int {
 	offset := 0
 
 	// Read type
@@ -148,7 +150,6 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 				unsafe.Pointer(elemSlice.Index(i).Addr().Pointer()),
 				elementPtrType,
 				typeHint,
-				idToName,
 			)
 		}
 
@@ -187,12 +188,12 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 		for i := 0; i < amount; i++ {
 			fieldName := ""
 
-			if idToName == nil {
-				nameSize := int(bytes[offset])
-				offset += 1
-				fieldName = string(bytes[offset : offset+nameSize])
-				offset += nameSize
-			} else {
+			//if idToName == nil {
+			nameSize := int(bytes[offset])
+			offset += 1
+			fieldName = string(bytes[offset : offset+nameSize])
+			offset += nameSize
+			/*} else {
 				// field name
 				name, ok := idToName[bytes[offset]]
 				if !ok {
@@ -200,7 +201,7 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 				}
 				fieldName = name
 				offset += 1
-			}
+			}*/
 
 			// Get real field
 			field, _ := typeOf.FieldByName(fieldName)
@@ -211,7 +212,6 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 					unsafe.Add(ptr, field.Offset),
 					T_SLICE,
 					reflect.ValueOf(typeHint).FieldByName(fieldName).Interface(),
-					idToName,
 				)
 			} else if field.Type.Kind() == reflect.Struct {
 				offset += unpack(
@@ -219,7 +219,6 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 					unsafe.Add(ptr, field.Offset),
 					T_STRUCT,
 					reflect.ValueOf(typeHint).FieldByName(fieldName).Interface(),
-					idToName,
 				)
 			} else {
 				offset += unpack(
@@ -227,7 +226,6 @@ func unpack(bytes []byte, ptr unsafe.Pointer, ptrType uint8, typeHint any, idToN
 					unsafe.Add(ptr, field.Offset),
 					TypeStringToTypeByte(field.Type.String()),
 					typeHint,
-					idToName,
 				)
 			}
 		}

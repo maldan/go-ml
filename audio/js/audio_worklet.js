@@ -6,18 +6,11 @@ class NumberHelper {
 
 class MyAudioProcessor extends AudioWorkletProcessor {
   sex = 0;
-  echoBuffer = [];
-  echoBuffer2 = [];
-  echoId = 0;
-  echoMode = 0;
 
   constructor() {
     super();
 
     this.port.onmessage = this.onmessage.bind(this);
-    this.phase = 0;
-    this.echoBuffer = new Float32Array(8192);
-    this.echoBuffer2 = new Float32Array(8192);
   }
 
   async onmessage(e) {
@@ -55,11 +48,11 @@ class MyAudioProcessor extends AudioWorkletProcessor {
       const ch = this["ch" + j];
 
       for (let i = 0; i < channel.length; ++i) {
-        outList[j].push(ch.do(this.phase));
+        outList[j].push(ch.do());
 
         // channel[i] = this.ch0.do(this.phase) + this.echoBuffer[this.echoId];
 
-        //channel[i] = this.ch0.do(this.phase);
+        // channel[i] = this.ch0.do(this.phase);
 
         // Add echo
         /*if (this.echoMode === 0) {
@@ -77,15 +70,6 @@ class MyAudioProcessor extends AudioWorkletProcessor {
             this.echoMode = 0;
           }
         }*/
-
-        this.phase += 1;
-        /*this.phase += this.ch0.phaseOffset;
-        this.ch0.phaseOffset = 0;*/
-        ch.volume = NumberHelper.lerp(
-          ch.volume,
-          ch.newVolume,
-          i / channel.length
-        );
       }
     }
 

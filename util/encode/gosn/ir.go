@@ -9,8 +9,8 @@ import (
 )
 
 type IR struct {
-	Type    int
-	Id      uint8
+	Type int
+	// Id      uint8
 	Name    string
 	Content []byte
 	List    []*IR
@@ -21,14 +21,14 @@ func (r *IR) Len() int {
 
 	// Name Id, 0 means value doesn't have named
 	// For example number or string doesn't have named, but struct field does
-	if r.Id > 0 {
+	/*if r.Id > 0 {
 		outSize += 1
-	}
+	}*/
 	// Same as id. Builder can work in 2 mode. Field with id or fields with name.
-	if r.Name != "" {
-		outSize += 1
-		outSize += len(r.Name)
-	}
+	//if r.Name != "" {
+	outSize += 1
+	outSize += len(r.Name)
+	//}
 
 	// Type
 	outSize += 1
@@ -120,9 +120,9 @@ func (r *IR) Build() []byte {
 
 	// Name Id, 0 means value doesn't have named
 	// For example number or string doesn't have named, but struct field does
-	if r.Id > 0 {
+	/*if r.Id > 0 {
 		s = append(s, r.Id)
-	}
+	}*/
 
 	// Same as id. Builder can work in 2 mode. Field with id or fields with name.
 	if r.Name != "" {
@@ -240,7 +240,7 @@ func (r *IR) Build() []byte {
 }
 
 // BuildIR convert v any type to IR tree
-func BuildIR(ir *IR, v any, nameToId NameToId) {
+func BuildIR(ir *IR, v any) {
 	valueOf := reflect.ValueOf(v)
 	typeOf := reflect.TypeOf(v)
 
@@ -356,7 +356,7 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 		for i := 0; i < valueOf.Len(); i++ {
 			tr := IR{}
 			ir.List = append(ir.List, &tr)
-			BuildIR(&tr, valueOf.Index(i).Interface(), nameToId)
+			BuildIR(&tr, valueOf.Index(i).Interface())
 		}
 
 		// Extend types by length
@@ -409,17 +409,17 @@ func BuildIR(ir *IR, v any, nameToId NameToId) {
 				tr := IR{}
 
 				// Mode without name id
-				if nameToId == nil {
-					tr.Name = typeOf.Field(i).Name
-				} else {
+				//if nameToId == nil {
+				tr.Name = typeOf.Field(i).Name
+				/*} else {
 					tr.Id, ok = nameToId[typeOf.Field(i).Name]
 					if !ok {
 						panic("name not found")
 					}
-				}
+				}*/
 
 				ir.List = append(ir.List, &tr)
-				BuildIR(&tr, valueOf.Field(i).Interface(), nameToId)
+				BuildIR(&tr, valueOf.Field(i).Interface())
 			}
 
 			// Extend types by length
