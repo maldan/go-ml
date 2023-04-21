@@ -371,7 +371,7 @@ class GoRenderUILayer extends GoRenderLayer {
         this.bufferList[x] = this._gl.createBuffer();
       }
     );
-    ["aVertex", "aPosition", "aUv", "aColor"].forEach((x) => {
+    ["aVertex", "aPosition", "aScale", "aUv", "aColor"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
     ["uProjectionMatrix", "uTexture"].forEach((x) => {
@@ -386,6 +386,7 @@ class GoRenderUILayer extends GoRenderLayer {
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("uv", state, float32Array);
     this.setDataArray("position", state, float32Array);
+    this.setDataArray("scale", state, float32Array);
     this.setDataArray("color", state, float32Array);
 
     this.setDataArray("index", state, shortArray);
@@ -401,13 +402,16 @@ class GoRenderUILayer extends GoRenderLayer {
     this.uploadData("any", "vertex");
     this.uploadData("any", "uv");
     this.uploadData("any", "position");
-    this.uploadData("any", "color");
+    this.uploadData("any", "scale");
+    // this.uploadData("any", "color");
 
     // Enable attributes
     this.enableAttribute("vertex");
     this.enableAttribute("uv", 2);
+
     this.enableAttribute("position");
-    this.enableAttribute("color", 4);
+    this.enableAttribute("scale");
+    // this.enableAttribute("color", 4);
 
     // Set projection
     this.setUniform("projectionMatrix");
@@ -420,6 +424,7 @@ class GoRenderUILayer extends GoRenderLayer {
       this.bufferList["index"]
     );
 
+    this._gl.disable(this._gl.DEPTH_TEST);
     this._gl.drawElements(
       this._gl.TRIANGLES,
       this.dataList["index"].length,

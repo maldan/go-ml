@@ -45,7 +45,7 @@ type UILayer struct {
 	UvAmount     int
 	ColorAmount  int
 
-	Camera mr_camera.PerspectiveCamera
+	Camera mr_camera.OrthographicCamera
 
 	InstanceId int
 
@@ -78,6 +78,7 @@ func (l *UILayer) Render() {
 
 	vertexId := 0
 	positionId := 0
+	scaleId := 0
 	indexId := 0
 	colorId := 0
 	uvId := 0
@@ -123,6 +124,25 @@ func (l *UILayer) Render() {
 		l.PositionList[positionId+11] = element.Position.Z
 
 		positionId += 3 * 4
+
+		// Scale list
+		l.ScaleList[scaleId] = element.Scale.X
+		l.ScaleList[scaleId+1] = element.Scale.Y
+		l.ScaleList[scaleId+2] = element.Scale.Z
+
+		l.ScaleList[scaleId+3] = element.Scale.X
+		l.ScaleList[scaleId+4] = element.Scale.Y
+		l.ScaleList[scaleId+5] = element.Scale.Z
+
+		l.ScaleList[scaleId+6] = element.Scale.X
+		l.ScaleList[scaleId+7] = element.Scale.Y
+		l.ScaleList[scaleId+8] = element.Scale.Z
+
+		l.ScaleList[scaleId+9] = element.Scale.X
+		l.ScaleList[scaleId+10] = element.Scale.Y
+		l.ScaleList[scaleId+11] = element.Scale.Z
+
+		scaleId += 3 * 4
 
 		// Color list
 		l.ColorList[colorId] = 1.0

@@ -172,6 +172,49 @@ func (m *Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) {
 	m.Raw[14] = 2 * far * near * nf
 }
 
+func (m *Matrix4x4[T]) Orthographic(left T, right T, bottom T, top T, near T, far T) {
+	m.Raw[0] = 2 / (right - left)
+	m.Raw[1] = 0
+	m.Raw[2] = 0
+	m.Raw[3] = 0
+
+	m.Raw[4] = 0
+	m.Raw[5] = 2 / (top - bottom)
+	m.Raw[6] = 0
+	m.Raw[7] = 0
+
+	m.Raw[8] = 0
+	m.Raw[9] = 0
+	m.Raw[10] = 2 / (near - far)
+	m.Raw[11] = 0
+
+	m.Raw[12] = (left + right) / (left - right)
+	m.Raw[13] = (bottom + top) / (bottom - top)
+	m.Raw[14] = (near + far) / (near - far)
+	m.Raw[15] = 1
+
+	/*lr := 1 / (left - right)
+	bt := 1 / (bottom - top)
+	nf := 1 / (near - far)
+
+	m.Raw[0] = -2 * lr
+	m.Raw[1] = 0
+	m.Raw[2] = 0
+	m.Raw[3] = 0
+	m.Raw[4] = 0
+	m.Raw[5] = -2 * bt
+	m.Raw[6] = 0
+	m.Raw[7] = 0
+	m.Raw[8] = 0
+	m.Raw[9] = 0
+	m.Raw[10] = 2 * nf
+	m.Raw[11] = 0
+	m.Raw[12] = (left + right) * lr
+	m.Raw[13] = (top + bottom) * bt
+	m.Raw[14] = (far + near) * nf
+	m.Raw[15] = 1*/
+}
+
 func (m *Matrix4x4[T]) Multiply(b Matrix4x4[T]) {
 	a00 := m.Raw[0]
 	a01 := m.Raw[1]

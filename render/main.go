@@ -1,11 +1,13 @@
 package mrender
 
 import (
+	"fmt"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
-	mr_mesh "github.com/maldan/go-ml/render/mesh"
+	mrender_mesh "github.com/maldan/go-ml/render/mesh"
+
 	mrender_uv "github.com/maldan/go-ml/render/uv"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 )
@@ -22,7 +24,7 @@ type RenderEngine struct {
 
 var State RenderEngine = RenderEngine{}
 
-func AllocateMesh(mesh mr_mesh.Mesh) *mr_mesh.Mesh {
+func AllocateMesh(mesh mrender_mesh.Mesh) *mrender_mesh.Mesh {
 	mesh.Id = len(State.Main.AllocatedMesh)
 
 	if mesh.Normal == nil {
@@ -40,8 +42,8 @@ func AllocateMesh(mesh mr_mesh.Mesh) *mr_mesh.Mesh {
 	return &State.Main.AllocatedMesh[len(State.Main.AllocatedMesh)-1]
 }
 
-func InstanceMesh(mesh *mr_mesh.Mesh) *mr_mesh.MeshInstance {
-	instance := mr_mesh.MeshInstance{
+func InstanceMesh(mesh *mrender_mesh.Mesh) *mrender_mesh.MeshInstance {
+	instance := mrender_mesh.MeshInstance{
 		Id:        mesh.Id,
 		Scale:     mmath_la.Vector3[float32]{1, 1, 1},
 		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
@@ -68,10 +70,24 @@ func Init() {
 	State.Line.Init()
 	State.Text.Init()
 	State.UI.Init()
+
+	State.UI.Camera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
+
+	State.UI.Camera.Area.Left = 0
+	State.UI.Camera.Area.Right = 320
+	State.UI.Camera.Area.Top = 0
+	State.UI.Camera.Area.Bottom = 240
+
+	State.UI.Camera.ApplyMatrix()
+
+	//
+	p := mmath_la.Vector3[float32]{-50, 50, 0}
+	p.TransformMatrix4x4(State.UI.Camera.Matrix)
+	fmt.Printf("%v\n", p)
 }
 
 func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
-	State.Line.LineList = append(State.Line.LineList, mr_mesh.Line{
+	State.Line.LineList = append(State.Line.LineList, mrender_mesh.Line{
 		From:  from,
 		To:    to,
 		Color: color,
@@ -138,7 +154,7 @@ func DrawUI(uv mmath_geom.Rectangle[float32], pos mmath_la.Vector3[float32]) {
 	State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
 		UvArea:    uv,
 		Position:  pos,
-		Scale:     mmath_la.Vector3[float32]{1, 1, 1},
+		Scale:     mmath_la.Vector3[float32]{100, 100, 100},
 		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
 		IsVisible: true,
 		IsActive:  true,
@@ -151,7 +167,6 @@ func (r *RenderEngine) Render() {
 	r.Point.Camera = r.GlobalCamera
 	r.Line.Camera = r.GlobalCamera
 	r.Text.Camera = r.GlobalCamera
-	r.UI.Camera = r.GlobalCamera
 
 	r.Main.Render()
 	r.Point.Render()

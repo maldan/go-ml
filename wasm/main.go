@@ -79,6 +79,8 @@ func InitRender(engine *mrender.RenderEngine) {
 
 	ExportFunction("renderResize", func(args []js.Value) any {
 		engine.GlobalCamera.AspectRatio = float32(args[0].Float() / args[1].Float())
+		engine.UI.Camera.Area.Right = float32(args[0].Float())
+		engine.UI.Camera.Area.Bottom = float32(args[1].Float())
 		return nil
 	})
 }
