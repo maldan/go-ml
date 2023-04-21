@@ -1,10 +1,7 @@
 package gosn_driver
 
 import (
-	"encoding/binary"
-	"fmt"
 	"github.com/maldan/go-ml/util/encode/gosn"
-	"reflect"
 	"unsafe"
 )
 
@@ -76,7 +73,7 @@ type emptyInterface struct {
 	return &mapper
 }*/
 
-func typeSize(bytes []byte) int {
+/*func typeSize(bytes []byte) int {
 	switch bytes[0] {
 	case ml_gosn.T_BOOL, ml_gosn.T_8:
 		return 1
@@ -94,9 +91,9 @@ func typeSize(bytes []byte) int {
 		panic(fmt.Sprintf("unknown type %v", bytes[0]))
 		return 0
 	}
-}
+}*/
 
-func applyType(v *Mapper, bytes []byte, offset int, fieldId uint8) {
+/*func applyType(v *Mapper, bytes []byte, offset int, fieldId uint8) {
 	off := v.MapOffset[fieldId]
 
 	const offType = 1 // offset type
@@ -138,9 +135,9 @@ func applyType(v *Mapper, bytes []byte, offset int, fieldId uint8) {
 	default:
 		panic(fmt.Sprintf("can't apply type %v", bytes[offset]))
 	}
-}
+}*/
 
-func handleStruct(v *Mapper, bytes []byte, offset int, searchField uint8) int {
+/*func handleStruct(v *Mapper, bytes []byte, offset int, searchField uint8) int {
 	// Type
 	offset += 1
 
@@ -171,7 +168,7 @@ func handleStruct(v *Mapper, bytes []byte, offset int, searchField uint8) int {
 	}
 
 	return size
-}
+}*/
 
 func (v *Mapper) Map(bytes []byte) {
 	// offset := 0

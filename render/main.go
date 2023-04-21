@@ -15,6 +15,7 @@ type RenderEngine struct {
 	Point mr_layer.PointLayer
 	Line  mr_layer.LineLayer
 	Text  mr_layer.TextLayer
+	UI    mr_layer.UILayer
 
 	GlobalCamera mr_camera.PerspectiveCamera
 }
@@ -66,6 +67,7 @@ func Init() {
 	State.Point.Init()
 	State.Line.Init()
 	State.Text.Init()
+	State.UI.Init()
 }
 
 func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
@@ -132,15 +134,28 @@ func DrawText(font string, text string, size float32, pos mmath_la.Vector3[float
 	})
 }
 
+func DrawUI(uv mmath_geom.Rectangle[float32], pos mmath_la.Vector3[float32]) {
+	State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
+		UvArea:    uv,
+		Position:  pos,
+		Scale:     mmath_la.Vector3[float32]{1, 1, 1},
+		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
+		IsVisible: true,
+		IsActive:  true,
+	})
+}
+
 func (r *RenderEngine) Render() {
 	r.GlobalCamera.ApplyMatrix()
 	r.Main.Camera = r.GlobalCamera
 	r.Point.Camera = r.GlobalCamera
 	r.Line.Camera = r.GlobalCamera
 	r.Text.Camera = r.GlobalCamera
+	r.UI.Camera = r.GlobalCamera
 
 	r.Main.Render()
 	r.Point.Render()
 	r.Line.Render()
 	r.Text.Render()
+	r.UI.Render()
 }

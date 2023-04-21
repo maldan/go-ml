@@ -5,7 +5,6 @@ import (
 	ms_log "github.com/maldan/go-ml/server/log"
 	ml_string "github.com/maldan/go-ml/util/string"
 	ml_time "github.com/maldan/go-ml/util/time"
-	"strings"
 )
 
 type Log struct {
@@ -78,8 +77,8 @@ func (l Log) GetList(args ArgsOffset) any {
 	}
 
 	return ms_log.LogDB.FindBy(mdb.ArgsFind{
-		FieldList: strings.Join(fieldList, ","),
-		Where:     finalWhere,
+		// FieldList: strings.Join(fieldList, ","),
+		Where: finalWhere,
 		// Limit:     10,
 	})
 

@@ -1,21 +1,21 @@
 class GoRenderLayer {
-  _gl = null;
+  public _gl: WebGLRenderingContext;
+  public shader: WebGLProgram;
 
-  shader = null;
-  attributeList = {};
-  uniformList = {};
-  bufferList = {};
-  dataList = {};
+  public attributeList: Record<string, any> = {};
+  public uniformList: Record<string, any> = {};
+  public bufferList: Record<string, any> = {};
+  public dataList: Record<string, any> = {};
   name = "";
-  state = {};
+  public state: Record<string, any> = {};
   texture = null;
 
-  constructor(name, gl) {
+  constructor(name: string, gl: WebGLRenderingContext) {
     this.name = name;
     this._gl = gl;
   }
 
-  init(vertex, fragment) {
+  init(vertex: string, fragment: string) {
     this.shader = this.compileShader(vertex, fragment);
 
     [
@@ -46,8 +46,10 @@ class GoRenderLayer {
     });
   }
 
-  loadShader(type, source) {
+  loadShader(type: number, source: string) {
     const shader = this._gl.createShader(type);
+    if (!shader) throw new Error(`Can't create shader`);
+
     this._gl.shaderSource(shader, source);
     this._gl.compileShader(shader);
 
@@ -62,11 +64,15 @@ class GoRenderLayer {
     return shader;
   }
 
-  compileShader(vertex, fragment) {
+  compileShader(vertex: string, fragment: string): WebGLProgram {
     const vertexShader = this.loadShader(this._gl.VERTEX_SHADER, vertex);
+    if (!vertexShader) throw new Error(`Vertex shader is null`);
     const fragmentShader = this.loadShader(this._gl.FRAGMENT_SHADER, fragment);
+    if (!fragmentShader) throw new Error(`Fragment shader is null`);
 
     const shaderProgram = this._gl.createProgram();
+    if (!shaderProgram) throw new Error(`Can't create shader program`);
+
     this._gl.attachShader(shaderProgram, vertexShader);
     this._gl.attachShader(shaderProgram, fragmentShader);
     this._gl.linkProgram(shaderProgram);
@@ -80,7 +86,7 @@ class GoRenderLayer {
     return shaderProgram;
   }
 
-  setWasmData(memory, state) {
+  setWasmData(memory: ArrayBuffer, state: any) {
     let byteArray = new Uint8Array(memory);
     let shortArray = new Uint16Array(memory);
     let float32Array = new Float32Array(memory);
@@ -96,7 +102,12 @@ class GoRenderLayer {
     this.setDataArray("projectionMatrix", state, float32Array, 16);
   }
 
-  setDataArray(name, state, array, length = 0) {
+  setDataArray(
+    name: string,
+    state: any,
+    array: Uint16Array | Float32Array,
+    length = 0
+  ) {
     let offsetSize = 1;
     if (array instanceof Uint16Array) offsetSize = 2;
     if (array instanceof Float32Array) offsetSize = 4;
@@ -108,7 +119,7 @@ class GoRenderLayer {
     );
   }
 
-  uploadData(type, name) {
+  uploadData(type: string, name: string) {
     if (type === "element") {
       this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this.bufferList[name]);
       this._gl.bufferData(
@@ -129,7 +140,7 @@ class GoRenderLayer {
     this._gl.bindBuffer(this._gl.ARRAY_BUFFER, null);
   }
 
-  enableAttribute(name, size = 3) {
+  enableAttribute(name: string, size = 3) {
     this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.bufferList[name]);
 
     let attributeName = "a" + name[0].toUpperCase() + name.slice(1);
@@ -145,7 +156,7 @@ class GoRenderLayer {
     this._gl.enableVertexAttribArray(this.attributeList[attributeName]);
   }
 
-  setUniform(name) {
+  setUniform(name: string) {
     let uniformName = "u" + name[0].toUpperCase() + name.slice(1);
     this._gl.uniformMatrix4fv(
       this.uniformList[uniformName],
@@ -204,7 +215,7 @@ class GoRenderLayer {
 }
 
 class GoRenderPointLayer extends GoRenderLayer {
-  init(vertex, fragment) {
+  init(vertex: string, fragment: string) {
     this.shader = this.compileShader(vertex, fragment);
 
     ["vertex", "color"].forEach((x) => {
@@ -218,7 +229,7 @@ class GoRenderPointLayer extends GoRenderLayer {
     });
   }
 
-  setWasmData(memory, state) {
+  setWasmData(memory: ArrayBuffer, state: any) {
     let float32Array = new Float32Array(memory);
 
     this.setDataArray("vertex", state, float32Array);
@@ -246,7 +257,7 @@ class GoRenderPointLayer extends GoRenderLayer {
 }
 
 class GoRenderLineLayer extends GoRenderLayer {
-  init(vertex, fragment) {
+  init(vertex: string, fragment: string) {
     this.shader = this.compileShader(vertex, fragment);
 
     ["vertex", "color"].forEach((x) => {
@@ -260,7 +271,7 @@ class GoRenderLineLayer extends GoRenderLayer {
     });
   }
 
-  setWasmData(memory, state) {
+  setWasmData(memory: ArrayBuffer, state: any) {
     let float32Array = new Float32Array(memory);
 
     this.setDataArray("vertex", state, float32Array);
@@ -287,7 +298,7 @@ class GoRenderLineLayer extends GoRenderLayer {
 }
 
 class GoRenderTextLayer extends GoRenderLayer {
-  init(vertex, fragment) {
+  init(vertex: string, fragment: string) {
     this.shader = this.compileShader(vertex, fragment);
 
     ["vertex", "index", "position", "uv", "color"].forEach((x) => {
@@ -301,7 +312,7 @@ class GoRenderTextLayer extends GoRenderLayer {
     });
   }
 
-  setWasmData(memory, state) {
+  setWasmData(memory: ArrayBuffer, state: any) {
     let shortArray = new Uint16Array(memory);
     let float32Array = new Float32Array(memory);
 
@@ -330,6 +341,73 @@ class GoRenderTextLayer extends GoRenderLayer {
     this.enableAttribute("uv", 2);
     this.enableAttribute("position");
     this.enableAttribute("color");
+
+    // Set projection
+    this.setUniform("projectionMatrix");
+
+    // Set texture
+    this.setTexture();
+
+    this._gl.bindBuffer(
+      this._gl.ELEMENT_ARRAY_BUFFER,
+      this.bufferList["index"]
+    );
+
+    this._gl.drawElements(
+      this._gl.TRIANGLES,
+      this.dataList["index"].length,
+      this._gl.UNSIGNED_SHORT,
+      0
+    );
+  }
+}
+
+class GoRenderUILayer extends GoRenderLayer {
+  init(vertex: string, fragment: string) {
+    this.shader = this.compileShader(vertex, fragment);
+
+    ["vertex", "index", "position", "rotation", "scale", "uv", "color"].forEach(
+      (x) => {
+        this.bufferList[x] = this._gl.createBuffer();
+      }
+    );
+    ["aVertex", "aPosition", "aUv", "aColor"].forEach((x) => {
+      this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
+    });
+    ["uProjectionMatrix", "uTexture"].forEach((x) => {
+      this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
+    });
+  }
+
+  setWasmData(memory: ArrayBuffer, state: any) {
+    let shortArray = new Uint16Array(memory);
+    let float32Array = new Float32Array(memory);
+
+    this.setDataArray("vertex", state, float32Array);
+    this.setDataArray("uv", state, float32Array);
+    this.setDataArray("position", state, float32Array);
+    this.setDataArray("color", state, float32Array);
+
+    this.setDataArray("index", state, shortArray);
+    this.setDataArray("projectionMatrix", state, float32Array, 16);
+  }
+
+  draw() {
+    // Set program
+    this._gl.useProgram(this.shader);
+
+    // Put main data
+    this.uploadData("element", "index");
+    this.uploadData("any", "vertex");
+    this.uploadData("any", "uv");
+    this.uploadData("any", "position");
+    this.uploadData("any", "color");
+
+    // Enable attributes
+    this.enableAttribute("vertex");
+    this.enableAttribute("uv", 2);
+    this.enableAttribute("position");
+    this.enableAttribute("color", 4);
 
     // Set projection
     this.setUniform("projectionMatrix");

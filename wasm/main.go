@@ -61,12 +61,14 @@ func InitRender(engine *mrender.RenderEngine) {
 		"pointLayer": engine.Point.GetState(),
 		"lineLayer":  engine.Line.GetState(),
 		"textLayer":  engine.Text.GetState(),
+		"uiLayer":    engine.UI.GetState(),
 	}
 	ExportFunction("renderState", func(args []js.Value) any {
 		state["mainLayer"] = engine.Main.GetState()
 		state["pointLayer"] = engine.Point.GetState()
 		state["lineLayer"] = engine.Line.GetState()
 		state["textLayer"] = engine.Text.GetState()
+		state["uiLayer"] = engine.UI.GetState()
 		return state
 	})
 

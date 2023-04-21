@@ -3,7 +3,6 @@ package ms_panel
 import (
 	"github.com/maldan/go-ml/db/mdb"
 	ms_log "github.com/maldan/go-ml/server/log"
-	"strings"
 )
 
 type Request struct {
@@ -75,8 +74,8 @@ func (r Request) GetList(args ArgsRequestOffset) any {
 	}
 
 	return ms_log.RequestDB.FindBy(mdb.ArgsFind{
-		FieldList: strings.Join(fieldList, ","),
-		Where:     finalWhere,
+		// FieldList: strings.Join(fieldList, ","),
+		Where: finalWhere,
 		// Limit:     10,
 	})
 
