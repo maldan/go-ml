@@ -22,6 +22,8 @@ type UIElement struct {
 	UvOffset mmath_la.Vector2[float32]
 	Color    ml_color.ColorRGBA[float32]
 
+	Pivot mmath_la.Vector2[float32]
+
 	IsVisible bool
 	IsActive  bool
 }
@@ -78,6 +80,7 @@ func (l *UILayer) Render() {
 
 	vertexId := 0
 	positionId := 0
+	rotationId := 0
 	scaleId := 0
 	indexId := 0
 	colorId := 0
@@ -87,20 +90,20 @@ func (l *UILayer) Render() {
 		element := l.ElementList[i]
 
 		// Vertex
-		l.VertexList[vertexId] = -0.5
-		l.VertexList[vertexId+1] = -0.5
+		l.VertexList[vertexId] = -0.5 + element.Pivot.X
+		l.VertexList[vertexId+1] = -0.5 + element.Pivot.Y
 		l.VertexList[vertexId+2] = 0
 
-		l.VertexList[vertexId+3] = 0.5
-		l.VertexList[vertexId+4] = -0.5
+		l.VertexList[vertexId+3] = 0.5 + element.Pivot.X
+		l.VertexList[vertexId+4] = -0.5 + element.Pivot.Y
 		l.VertexList[vertexId+5] = 0
 
-		l.VertexList[vertexId+6] = 0.5
-		l.VertexList[vertexId+7] = 0.5
+		l.VertexList[vertexId+6] = 0.5 + element.Pivot.X
+		l.VertexList[vertexId+7] = 0.5 + element.Pivot.Y
 		l.VertexList[vertexId+8] = 0
 
-		l.VertexList[vertexId+9] = -0.5
-		l.VertexList[vertexId+10] = 0.5
+		l.VertexList[vertexId+9] = -0.5 + element.Pivot.X
+		l.VertexList[vertexId+10] = 0.5 + element.Pivot.Y
 		l.VertexList[vertexId+11] = 0
 
 		vertexId += 3 * 4
@@ -124,6 +127,25 @@ func (l *UILayer) Render() {
 		l.PositionList[positionId+11] = element.Position.Z
 
 		positionId += 3 * 4
+
+		// Rotation list
+		l.RotationList[rotationId] = element.Rotation.X
+		l.RotationList[rotationId+1] = element.Rotation.Y
+		l.RotationList[rotationId+2] = element.Rotation.Z
+
+		l.RotationList[rotationId+3] = element.Rotation.X
+		l.RotationList[rotationId+4] = element.Rotation.Y
+		l.RotationList[rotationId+5] = element.Rotation.Z
+
+		l.RotationList[rotationId+6] = element.Rotation.X
+		l.RotationList[rotationId+7] = element.Rotation.Y
+		l.RotationList[rotationId+8] = element.Rotation.Z
+
+		l.RotationList[rotationId+9] = element.Rotation.X
+		l.RotationList[rotationId+10] = element.Rotation.Y
+		l.RotationList[rotationId+11] = element.Rotation.Z
+
+		rotationId += 3 * 4
 
 		// Scale list
 		l.ScaleList[scaleId] = element.Scale.X

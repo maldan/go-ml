@@ -1,7 +1,6 @@
 package mrender
 
 import (
-	"fmt"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	mr_camera "github.com/maldan/go-ml/render/camera"
@@ -79,11 +78,6 @@ func Init() {
 	State.UI.Camera.Area.Bottom = 240
 
 	State.UI.Camera.ApplyMatrix()
-
-	//
-	p := mmath_la.Vector3[float32]{-50, 50, 0}
-	p.TransformMatrix4x4(State.UI.Camera.Matrix)
-	fmt.Printf("%v\n", p)
 }
 
 func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
@@ -150,14 +144,22 @@ func DrawText(font string, text string, size float32, pos mmath_la.Vector3[float
 	})
 }
 
-func DrawUI(uv mmath_geom.Rectangle[float32], pos mmath_la.Vector3[float32]) {
+func DrawUI(
+	uv mmath_geom.Rectangle[float32],
+	pos mmath_la.Vector3[float32],
+	size mmath_la.Vector2[float32],
+	rotation float32,
+	pivot mmath_la.Vector2[float32],
+) {
 	State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
 		UvArea:    uv,
 		Position:  pos,
-		Scale:     mmath_la.Vector3[float32]{100, 100, 100},
+		Rotation:  mmath_la.Vector3[float32]{0, 0, rotation},
+		Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
 		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
 		IsVisible: true,
 		IsActive:  true,
+		Pivot:     pivot,
 	})
 }
 
@@ -167,6 +169,7 @@ func (r *RenderEngine) Render() {
 	r.Point.Camera = r.GlobalCamera
 	r.Line.Camera = r.GlobalCamera
 	r.Text.Camera = r.GlobalCamera
+	// r.UI.Camera = r.GlobalCamera
 
 	r.Main.Render()
 	r.Point.Render()
