@@ -117,6 +117,10 @@ class GoRenderWasm {
       // Request next frame
       start = timestamp;
       window.requestAnimationFrame(step);
+
+      // Reset Mouse click
+      // @ts-ignore
+      for (let i = 0; i < 4; i++) window.go.setMouseClick(i, false);
     };
 
     window.requestAnimationFrame(step);

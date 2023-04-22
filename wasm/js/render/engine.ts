@@ -12,6 +12,14 @@ class GoRender {
     this.shaderSource[url] = await x.text();
   }
 
+  static async scale(v: number) {
+    const width = Number(this._canvas.getAttribute("width"));
+    const height = Number(this._canvas.getAttribute("height"));
+
+    this._canvas.style.width = width * v + "px";
+    this._canvas.style.height = height * v + "px";
+  }
+
   static async init() {
     this._canvas = document.querySelector("#glcanvas") as HTMLCanvasElement;
     if (!this._canvas) throw new Error(`Canvas not found`);
@@ -58,6 +66,9 @@ class GoRender {
       return x;
     });
 
+    // @ts-ignore
+    window.go.canvas = this._canvas;
+
     window.addEventListener("resize", () => {
       this.onResize();
     });
@@ -65,26 +76,21 @@ class GoRender {
   }
 
   static onResize() {
-    this._canvas.setAttribute(
+    const width = Number(this._canvas.getAttribute("width"));
+    const height = Number(this._canvas.getAttribute("height"));
+
+    /*this._canvas.setAttribute(
       "width",
       window.innerWidth / this.downscale + "px"
     );
     this._canvas.setAttribute(
       "height",
       window.innerHeight / this.downscale + "px"
-    );
-    this._gl.viewport(
-      0,
-      0,
-      window.innerWidth / this.downscale,
-      window.innerHeight / this.downscale
-    );
+    );*/
+    this._gl.viewport(0, 0, width, height);
 
-    if (window.go)
-      window.go.renderResize(
-        window.innerWidth / this.downscale,
-        window.innerHeight / this.downscale
-      );
+    // @ts-ignore
+    if (window.go) window.go.renderResize(width, height);
   }
 
   static draw() {

@@ -23,11 +23,25 @@ func BindKeyboard() {
 }
 
 func BindMouse() {
-	mousemove := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+	/*mousemove := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		width := args[0].Get("view").Get("innerWidth").Float()
+		height := args[0].Get("view").Get("innerHeight").Float()
+
 		px := (args[0].Get("pageX").Float()/args[0].Get("view").Get("innerWidth").Float())*2 - 1
 		py := (args[0].Get("pageY").Float()/args[0].Get("view").Get("innerHeight").Float())*2 - 1
 		ml_mouse.Position.X = float32(px)
 		ml_mouse.Position.Y = -float32(py)
+
+		// If there is canvas
+		canvas := js.Global().Get("window").Get("go").Get("canvas")
+		if !canvas.IsUndefined() {
+			fx := canvas.Call("getBoundingClientRect").Get("width").Float() / width
+			fy := canvas.Call("getBoundingClientRect").Get("height").Float() / height
+
+			ml_mouse.Position.X /= float32(fx)
+			ml_mouse.Position.Y /= float32(fy)
+		}
+
 		return nil
 	})
 	js.Global().Get("document").Call("addEventListener", "mousemove", mousemove)
@@ -42,7 +56,22 @@ func BindMouse() {
 		ml_mouse.State[args[0].Get("button").Int()] = false
 		return nil
 	})
-	js.Global().Get("document").Call("addEventListener", "mouseup", mouseup)
+	js.Global().Get("document").Call("addEventListener", "mouseup", mouseup)*/
+
+	ExportFunction("setMousePosition", func(args []js.Value) any {
+		ml_mouse.Position.X = float32(args[0].Float())
+		ml_mouse.Position.Y = float32(args[1].Float())
+		return nil
+	})
+
+	ExportFunction("setMouseDown", func(args []js.Value) any {
+		ml_mouse.State[args[0].Int()] = args[1].Bool()
+		return nil
+	})
+	ExportFunction("setMouseClick", func(args []js.Value) any {
+		ml_mouse.ClickState[args[0].Int()] = args[1].Bool()
+		return nil
+	})
 }
 
 func ExportFunction(name string, fn func(args []js.Value) any) {
@@ -78,6 +107,9 @@ func InitRender(engine *mrender.RenderEngine) {
 	})
 
 	ExportFunction("renderResize", func(args []js.Value) any {
+		engine.ScreenSize.X = float32(args[0].Float())
+		engine.ScreenSize.Y = float32(args[1].Float())
+
 		engine.GlobalCamera.AspectRatio = float32(args[0].Float() / args[1].Float())
 		engine.UI.Camera.Area.Right = float32(args[0].Float())
 		engine.UI.Camera.Area.Bottom = float32(args[1].Float())

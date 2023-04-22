@@ -7,7 +7,7 @@ uniform sampler2D uTexture;
 
 void main() {
     highp vec4 texelColor = texture2D(uTexture, vUv);
-    vec4 finalColor = vec4(texelColor.rgb, texelColor.a) * vColor.rgba;
+    vec4 finalColor = texelColor * vColor.rgba;
     if (finalColor.a <= 0.0) {
         discard;
     }

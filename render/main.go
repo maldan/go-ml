@@ -6,6 +6,7 @@ import (
 	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mrender_mesh "github.com/maldan/go-ml/render/mesh"
+	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
 
 	mrender_uv "github.com/maldan/go-ml/render/uv"
 	ml_color "github.com/maldan/go-ml/util/media/color"
@@ -17,6 +18,8 @@ type RenderEngine struct {
 	Line  mr_layer.LineLayer
 	Text  mr_layer.TextLayer
 	UI    mr_layer.UILayer
+
+	ScreenSize mmath_la.Vector2[float32]
 
 	GlobalCamera mr_camera.PerspectiveCamera
 }
@@ -163,13 +166,56 @@ func DrawUI(
 	})
 }
 
+func DrawButton(
+	uv mmath_geom.Rectangle[float32],
+	pos mmath_la.Vector3[float32],
+	size mmath_la.Vector2[float32],
+	onClick func()) {
+
+	mp := ml_mouse.GetPosition()
+	mp.X = ((mp.X + 1) / 2) * State.ScreenSize.X
+	mp.Y = State.ScreenSize.Y - (((mp.Y + 1) / 2) * State.ScreenSize.Y)
+
+	halfX := size.X / 2
+	halfY := size.Y / 2
+
+	rect := mmath_geom.Rectangle[float32]{Left: pos.X, Right: pos.X + size.X, Top: pos.Y, Bottom: pos.Y + size.Y}
+	rect = rect.Add(-halfX, -halfY)
+
+	if rect.IntersectPoint(mp) {
+		if ml_mouse.IsMouseDown(ml_mouse.LeftButton) {
+			pos.Y += 2
+		}
+		if ml_mouse.IsMouseClick(ml_mouse.LeftButton) {
+			onClick()
+		}
+
+		State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
+			UvArea:    uv,
+			Position:  pos,
+			Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
+			Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 0.8},
+			IsVisible: true,
+			IsActive:  true,
+		})
+	} else {
+		State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
+			UvArea:    uv,
+			Position:  pos,
+			Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
+			Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
+			IsVisible: true,
+			IsActive:  true,
+		})
+	}
+}
+
 func (r *RenderEngine) Render() {
 	r.GlobalCamera.ApplyMatrix()
 	r.Main.Camera = r.GlobalCamera
 	r.Point.Camera = r.GlobalCamera
 	r.Line.Camera = r.GlobalCamera
 	r.Text.Camera = r.GlobalCamera
-	// r.UI.Camera = r.GlobalCamera
 
 	r.Main.Render()
 	r.Point.Render()

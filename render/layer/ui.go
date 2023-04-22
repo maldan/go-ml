@@ -167,25 +167,25 @@ func (l *UILayer) Render() {
 		scaleId += 3 * 4
 
 		// Color list
-		l.ColorList[colorId] = 1.0
-		l.ColorList[colorId+1] = 1.0
-		l.ColorList[colorId+2] = 1.0
-		l.ColorList[colorId+3] = 1.0
+		l.ColorList[colorId] = element.Color.R
+		l.ColorList[colorId+1] = element.Color.G
+		l.ColorList[colorId+2] = element.Color.B
+		l.ColorList[colorId+3] = element.Color.A
 
-		l.ColorList[colorId+4] = 1.0
-		l.ColorList[colorId+5] = 1.0
-		l.ColorList[colorId+6] = 1.0
-		l.ColorList[colorId+7] = 1.0
+		l.ColorList[colorId+4] = element.Color.R
+		l.ColorList[colorId+5] = element.Color.G
+		l.ColorList[colorId+6] = element.Color.B
+		l.ColorList[colorId+7] = element.Color.A
 
-		l.ColorList[colorId+8] = 1.0
-		l.ColorList[colorId+9] = 1.0
-		l.ColorList[colorId+10] = 1.0
-		l.ColorList[colorId+11] = 1.0
+		l.ColorList[colorId+8] = element.Color.R
+		l.ColorList[colorId+9] = element.Color.G
+		l.ColorList[colorId+10] = element.Color.B
+		l.ColorList[colorId+11] = element.Color.A
 
-		l.ColorList[colorId+12] = 1.0
-		l.ColorList[colorId+13] = 1.0
-		l.ColorList[colorId+14] = 1.0
-		l.ColorList[colorId+15] = 1.0
+		l.ColorList[colorId+12] = element.Color.R
+		l.ColorList[colorId+13] = element.Color.G
+		l.ColorList[colorId+14] = element.Color.B
+		l.ColorList[colorId+15] = element.Color.A
 
 		colorId += 4 * 4
 		l.ColorAmount += 4 * 4
