@@ -5,11 +5,15 @@ class GoRender {
   static shaderSource: Record<string, string> = {};
   static layerList: GoRenderLayer[] = [];
 
-  static downscale = 4;
-
   static async loadShaderSourceCode(url: string) {
     const x = await fetch(url);
     this.shaderSource[url] = await x.text();
+  }
+
+  static async setResolution(w: number, h: number) {
+    this._canvas.setAttribute("width", `${w}`);
+    this._canvas.setAttribute("height", `${h}`);
+    this.onResize();
   }
 
   static async scale(v: number) {
@@ -83,18 +87,8 @@ class GoRender {
     const width = Number(this._canvas.getAttribute("width"));
     const height = Number(this._canvas.getAttribute("height"));
 
-    /*this._canvas.setAttribute(
-      "width",
-      window.innerWidth / this.downscale + "px"
-    );
-    this._canvas.setAttribute(
-      "height",
-      window.innerHeight / this.downscale + "px"
-    );*/
     this._gl.viewport(0, 0, width, height);
-
-    // @ts-ignore
-    if (window.go) window.go.renderResize(width, height);
+    if ((window as any).go) (window as any).go.renderResize(width, height);
   }
 
   static draw() {
