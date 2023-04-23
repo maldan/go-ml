@@ -1,18 +1,18 @@
+declare const Go: any;
+
 class GoRenderWasm {
-  static wasmTime = [];
-  static jsTime = [];
-  static calculateTime = [];
-  static soundTime = [];
+  static wasmTime: number[] = [];
+  static jsTime: number[] = [];
+  static calculateTime: number[] = [];
+  static soundTime: number[] = [];
 
   static stats = {
     requestAnimationFramePerSecond: 0,
-    avgDelta: [],
+    avgDelta: [] as number[],
   };
 
   static async init(wasmData: ArrayBuffer) {
     const go = new Go();
-    //const b = await fetch(wasmModuleUrl);
-    //const bytes = await b.blob();
     const wasmModule = await WebAssembly.instantiate(wasmData, go.importObject);
     let memory = new ArrayBuffer(0);
     go.run(wasmModule.instance);
@@ -20,13 +20,9 @@ class GoRenderWasm {
     // Init webgl render
     await GoRender.init();
 
-    // Init sound
-    // GoSound.init(wasmModule.instance);
+    let start = 0;
 
-    let start;
-    let audioTick = 0;
-
-    window.exportWasmMemory = () => {
+    (window as any).exportWasmMemory = () => {
       const file = new Blob([memory], { type: "bin" });
 
       const a = document.createElement("a"),
@@ -41,7 +37,7 @@ class GoRenderWasm {
       }, 0);
     };
 
-    const step = (timestamp) => {
+    const step = (timestamp: number) => {
       if (start === undefined) start = timestamp;
       let delta = (timestamp - start) / 1000;
       if (delta <= 0) delta = 1 / 1000;
@@ -50,29 +46,33 @@ class GoRenderWasm {
 
       // Calculate scene in golang
       let pp = performance.now();
-      window.go.gameTick(delta);
+      (window as any).go.gameTick(delta);
       this.calculateTime.push(performance.now() - pp);
 
       pp = performance.now();
-      window.go.renderFrame();
+      (window as any).go.renderFrame();
       this.wasmTime.push(performance.now() - pp);
 
       // Get state
-      let state = window.go.renderState();
+      let state = (window as any).go.renderState();
 
       // Send golang data to webgl render
       GoRender.layerList.forEach((layer) => {
         layer.state = state;
 
         if (wasmModule.instance.exports.mem) {
+          // @ts-ignore
           memory = wasmModule.instance.exports.mem.buffer;
           layer.setWasmData(
+            // @ts-ignore
             wasmModule.instance.exports.mem.buffer,
             state[layer.name + "Layer"]
           );
         } else {
+          // @ts-ignore
           memory = wasmModule.instance.exports.memory.buffer;
           layer.setWasmData(
+            // @ts-ignore
             wasmModule.instance.exports.memory.buffer,
             state[layer.name + "Layer"]
           );
@@ -84,35 +84,7 @@ class GoRenderWasm {
       GoRender.draw();
       this.jsTime.push(performance.now() - pp);
 
-      /*pp = performance.now();
-      if (!GoSound.isPlay) {
-        if (goWasmSoundTick) {
-          goWasmSoundTick();
-        }
-        if (goWasmSoundState) {
-          const soundState = goWasmSoundState();
-
-          const float32Array = new Float32Array(memory);
-          const audioBufferData = float32Array.subarray(
-            soundState.bufferPointer / 4,
-            soundState.bufferPointer / 4 + soundState.bufferLength
-          );
-
-          GoSound.play(audioBufferData);
-        }
-      }
-      this.soundTime.push(performance.now() - pp);*/
-
-      // GoSound._wasmMemory = memory;
-
       this.stats.requestAnimationFramePerSecond += 1;
-
-      /*audioTick += 1;
-      if (audioTick > 5) {
-        audioTick = 0;
-
-        GoSound.play(wasmModule.instance, goWasmSoundState);
-      }*/
 
       // Request next frame
       start = timestamp;
@@ -126,7 +98,8 @@ class GoRenderWasm {
     window.requestAnimationFrame(step);
 
     // Timers
-    const avg = (x) => x.reduce((a, b) => a + b) / x.length;
+    const avg = (x: number[]) =>
+      x.reduce((a: number, b: number) => a + b) / x.length;
     setInterval(() => {
       const gameCalculate = avg(this.calculateTime);
       const renderCalculate = avg(this.wasmTime);
@@ -134,7 +107,9 @@ class GoRenderWasm {
       const avgDelta = avg(this.stats.avgDelta);
       // const soundTime = avg(this.soundTime);
 
-      document.getElementById("stats").innerHTML = `
+      const stats = document.getElementById("stats");
+      if (stats) {
+        stats.innerHTML = `
         <div>game calculate: ${gameCalculate.toFixed(2)}</div>
         <div>render calculate: ${renderCalculate.toFixed(2)}</div>
         <div>render draw: ${renderDraw.toFixed(2)}</div> 
@@ -147,6 +122,7 @@ class GoRenderWasm {
         <div>fps: ${this.stats.requestAnimationFramePerSecond}</div>
         <div>delta: ${avgDelta.toFixed(4)}</div>
       `;
+      }
 
       this.stats.avgDelta.length = 0;
       this.stats.requestAnimationFramePerSecond = 0;

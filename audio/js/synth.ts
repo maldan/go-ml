@@ -14,9 +14,14 @@ class AudioChannel {
   public echoBuffer2 = new Float32Array(8192);
   public echoId = 0;
   public echoMode = 0;
+  public noiseTable = new Float32Array(8192);
+  public noiseId = 0;
 
   constructor(sampleRate: number) {
     this.sampleRate = sampleRate;
+    for (let i = 0; i < this.noiseTable.length; i++) {
+      this.noiseTable[i] = -1 + Math.random() * 2;
+    }
   }
 
   public doSin(): number {
@@ -96,6 +101,20 @@ class AudioChannel {
     return 2 * (tt % (1 / f)) * f - 1;
   }
 
+  public doNoise(): number {
+    if (this.frequency != this.newFrequency) {
+      this.frequency = this.newFrequency;
+    }
+
+    const step = this.frequency / 440;
+
+    this.noiseId += step;
+    if (this.noiseId > this.noiseTable.length - 1) {
+      this.noiseId = 0;
+    }
+    return this.noiseTable[~~this.noiseId];
+  }
+
   private lerp(start, end, amt) {
     return (1 - amt) * start + amt * end;
   }
@@ -111,7 +130,7 @@ class AudioChannel {
       }
     }
 
-    if (Math.abs(this.volume) < 0.005) return 0;
+    // if (Math.abs(this.volume) < 0.005) return 0;
 
     let v = 0;
 
@@ -119,6 +138,7 @@ class AudioChannel {
     if (this.waveType == 1) v = this.doSquare() * this.volume;
     if (this.waveType == 2) v = this.doTriangle() * this.volume;
     if (this.waveType == 3) v = this.doSaw() * this.volume;
+    if (this.waveType == 4) v = this.doNoise() * this.volume;
 
     if (this.echoMode === 0) {
       this.echoBuffer[this.echoId] = v * 0.35;

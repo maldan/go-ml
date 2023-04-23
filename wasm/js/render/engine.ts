@@ -31,11 +31,15 @@ class GoRender {
 
     // Load shaders
     const shaderList = ["matrix.glsl"];
-    shaderList.push(
+    ["main", "point", "line", "text", "ui"].forEach((x) => {
+      shaderList.push(`${x}.vertex.glsl`);
+      shaderList.push(`${x}.fragment.glsl`);
+    });
+    /*shaderList.push(
       ...["main", "point", "line", "text", "ui"]
         .map((x) => [`${x}.vertex.glsl`, `${x}.fragment.glsl`])
         .flat()
-    );
+    );*/
     for (let i = 0; i < shaderList.length; i++) {
       await this.loadShaderSourceCode(`./js/render/shader/${shaderList[i]}`);
     }
@@ -110,8 +114,9 @@ class GoRender {
   }
 }
 
-function loadTexture(gl: WebGLRenderingContext, url: string) {
+function loadTexture(gl: WebGLRenderingContext, url: string): WebGLTexture {
   const texture = gl.createTexture();
+  if (!texture) throw new Error(`Can't create texture`);
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 

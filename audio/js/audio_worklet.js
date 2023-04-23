@@ -18,6 +18,8 @@ class MyAudioProcessor extends AudioWorkletProcessor {
       eval(e.data.synthText);
       this.ch0 = new AudioChannel(e.data.sampleRate);
       this.ch1 = new AudioChannel(e.data.sampleRate);
+      this.ch2 = new AudioChannel(e.data.sampleRate);
+      this.ch3 = new AudioChannel(e.data.sampleRate);
     }
     if (e.data.type === "setChannelData") {
       for (let i = 0; i < e.data.channel.length; i++) {
@@ -43,8 +45,8 @@ class MyAudioProcessor extends AudioWorkletProcessor {
     // let echoBuffer = this.echoBuffer2;
     // if (this.echoMode === 1) echoBuffer = this.echoBuffer;
 
-    const outList = [[], []];
-    for (let j = 0; j < 2; j++) {
+    const outList = [[], [], [], []];
+    for (let j = 0; j < 4; j++) {
       const ch = this["ch" + j];
 
       for (let i = 0; i < channel.length; ++i) {
@@ -75,7 +77,8 @@ class MyAudioProcessor extends AudioWorkletProcessor {
 
     // Combine channels
     for (let i = 0; i < channel.length; ++i) {
-      channel[i] = outList[0][i] + outList[1][i];
+      channel[i] =
+        outList[0][i] + outList[1][i] + outList[2][i] + outList[3][i];
     }
 
     return true;

@@ -8,7 +8,7 @@ class GoRenderLayer {
   public dataList: Record<string, any> = {};
   name = "";
   public state: Record<string, any> = {};
-  texture = null;
+  public texture: WebGLTexture;
 
   constructor(name: string, gl: WebGLRenderingContext) {
     this.name = name;
