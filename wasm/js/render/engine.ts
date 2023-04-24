@@ -30,6 +30,7 @@ class GoRender {
 
     this._gl = this._canvas.getContext("webgl", {
       antialias: false,
+      premultipliedAlpha: false,
     }) as WebGLRenderingContext;
     if (this._gl === null) throw new Error("WebGL is not supported");
 
@@ -88,19 +89,24 @@ class GoRender {
     const height = Number(this._canvas.getAttribute("height"));
 
     this._gl.viewport(0, 0, width, height);
-    if ((window as any).go) (window as any).go.renderResize(width, height);
+    if ((window as any).go?.renderResize)
+      (window as any).go.renderResize(width, height);
   }
 
   static draw() {
-    this._gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    this._gl.clearDepth(1.0);
-    this._gl.enable(this._gl.DEPTH_TEST);
-
     // this._gl.enable(this._gl.CULL_FACE);
     // this._gl.cullFace(this._gl.BACK);
 
-    this._gl.depthFunc(this._gl.LEQUAL);
+    // this._gl.colorMask(false, false, false, true);
     this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
+    this._gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    this._gl.clearDepth(1.0);
+
+    // this._gl.colorMask(true, true, true, false);
+
+    this._gl.enable(this._gl.DEPTH_TEST);
+    this._gl.depthFunc(this._gl.LEQUAL);
+    this._gl.blendFunc(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
 
     this.layerList.forEach((layer) => {
       layer.draw();

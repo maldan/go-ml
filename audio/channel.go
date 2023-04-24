@@ -1,7 +1,7 @@
 package maudio
 
 import (
-	ml_number "github.com/maldan/go-ml/util/number"
+	ml_random "github.com/maldan/go-ml/util/random"
 	"math"
 )
 
@@ -21,7 +21,7 @@ type AudioChannel struct {
 }
 
 func (c *AudioChannel) DoNoise(t float32) float32 {
-	return ml_number.RandFloat32(-1, 1)
+	return ml_random.Range[float32](-1, 1)
 }
 
 func (c *AudioChannel) DoSin(t float32) float32 {

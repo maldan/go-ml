@@ -42,16 +42,25 @@ func (v *Vector3[T]) Normalize() {
 	v.Z /= l
 }
 
-func (v *Vector3[T]) Scale(v2 T) {
+func (v Vector3[T]) Divide(v2 T) Vector3[T] {
+	v.X /= v2
+	v.Y /= v2
+	v.Z /= v2
+	return v
+}
+
+func (v Vector3[T]) Scale(v2 T) Vector3[T] {
 	v.X *= v2
 	v.Y *= v2
 	v.Z *= v2
+	return v
 }
 
-func (v *Vector3[T]) Add(v2 Vector3[T]) {
+func (v Vector3[T]) Add(v2 Vector3[T]) Vector3[T] {
 	v.X += v2.X
 	v.Y += v2.Y
 	v.Z += v2.Z
+	return v
 }
 
 func (v *Vector3[T]) Sub(v2 Vector3[T]) {

@@ -74,7 +74,7 @@ func BindMouse() {
 	})
 }
 
-func ExportFunction(name string, fn func(args []js.Value) any) {
+func ExportFunction(name string, fn func(a []js.Value) any) {
 	if js.Global().Get("window").Get("go").IsUndefined() {
 		js.Global().Get("window").Set("go", map[string]any{})
 	}

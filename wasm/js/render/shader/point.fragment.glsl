@@ -1,4 +1,4 @@
-varying lowp vec4 vColor;
+varying highp vec4 vColor;
 
 void main() {
     if (vColor.a <= 0.0) {

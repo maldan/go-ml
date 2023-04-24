@@ -28,7 +28,15 @@ func IndexBy[T any](slice []T, fn func(*T) bool) int {
 }
 
 func RemoveAt[T any](slice []T, index int) []T {
-	return append(slice[:index], slice[index+1:]...)
+	out := make([]T, 0, len(slice))
+	for i := 0; i < len(slice); i++ {
+		if i == index {
+			continue
+		}
+		out = append(out, slice[i])
+	}
+	return out
+	// return append(slice[:index], slice[index+1:]...)
 }
 
 func Includes[T comparable](slice []T, v T) bool {
@@ -166,40 +174,36 @@ func NotNil[T any](slice []T) []T {
 	return slice
 }
 
-func SortAZ[T constraints.Ordered](slice []T) []T {
+func SortAZ[T constraints.Ordered](slice []T) {
 	fn := func(i, j int) (T, T) { return slice[i], slice[j] }
 
 	sort.SliceStable(slice, func(i, j int) bool {
 		a, b := fn(i, j)
 		return a < b
 	})
-	return slice
 }
 
-func SortZA[T constraints.Ordered](slice []T) []T {
+func SortZA[T constraints.Ordered](slice []T) {
 	fn := func(i, j int) (T, T) { return slice[i], slice[j] }
 
 	sort.SliceStable(slice, func(i, j int) bool {
 		a, b := fn(i, j)
 		return a > b
 	})
-	return slice
 }
 
-func SortAZBy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N, N)) []T {
+func SortAZBy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N, N)) {
 	sort.SliceStable(slice, func(i, j int) bool {
 		a, b := fn(i, j)
 		return a < b
 	})
-	return slice
 }
 
-func SortZABy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N, N)) []T {
+func SortZABy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N, N)) {
 	sort.SliceStable(slice, func(i, j int) bool {
 		a, b := fn(i, j)
 		return a > b
 	})
-	return slice
 }
 
 func Reverse[T any](slice []T) []T {
