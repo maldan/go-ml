@@ -34,17 +34,25 @@ class GoRender {
     }) as WebGLRenderingContext;
     if (this._gl === null) throw new Error("WebGL is not supported");
 
+    /*const extensions = this._gl.getSupportedExtensions();
+    alert(extensions);
+
+    if (!this._gl.getExtension("OES_texture_half_float")) {
+      alert("OES_texture_half_float is not supported");
+      throw new Error("OES_texture_half_float is not supported");
+    }
+
+    if (!this._gl.getExtension("OES_element_index_uint")) {
+      alert("OES_element_index_uint is not supported");
+      throw new Error("OES_element_index_uint is not supported");
+    }*/
+
     // Load shaders
     const shaderList = ["matrix.glsl"];
     ["main", "point", "line", "text", "ui"].forEach((x) => {
       shaderList.push(`${x}.vertex.glsl`);
       shaderList.push(`${x}.fragment.glsl`);
     });
-    /*shaderList.push(
-      ...["main", "point", "line", "text", "ui"]
-        .map((x) => [`${x}.vertex.glsl`, `${x}.fragment.glsl`])
-        .flat()
-    );*/
     for (let i = 0; i < shaderList.length; i++) {
       await this.loadShaderSourceCode(`./js/render/shader/${shaderList[i]}`);
     }

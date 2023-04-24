@@ -20,14 +20,15 @@ void main() {
     mat4 rotationMatrix = rotate(aRotation);
 
     // Set position
-    gl_Position = uProjectionMatrix * translate(aPosition) * rotationMatrix * scale(aScale) * vec4(aVertex, 1.0);
+    vec3 position = aPosition;
+    gl_Position = uProjectionMatrix * translate(position) * rotationMatrix * scale(aScale) * vec4(aVertex, 1.0);
     vUv = aUv;
     vColor = aColor;
 
     // Apply lighting effect
     highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
     highp vec3 directionalLightColor = vec3(1, 1, 1);
-    highp vec3 directionalVector = normalize(vec3(0.0, 0.0, 0.6));
+    highp vec3 directionalVector = normalize(vec3(0.3, 0.4, 0.8));
 
     // Prepare normal matrix
     mat4 normalMatrix = identity();

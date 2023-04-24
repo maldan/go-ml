@@ -46,8 +46,8 @@ func (l *MainLayer) Init() {
 	l.ScaleList = make([]float32, 65536*3)
 	l.ColorList = make([]float32, 65536*4)
 
-	l.AllocatedMesh = make([]mr_mesh.Mesh, 0, 1024)
-	l.MeshInstanceList = make([]mr_mesh.MeshInstance, 1024)
+	l.AllocatedMesh = make([]mr_mesh.Mesh, 0, 8192)
+	l.MeshInstanceList = make([]mr_mesh.MeshInstance, 8192)
 	l.IndexList = make([]uint16, 65536)
 
 	fmt.Printf("Render allocated %v\n", cap(l.VertexList)*4*6)

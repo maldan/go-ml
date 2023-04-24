@@ -1,9 +1,12 @@
 package mrender_mesh
 
 import (
+	"encoding/binary"
+	"fmt"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 	ml_number "github.com/maldan/go-ml/util/number"
+	"math"
 )
 
 type Mesh struct {
@@ -33,6 +36,63 @@ func New() Mesh {
 	}
 }
 
+func BytesToMesh(bytes []byte) Mesh {
+	offset := 0
+	fmt.Printf("%v\n", len(bytes))
+	out := New()
+
+	// Read vertex
+	amount := binary.LittleEndian.Uint16(bytes[0:2])
+	offset += 2
+	for i := 0; i < int(amount); i++ {
+		x := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+		y := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+		z := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+
+		out.Vertices = append(out.Vertices, mmath_la.Vector3[float32]{x, y, z})
+	}
+
+	// Read normal
+	amount = binary.LittleEndian.Uint16(bytes[offset : offset+2])
+	offset += 2
+	for i := 0; i < int(amount); i++ {
+		x := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+		y := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+		z := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+
+		out.Normal = append(out.Normal, mmath_la.Vector3[float32]{x, y, z})
+	}
+
+	// Read index
+	amount = binary.LittleEndian.Uint16(bytes[offset : offset+2])
+	offset += 2
+	for i := 0; i < int(amount); i++ {
+		index := binary.LittleEndian.Uint16(bytes[offset : offset+2])
+		offset += 2
+		out.Indices = append(out.Indices, index)
+	}
+
+	// Read uv
+	amount = binary.LittleEndian.Uint16(bytes[offset : offset+2])
+	offset += 2
+	for i := 0; i < int(amount); i++ {
+		x := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+		y := math.Float32frombits(binary.LittleEndian.Uint32(bytes[offset : offset+4]))
+		offset += 4
+
+		out.UV = append(out.UV, mmath_la.Vector2[float32]{x, y})
+	}
+
+	return out
+}
+
 /*func (m *Mesh) ApplyMatrix() {
 	m.Matrix.Identity()
 	m.Matrix.Translate(m.Position)
@@ -40,6 +100,17 @@ func New() Mesh {
 	m.Matrix.RotateY(m.Rotation.Y)
 	m.Matrix.RotateZ(m.Rotation.Z)
 }*/
+
+func (m *Mesh) RotateY(rad float32) {
+	mx := mmath_la.Matrix4x4[float32]{}
+	mx.Identity()
+	mx.RotateY(rad)
+
+	for i := 0; i < len(m.Vertices); i++ {
+		m.Vertices[i] = m.Vertices[i].TransformMatrix4x4(mx)
+		m.Normal[i] = m.Normal[i].TransformMatrix4x4(mx)
+	}
+}
 
 func (m *Mesh) ScaleUV(size mmath_la.Vector2[float32]) {
 	for i := 0; i < len(m.UV); i++ {

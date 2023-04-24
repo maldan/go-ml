@@ -76,7 +76,7 @@ func Init() {
 	// Init global camera
 	State.GlobalCamera = mr_camera.PerspectiveCamera{Fov: 45, AspectRatio: 1}
 	State.GlobalCamera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
-	State.GlobalCamera.Position.Z = -15.5
+	State.GlobalCamera.Position.Z = 15.5
 
 	State.UI.Camera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
 	State.UI.Camera.Area.Left = 0

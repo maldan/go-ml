@@ -11,7 +11,7 @@ type Vector3[T constraints.Float] struct {
 	Z T
 }
 
-func (v *Vector3[T]) TransformMatrix4x4(mx Matrix4x4[T]) {
+func (v Vector3[T]) TransformMatrix4x4(mx Matrix4x4[T]) Vector3[T] {
 	x := v.X
 	y := v.Y
 	z := v.Z
@@ -22,6 +22,8 @@ func (v *Vector3[T]) TransformMatrix4x4(mx Matrix4x4[T]) {
 	v.X = (mx.Raw[0]*x + mx.Raw[4]*y + mx.Raw[8]*z + mx.Raw[12]) / w
 	v.Y = (mx.Raw[1]*x + mx.Raw[5]*y + mx.Raw[9]*z + mx.Raw[13]) / w
 	v.Z = (mx.Raw[2]*x + mx.Raw[6]*y + mx.Raw[10]*z + mx.Raw[14]) / w
+
+	return v
 }
 
 func (v *Vector3[T]) Clone() Vector3[T] {

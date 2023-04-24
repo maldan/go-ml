@@ -324,3 +324,46 @@ func (m *Matrix4x4[T]) Rotate(rad T, axis Vector3[T]) {
 	m.Raw[10] = a02*b20 + a12*b21 + a22*b22
 	m.Raw[11] = a03*b20 + a13*b21 + a23*b22
 }
+
+func (m *Matrix4x4[T]) TargetTo(from Vector3[T], to Vector3[T], up Vector3[T]) {
+	z0 := from.X - to.X
+	z1 := from.Y - to.Y
+	z2 := from.Z - to.Z
+
+	ln := z0*z0 + z1*z1 + z2*z2
+	if ln > 0 {
+		ln = 1 / T(math.Sqrt(float64(ln)))
+		z0 *= ln
+		z1 *= ln
+		z2 *= ln
+	}
+
+	x0 := up.Y*z2 - up.Z*z1
+	x1 := up.Z*z0 - up.X*z2
+	x2 := up.X*z1 - up.Y*z0
+
+	ln = x0*x0 + x1*x1 + x2*x2
+	if ln > 0 {
+		ln = 1 / T(math.Sqrt(float64(ln)))
+		x0 *= ln
+		x1 *= ln
+		x2 *= ln
+	}
+
+	m.Raw[0] = x0
+	m.Raw[1] = x1
+	m.Raw[2] = x2
+	m.Raw[3] = 0
+	m.Raw[4] = z1*x2 - z2*x1
+	m.Raw[5] = z2*x0 - z0*x2
+	m.Raw[6] = z0*x1 - z1*x0
+	m.Raw[7] = 0
+	m.Raw[8] = z0
+	m.Raw[9] = z1
+	m.Raw[10] = z2
+	m.Raw[11] = 0
+	m.Raw[12] = from.X
+	m.Raw[13] = from.Y
+	m.Raw[14] = from.Z
+	m.Raw[15] = 1
+}
