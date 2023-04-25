@@ -6,10 +6,6 @@ attribute vec3 aNormal;
 attribute vec2 aUv;
 attribute vec4 aColor;
 
-attribute vec3 aPosition;
-attribute vec3 aRotation;
-attribute vec3 aScale;
-
 varying highp vec2 vUv;
 varying highp vec3 vLighting;
 varying highp vec4 vColor;
@@ -17,11 +13,8 @@ varying highp vec4 vColor;
 uniform mat4 uProjectionMatrix;
 
 void main() {
-    mat4 rotationMatrix = rotate(aRotation);
-
     // Set position
-    vec3 position = aPosition;
-    gl_Position = uProjectionMatrix * translate(position) * rotationMatrix * scale(aScale) * vec4(aVertex, 1.0);
+    gl_Position = uProjectionMatrix * vec4(aVertex, 1.0);
     vUv = aUv;
     vColor = aColor;
 
@@ -32,10 +25,29 @@ void main() {
 
     // Prepare normal matrix
     mat4 normalMatrix = identity();
-    normalMatrix = inverse(rotationMatrix);
+    normalMatrix = inverse(normalMatrix);
 
     // Calculate light
     highp vec4 transformedNormal = normalMatrix * vec4(aNormal.xyz, 1.0);
     highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
     vLighting = ambientLight + (directionalLightColor * directional);
+}
+
+// Fragment
+precision highp float;
+
+varying vec4 vColor;
+varying vec2 vUv;
+varying vec3 vLighting;
+
+uniform sampler2D uTexture;
+
+void main() {
+    highp vec4 texelColor = texture2D(uTexture, vUv);
+    vec4 finalColor = vec4(texelColor.rgb * vLighting.rgb, texelColor.a) * vColor.rgba;
+    if (finalColor.a <= 0.0) {
+        discard;
+    }
+
+    gl_FragColor = finalColor;
 }

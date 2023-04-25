@@ -15,6 +15,7 @@ type Mesh struct {
 	Indices  []uint16
 	UV       []mmath_la.Vector2[float32]
 	Normal   []mmath_la.Vector3[float32]
+	Color    []ml_color.ColorRGBA[float32]
 }
 
 type MeshInstance struct {
@@ -100,6 +101,16 @@ func BytesToMesh(bytes []byte) Mesh {
 	m.Matrix.RotateY(m.Rotation.Y)
 	m.Matrix.RotateZ(m.Rotation.Z)
 }*/
+
+func (m *Mesh) SetPosition(position mmath_la.Vector3[float32]) {
+	mx := mmath_la.Matrix4x4[float32]{}
+	mx.Identity()
+	mx.Translate(position)
+
+	for i := 0; i < len(m.Vertices); i++ {
+		m.Vertices[i] = m.Vertices[i].TransformMatrix4x4(mx)
+	}
+}
 
 func (m *Mesh) RotateY(rad float32) {
 	mx := mmath_la.Matrix4x4[float32]{}

@@ -6,18 +6,18 @@ import (
 	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mrender_mesh "github.com/maldan/go-ml/render/mesh"
-	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
-
 	mrender_uv "github.com/maldan/go-ml/render/uv"
+	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 )
 
 type RenderEngine struct {
-	Main  mr_layer.MainLayer
-	Point mr_layer.PointLayer
-	Line  mr_layer.LineLayer
-	Text  mr_layer.TextLayer
-	UI    mr_layer.UILayer
+	Main       mr_layer.MainLayer
+	StaticMesh mr_layer.StaticMeshLayer
+	Point      mr_layer.PointLayer
+	Line       mr_layer.LineLayer
+	Text       mr_layer.TextLayer
+	UI         mr_layer.UILayer
 
 	ScreenSize mmath_la.Vector2[float32]
 
@@ -25,6 +25,50 @@ type RenderEngine struct {
 }
 
 var State RenderEngine = RenderEngine{}
+
+func AddStaticMesh(mesh mrender_mesh.Mesh, position mmath_la.Vector3[float32]) *mrender_mesh.Mesh {
+	if mesh.Normal == nil {
+		for i := 0; i < len(mesh.Vertices); i++ {
+			mesh.Normal = append(mesh.Normal, mmath_la.Vector3[float32]{0, 0, 0})
+		}
+	}
+	if mesh.UV == nil {
+		for i := 0; i < len(mesh.Vertices); i++ {
+			mesh.UV = append(mesh.UV, mmath_la.Vector2[float32]{0, 0})
+		}
+	}
+	if mesh.Color == nil {
+		for i := 0; i < len(mesh.Vertices); i++ {
+			mesh.Color = append(mesh.Color, ml_color.ColorRGBA[float32]{1, 1, 1, 1})
+		}
+	}
+
+	// Create copy of mesh
+	copyMesh := mrender_mesh.Mesh{}
+	copyMesh.Vertices = make([]mmath_la.Vector3[float32], len(mesh.Vertices))
+	copyMesh.UV = make([]mmath_la.Vector2[float32], len(mesh.UV))
+	copyMesh.Normal = make([]mmath_la.Vector3[float32], len(mesh.Normal))
+	copyMesh.Color = make([]ml_color.ColorRGBA[float32], len(mesh.Color))
+	copyMesh.Indices = make([]uint16, len(mesh.Indices))
+
+	// Copy vertices
+	copy(copyMesh.Vertices, mesh.Vertices)
+	copy(copyMesh.Normal, mesh.Normal)
+	copy(copyMesh.UV, mesh.UV)
+	copy(copyMesh.Color, mesh.Color)
+	copy(copyMesh.Indices, mesh.Indices)
+
+	// Apply matrix
+	copyMesh.SetPosition(position)
+
+	State.StaticMesh.MeshList = append(State.StaticMesh.MeshList, copyMesh)
+	State.StaticMesh.IsChanged = true
+	return &State.StaticMesh.MeshList[len(State.StaticMesh.MeshList)-1]
+}
+
+func DeleteStaticMesh(mesh *mrender_mesh.Mesh) {
+
+}
 
 func AllocateMesh(mesh mrender_mesh.Mesh) *mrender_mesh.Mesh {
 	mesh.Id = len(State.Main.AllocatedMesh)
@@ -68,6 +112,7 @@ func InstanceMesh(mesh *mrender_mesh.Mesh) *mrender_mesh.MeshInstance {
 
 func Init() {
 	State.Main.Init()
+	State.StaticMesh.Init()
 	State.Point.Init()
 	State.Line.Init()
 	State.Text.Init()
@@ -217,11 +262,13 @@ func DrawButton(
 func (r *RenderEngine) Render() {
 	r.GlobalCamera.ApplyMatrix()
 	r.Main.Camera = r.GlobalCamera
+	r.StaticMesh.Camera = r.GlobalCamera
 	r.Point.Camera = r.GlobalCamera
 	r.Line.Camera = r.GlobalCamera
 	r.Text.Camera = r.GlobalCamera
 
 	r.Main.Render()
+	r.StaticMesh.Render()
 	r.Point.Render()
 	r.Line.Render()
 	r.Text.Render()

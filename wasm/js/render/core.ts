@@ -5,11 +5,6 @@ class GoRender {
   static shaderSource: Record<string, string> = {};
   static layerList: GoRenderLayer[] = [];
 
-  static async loadShaderSourceCode(url: string) {
-    const x = await fetch(url);
-    this.shaderSource[url] = await x.text();
-  }
-
   static async setResolution(w: number, h: number) {
     this._canvas.setAttribute("width", `${w}`);
     this._canvas.setAttribute("height", `${h}`);
@@ -48,20 +43,36 @@ class GoRender {
     }*/
 
     // Load shaders
-    const shaderList = ["matrix.glsl"];
-    ["main", "point", "line", "text", "ui"].forEach((x) => {
-      shaderList.push(`${x}.vertex.glsl`);
-      shaderList.push(`${x}.fragment.glsl`);
-    });
+    const shaderList = [
+      "matrix",
+      "staticMesh",
+      "dynamicMesh",
+      "line",
+      "point",
+      "text",
+      "ui",
+    ];
+
     for (let i = 0; i < shaderList.length; i++) {
-      await this.loadShaderSourceCode(`./js/render/shader/${shaderList[i]}`);
+      const url = `./js/render/shader/${shaderList[i]}.glsl`;
+      const x = await fetch(url);
+      this.shaderSource[url] = await x.text();
     }
 
     // Inject library
     shaderList.slice(1).forEach((x) => {
-      this.shaderSource[`./js/render/shader/${x}`] = this.shaderSource[
-        `./js/render/shader/${x}`
+      this.shaderSource[`./js/render/shader/${x}.glsl`] = this.shaderSource[
+        `./js/render/shader/${x}.glsl`
       ].replace("// LIB", this.shaderSource["./js/render/shader/matrix.glsl"]);
+    });
+
+    // Separate shaders
+    shaderList.slice(1).forEach((x) => {
+      const shader = this.shaderSource[`./js/render/shader/${x}.glsl`];
+      const tuple = shader.split("// Fragment");
+
+      this.shaderSource[`./js/render/shader/${x}.vertex.glsl`] = tuple[0];
+      this.shaderSource[`./js/render/shader/${x}.fragment.glsl`] = tuple[1];
     });
 
     // Main texture
@@ -69,7 +80,8 @@ class GoRender {
 
     // Compile shaders
     this.layerList = [
-      new GoRenderLayer("main", this._gl),
+      new GoRenderDynamicMeshLayer("dynamicMesh", this._gl),
+      new GoRenderStaticMeshLayer("staticMesh", this._gl),
       new GoRenderPointLayer("point", this._gl),
       new GoRenderLineLayer("line", this._gl),
       new GoRenderTextLayer("text", this._gl),

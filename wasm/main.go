@@ -86,14 +86,16 @@ func ExportFunction(name string, fn func(a []js.Value) any) {
 
 func InitRender(engine *mrender.RenderEngine) {
 	state := map[string]any{
-		"mainLayer":  engine.Main.GetState(),
-		"pointLayer": engine.Point.GetState(),
-		"lineLayer":  engine.Line.GetState(),
-		"textLayer":  engine.Text.GetState(),
-		"uiLayer":    engine.UI.GetState(),
+		"dynamicMeshLayer": engine.Main.GetState(),
+		"staticMeshLayer":  engine.StaticMesh.GetState(),
+		"pointLayer":       engine.Point.GetState(),
+		"lineLayer":        engine.Line.GetState(),
+		"textLayer":        engine.Text.GetState(),
+		"uiLayer":          engine.UI.GetState(),
 	}
 	ExportFunction("renderState", func(args []js.Value) any {
-		state["mainLayer"] = engine.Main.GetState()
+		state["dynamicMeshLayer"] = engine.Main.GetState()
+		state["staticMeshLayer"] = engine.StaticMesh.GetState()
 		state["pointLayer"] = engine.Point.GetState()
 		state["lineLayer"] = engine.Line.GetState()
 		state["textLayer"] = engine.Text.GetState()
