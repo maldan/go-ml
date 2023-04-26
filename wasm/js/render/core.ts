@@ -26,6 +26,7 @@ class GoRender {
     this._gl = this._canvas.getContext("webgl", {
       antialias: false,
       premultipliedAlpha: false,
+      // alpha: false,
     }) as WebGLRenderingContext;
     if (this._gl === null) throw new Error("WebGL is not supported");
 
@@ -114,19 +115,19 @@ class GoRender {
   }
 
   static draw() {
-    // this._gl.enable(this._gl.CULL_FACE);
-    // this._gl.cullFace(this._gl.BACK);
-
     // this._gl.colorMask(false, false, false, true);
-    this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
     this._gl.clearColor(0.0, 0.0, 0.0, 1.0);
     this._gl.clearDepth(1.0);
+    this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
 
-    // this._gl.colorMask(true, true, true, false);
+    // this._gl.enable(this._gl.CULL_FACE);
+    // this._gl.cullFace(this._gl.FRONT);
+
+    this._gl.enable(this._gl.BLEND);
+    this._gl.blendFunc(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);
 
     this._gl.enable(this._gl.DEPTH_TEST);
     this._gl.depthFunc(this._gl.LEQUAL);
-    this._gl.blendFunc(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
 
     this.layerList.forEach((layer) => {
       layer.draw();
@@ -139,6 +140,7 @@ function loadTexture(gl: WebGLRenderingContext, url: string): WebGLTexture {
   if (!texture) throw new Error(`Can't create texture`);
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
   const level = 0;
   const internalFormat = gl.RGBA;

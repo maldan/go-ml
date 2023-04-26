@@ -84,6 +84,14 @@ func ExportFunction(name string, fn func(a []js.Value) any) {
 	}))
 }
 
+func ExportFunction2(name string, fn func(this js.Value, a []js.Value) any) {
+	if js.Global().Get("window").Get("go").IsUndefined() {
+		js.Global().Get("window").Set("go", map[string]any{})
+	}
+
+	js.Global().Get("window").Get("go").Set(name, js.FuncOf(fn))
+}
+
 func InitRender(engine *mrender.RenderEngine) {
 	state := map[string]any{
 		"dynamicMeshLayer": engine.Main.GetState(),
@@ -93,7 +101,7 @@ func InitRender(engine *mrender.RenderEngine) {
 		"textLayer":        engine.Text.GetState(),
 		"uiLayer":          engine.UI.GetState(),
 	}
-	ExportFunction("renderState", func(args []js.Value) any {
+	ExportFunction2("renderState", func(this js.Value, args []js.Value) any {
 		state["dynamicMeshLayer"] = engine.Main.GetState()
 		state["staticMeshLayer"] = engine.StaticMesh.GetState()
 		state["pointLayer"] = engine.Point.GetState()
@@ -103,12 +111,12 @@ func InitRender(engine *mrender.RenderEngine) {
 		return state
 	})
 
-	ExportFunction("renderFrame", func(args []js.Value) any {
+	ExportFunction2("renderFrame", func(this js.Value, args []js.Value) any {
 		engine.Render()
 		return nil
 	})
 
-	ExportFunction("renderResize", func(args []js.Value) any {
+	ExportFunction2("renderResize", func(this js.Value, args []js.Value) any {
 		engine.ScreenSize.X = float32(args[0].Float())
 		engine.ScreenSize.Y = float32(args[1].Float())
 

@@ -37,11 +37,12 @@ func (v *Vector3[T]) Length() T {
 	return T(math.Sqrt((ax * ax) + (ay * ay) + (az * az)))
 }
 
-func (v *Vector3[T]) Normalize() {
+func (v Vector3[T]) Normalize() Vector3[T] {
 	l := v.Length()
 	v.X /= l
 	v.Y /= l
 	v.Z /= l
+	return v
 }
 
 func (v Vector3[T]) Divide(v2 T) Vector3[T] {
@@ -58,6 +59,26 @@ func (v Vector3[T]) Scale(v2 T) Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) Sin(v2 T) Vector3[T] {
+	v.X = T(math.Sin(float64(v2)))
+	v.Y = T(math.Sin(float64(v2)))
+	v.Z = T(math.Sin(float64(v2)))
+	return v
+}
+
+func (v Vector3[T]) Abs() Vector3[T] {
+	if v.X < 0 {
+		v.X *= -1
+	}
+	if v.Y < 0 {
+		v.Y *= -1
+	}
+	if v.Z < 0 {
+		v.Z *= -1
+	}
+	return v
+}
+
 func (v Vector3[T]) Add(v2 Vector3[T]) Vector3[T] {
 	v.X += v2.X
 	v.Y += v2.Y
@@ -65,10 +86,18 @@ func (v Vector3[T]) Add(v2 Vector3[T]) Vector3[T] {
 	return v
 }
 
-func (v *Vector3[T]) Sub(v2 Vector3[T]) {
+func (v Vector3[T]) Mul(v2 Vector3[T]) Vector3[T] {
+	v.X *= v2.X
+	v.Y *= v2.Y
+	v.Z *= v2.Z
+	return v
+}
+
+func (v Vector3[T]) Sub(v2 Vector3[T]) Vector3[T] {
 	v.X -= v2.X
 	v.Y -= v2.Y
 	v.Z -= v2.Z
+	return v
 }
 
 func (v Vector3[T]) ToVector2() Vector2[T] {
@@ -81,6 +110,10 @@ func (v *Vector3[T]) DistanceTo(to Vector3[T]) T {
 	c := float64(v.Z - to.Z)
 
 	return T(math.Sqrt(a*a + b*b + c*c))
+}
+
+func (v Vector3[T]) DirectionXZToAngle() T {
+	return T(math.Atan2(float64(v.X), float64(-v.Z)))
 }
 
 /*func AngleBetweenPoints[T constraints.Float](p1 Vector2[T], p2 T) T {

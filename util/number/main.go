@@ -24,3 +24,13 @@ func CheckBitMask[T constraints.Integer](v T, mask T) bool {
 func Lerp[T constraints.Integer | constraints.Float](start T, end T, t T) T {
 	return (1-t)*start + t*end
 }
+
+func Clamp[T constraints.Integer | constraints.Float](v T, min T, max T) T {
+	if v <= min {
+		return min
+	}
+	if v >= max {
+		return max
+	}
+	return v
+}

@@ -66,6 +66,11 @@ func AddStaticMesh(mesh mrender_mesh.Mesh, position mmath_la.Vector3[float32]) *
 	return &State.StaticMesh.MeshList[len(State.StaticMesh.MeshList)-1]
 }
 
+func ClearStaticMesh() {
+	State.StaticMesh.MeshList = State.StaticMesh.MeshList[:0]
+	State.StaticMesh.IsChanged = true
+}
+
 func DeleteStaticMesh(mesh *mrender_mesh.Mesh) {
 
 }
