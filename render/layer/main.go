@@ -1,7 +1,6 @@
 package mrender_layer
 
 import (
-	"fmt"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	"reflect"
 	"unsafe"
@@ -20,10 +19,10 @@ type MainLayer struct {
 	ColorList    []float32
 	IndexList    []uint16
 
-	VertexAmount int
+	/*VertexAmount int
 	UvAmount     int
 	ColorAmount  int
-	IndexAmount  int
+	IndexAmount  int*/
 
 	AllocatedMesh    []mr_mesh.Mesh
 	MeshInstanceList []mr_mesh.MeshInstance
@@ -36,6 +35,106 @@ type MainLayer struct {
 }
 
 func (l *MainLayer) Init() {
+	l.VertexList = make([]float32, 0, 1024)
+	l.UvList = make([]float32, 0, 1024)
+	l.NormalList = make([]float32, 0, 1024)
+	l.PositionList = make([]float32, 0, 1024)
+	l.RotationList = make([]float32, 0, 1024)
+	l.ScaleList = make([]float32, 0, 1024)
+	l.ColorList = make([]float32, 0, 1024)
+
+	l.AllocatedMesh = make([]mr_mesh.Mesh, 0, 32)
+	l.MeshInstanceList = make([]mr_mesh.MeshInstance, 1024)
+	l.IndexList = make([]uint16, 0, 1024)
+}
+
+func (l *MainLayer) Render() {
+	/*vertexId := 0
+	vertexId2 := 0
+	indexId := 0
+	uvIndex := 0
+	colorId := 0*/
+	lastMaxIndex := uint16(0)
+
+	// Clear before start
+	l.VertexList = l.VertexList[:0]
+	l.UvList = l.UvList[:0]
+	l.NormalList = l.NormalList[:0]
+	l.PositionList = l.PositionList[:0]
+	l.RotationList = l.RotationList[:0]
+	l.ScaleList = l.ScaleList[:0]
+	l.ColorList = l.ColorList[:0]
+	l.IndexList = l.IndexList[:0]
+
+	for i := 0; i < len(l.MeshInstanceList); i++ {
+		instance := l.MeshInstanceList[i]
+
+		if !instance.IsVisible {
+			continue
+		}
+		if !instance.IsActive {
+			continue
+		}
+		if instance.Id < 0 {
+			continue
+		}
+
+		mesh := l.AllocatedMesh[instance.Id]
+
+		// Copy vertex
+		for j := 0; j < len(mesh.Vertices); j++ {
+			v := mesh.Vertices[j]
+			l.VertexList = append(l.VertexList, v.X, v.Y, v.Z)
+
+			// Copy normal
+			n := mesh.Normal[j]
+			l.NormalList = append(l.NormalList, n.X, n.Y, n.Z)
+
+			// vertexId += 3
+		}
+
+		for j := 0; j < len(mesh.Vertices); j++ {
+			p := instance.Position
+			l.PositionList = append(l.PositionList, p.X, p.Y, p.Z)
+
+			p = instance.Rotation
+			l.RotationList = append(l.RotationList, p.X, p.Y, p.Z)
+
+			p = instance.Scale
+			l.ScaleList = append(l.ScaleList, p.X, p.Y, p.Z)
+		}
+
+		// Copy index
+		maxIndex := lastMaxIndex
+		for j := 0; j < len(mesh.Indices); j++ {
+			iv := mesh.Indices[j] + maxIndex
+			if iv > lastMaxIndex {
+				lastMaxIndex = iv
+			}
+			l.IndexList = append(l.IndexList, iv)
+		}
+		lastMaxIndex += 1
+
+		// Copy uv
+		for j := 0; j < len(mesh.UV); j++ {
+			v := mesh.UV[j]
+
+			if instance.UvOffset.X != 0 || instance.UvOffset.Y != 0 {
+				l.UvList = append(l.UvList, v.X+instance.UvOffset.X, v.Y-instance.UvOffset.Y)
+			} else {
+				l.UvList = append(l.UvList, v.X, v.Y)
+			}
+		}
+
+		// Copy color
+		for j := 0; j < len(mesh.Vertices); j++ {
+			c := instance.Color
+			l.ColorList = append(l.ColorList, c.R, c.G, c.B, c.A)
+		}
+	}
+}
+
+/*func (l *MainLayer) Init() {
 	l.VertexList = make([]float32, 65536*3)
 	l.UvList = make([]float32, 65536*2)
 	l.NormalList = make([]float32, 65536*3)
@@ -49,11 +148,9 @@ func (l *MainLayer) Init() {
 	l.IndexList = make([]uint16, 65536)
 
 	fmt.Printf("Render allocated %v\n", cap(l.VertexList)*4*6)
-}
+}*/
 
-func (l *MainLayer) Render() {
-	// l.Camera.ApplyMatrix()
-
+/*func (l *MainLayer) Render() {
 	l.VertexAmount = 0
 	l.IndexAmount = 0
 	l.UvAmount = 0
@@ -156,7 +253,7 @@ func (l *MainLayer) Render() {
 		}
 		l.ColorAmount += len(mesh.Vertices) * 4
 	}
-}
+}*/
 
 func (l *MainLayer) GetState() map[string]any {
 	vertexHeader := (*reflect.SliceHeader)(unsafe.Pointer(&l.VertexList))
@@ -179,26 +276,26 @@ func (l *MainLayer) GetState() map[string]any {
 			"scalePointer":    scaleHeader.Data,
 			"colorPointer":    colorHeader.Data,
 
-			"vertexAmount":   l.VertexAmount,
+			/*"vertexAmount":   l.VertexAmount,
 			"normalAmount":   l.VertexAmount,
 			"uvAmount":       l.UvAmount,
 			"indexAmount":    l.IndexAmount,
 			"positionAmount": l.VertexAmount,
 			"rotationAmount": l.VertexAmount,
 			"scaleAmount":    l.VertexAmount,
-			"colorAmount":    l.ColorAmount,
+			"colorAmount":    l.ColorAmount,*/
 
 			// "projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
-		l.state["vertexAmount"] = l.VertexAmount
+		/*l.state["vertexAmount"] = l.VertexAmount
 		l.state["normalAmount"] = l.VertexAmount
 		l.state["uvAmount"] = l.UvAmount
 		l.state["indexAmount"] = l.IndexAmount
 		l.state["positionAmount"] = l.VertexAmount
 		l.state["rotationAmount"] = l.VertexAmount
 		l.state["scaleAmount"] = l.VertexAmount
-		l.state["colorAmount"] = l.ColorAmount
+		l.state["colorAmount"] = l.ColorAmount*/
 	}
 
 	return l.state

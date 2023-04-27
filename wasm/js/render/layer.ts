@@ -411,16 +411,16 @@ class GoRenderDynamicMeshLayer extends GoRenderLayer {
         (window as any).go.pointer[`renderDynamicMeshLayer_${x}`],
         true
       );
+      state[x + "Amount"] = mv.getUint32(
+        (window as any).go.pointer[`renderDynamicMeshLayer_${x}`] + 8,
+        true
+      );
     });
 
     // Get camera matrix
     state["projectionMatrixPointer"] = (window as any).go.pointer[
       `renderCamera_matrix`
     ];
-    console.log(
-      mv.getFloat32(state["projectionMatrixPointer"], true),
-      mv.getFloat32(state["projectionMatrixPointer"] + 4, true)
-    );
 
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("normal", state, float32Array);
@@ -496,9 +496,27 @@ class GoRenderStaticMeshLayer extends GoRenderLayer {
     let shortArray = new Uint16Array(memory);
     let float32Array = new Float32Array(memory);
 
+    // Get pointers
+    const mv = (window as any).go.memoryView;
+    ["vertex", "uv", "normal", "color", "index"].forEach((x) => {
+      state[x + "Pointer"] = mv.getUint32(
+        (window as any).go.pointer[`renderStaticMeshLayer_${x}`],
+        true
+      );
+      state[x + "Amount"] = mv.getUint32(
+        (window as any).go.pointer[`renderStaticMeshLayer_${x}`] + 8,
+        true
+      );
+    });
+
+    // Get camera matrix
+    state["projectionMatrixPointer"] = (window as any).go.pointer[
+      `renderCamera_matrix`
+    ];
+
     this.setDataArray("vertex", state, float32Array);
-    this.setDataArray("normal", state, float32Array);
     this.setDataArray("uv", state, float32Array);
+    this.setDataArray("normal", state, float32Array);
     this.setDataArray("color", state, float32Array);
     this.setDataArray("index", state, shortArray);
     this.setDataArray("projectionMatrix", state, float32Array, 16);

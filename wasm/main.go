@@ -154,6 +154,13 @@ func InitRender(engine *mrender.RenderEngine) {
 	ExportPointer("renderDynamicMeshLayer_scale", unsafe.Pointer(&engine.Main.ScaleList))
 	ExportPointer("renderDynamicMeshLayer_color", unsafe.Pointer(&engine.Main.ColorList))
 	ExportPointer("renderDynamicMeshLayer_index", unsafe.Pointer(&engine.Main.IndexList))
+
+	// Export static mesh layer
+	ExportPointer("renderStaticMeshLayer_vertex", unsafe.Pointer(&engine.StaticMesh.VertexList))
+	ExportPointer("renderStaticMeshLayer_uv", unsafe.Pointer(&engine.StaticMesh.UvList))
+	ExportPointer("renderStaticMeshLayer_normal", unsafe.Pointer(&engine.StaticMesh.NormalList))
+	ExportPointer("renderStaticMeshLayer_color", unsafe.Pointer(&engine.StaticMesh.ColorList))
+	ExportPointer("renderStaticMeshLayer_index", unsafe.Pointer(&engine.StaticMesh.IndexList))
 }
 
 func InitSound() {

@@ -7,44 +7,43 @@ import (
 )
 
 type StaticMeshLayer struct {
-	MeshList   []mr_mesh.Mesh
 	VertexList []float32
 	UvList     []float32
 	NormalList []float32
 	ColorList  []float32
 	IndexList  []uint16
 
-	VertexAmount int
+	/*VertexAmount int
 	IndexAmount  int
 	UvAmount     int
-	ColorAmount  int
+	ColorAmount  int*/
 
 	IsChanged bool
 
+	MeshList []mr_mesh.Mesh
 	//Camera mr_camera.PerspectiveCamera
 
 	state map[string]any
 }
 
 func (l *StaticMeshLayer) Init() {
-	l.VertexList = make([]float32, 65536*3)
-	l.NormalList = make([]float32, 65536*3)
-	l.UvList = make([]float32, 65536*2)
-	l.ColorList = make([]float32, 65536*4)
+	l.VertexList = make([]float32, 0, 1024)
+	l.NormalList = make([]float32, 0, 1024)
+	l.UvList = make([]float32, 0, 1024)
+	l.ColorList = make([]float32, 0, 1024)
 
-	l.MeshList = make([]mr_mesh.Mesh, 0, 8192)
-	l.IndexList = make([]uint16, 65536)
+	l.MeshList = make([]mr_mesh.Mesh, 0, 128)
+	l.IndexList = make([]uint16, 1024)
 }
 
 func (l *StaticMeshLayer) Build() {
-	l.VertexAmount = 0
-	l.IndexAmount = 0
-	l.UvAmount = 0
+	// Clear before start
+	l.VertexList = l.VertexList[:0]
+	l.UvList = l.UvList[:0]
+	l.NormalList = l.NormalList[:0]
+	l.ColorList = l.ColorList[:0]
+	l.IndexList = l.IndexList[:0]
 
-	vertexId := 0
-	indexId := 0
-	uvIndex := 0
-	colorId := 0
 	lastMaxIndex := uint16(0)
 	for i := 0; i < len(l.MeshList); i++ {
 		mesh := l.MeshList[i]
@@ -52,53 +51,35 @@ func (l *StaticMeshLayer) Build() {
 		// Copy vertex
 		for j := 0; j < len(mesh.Vertices); j++ {
 			v := mesh.Vertices[j]
-			l.VertexList[vertexId] = v.X
-			l.VertexList[vertexId+1] = v.Y
-			l.VertexList[vertexId+2] = v.Z
+			l.VertexList = append(l.VertexList, v.X, v.Y, v.Z)
 
 			// Copy normal
 			n := mesh.Normal[j]
-			l.NormalList[vertexId] = n.X
-			l.NormalList[vertexId+1] = n.Y
-			l.NormalList[vertexId+2] = n.Z
-
-			vertexId += 3
+			l.NormalList = append(l.NormalList, n.X, n.Y, n.Z)
 		}
-		l.VertexAmount += len(mesh.Vertices) * 3
 
 		// Copy index
 		maxIndex := lastMaxIndex
 		for j := 0; j < len(mesh.Indices); j++ {
-			l.IndexList[indexId] = mesh.Indices[j] + maxIndex
-			if l.IndexList[indexId] > lastMaxIndex {
-				lastMaxIndex = l.IndexList[indexId]
+			iv := mesh.Indices[j] + maxIndex
+			if iv > lastMaxIndex {
+				lastMaxIndex = iv
 			}
-			indexId += 1
+			l.IndexList = append(l.IndexList, iv)
 		}
 		lastMaxIndex += 1
-		l.IndexAmount += len(mesh.Indices)
 
 		// Copy uv
 		for j := 0; j < len(mesh.UV); j++ {
 			v := mesh.UV[j]
-
-			l.UvList[uvIndex] = v.X
-			l.UvList[uvIndex+1] = v.Y
-
-			uvIndex += 2
+			l.UvList = append(l.UvList, v.X, v.Y)
 		}
-		l.UvAmount += len(mesh.UV) * 2
 
 		// Copy color
 		for j := 0; j < len(mesh.Vertices); j++ {
 			c := mesh.Color[j]
-			l.ColorList[colorId] = c.R
-			l.ColorList[colorId+1] = c.G
-			l.ColorList[colorId+2] = c.B
-			l.ColorList[colorId+3] = c.A
-			colorId += 4
+			l.ColorList = append(l.ColorList, c.R, c.G, c.B, c.A)
 		}
-		l.ColorAmount += len(mesh.Vertices) * 4
 	}
 }
 
@@ -125,26 +106,26 @@ func (l *StaticMeshLayer) GetState() map[string]any {
 			"indexPointer":  indexHeader.Data,
 			"colorPointer":  colorHeader.Data,
 
-			"vertexAmount":   l.VertexAmount,
+			/*"vertexAmount":   l.VertexAmount,
 			"normalAmount":   l.VertexAmount,
 			"uvAmount":       l.UvAmount,
 			"indexAmount":    l.IndexAmount,
 			"positionAmount": l.VertexAmount,
 			"rotationAmount": l.VertexAmount,
 			"scaleAmount":    l.VertexAmount,
-			"colorAmount":    l.ColorAmount,
+			"colorAmount":    l.ColorAmount,*/
 
 			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
-		l.state["vertexAmount"] = l.VertexAmount
+		/*l.state["vertexAmount"] = l.VertexAmount
 		l.state["normalAmount"] = l.VertexAmount
 		l.state["uvAmount"] = l.UvAmount
 		l.state["indexAmount"] = l.IndexAmount
 		l.state["positionAmount"] = l.VertexAmount
 		l.state["rotationAmount"] = l.VertexAmount
 		l.state["scaleAmount"] = l.VertexAmount
-		l.state["colorAmount"] = l.ColorAmount
+		l.state["colorAmount"] = l.ColorAmount*/
 	}
 
 	return l.state
