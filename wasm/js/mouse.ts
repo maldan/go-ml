@@ -20,8 +20,11 @@ class GoMouse {
         py /= fy;
       }
 
-      // @ts-ignore
-      window.go.setMousePosition(px, -py);
+      try {
+        const mp = window.go.pointer.mousePosition;
+        window.go.memoryView.setFloat32(mp, px, true);
+        window.go.memoryView.setFloat32(mp + 4, -py, true);
+      } catch {}
     });
 
     document.addEventListener("mousedown", (e: MouseEvent) => {

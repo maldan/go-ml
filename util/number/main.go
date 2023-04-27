@@ -25,6 +25,20 @@ func Lerp[T constraints.Integer | constraints.Float](start T, end T, t T) T {
 	return (1-t)*start + t*end
 }
 
+func Min[T constraints.Integer | constraints.Float](a T, b T) T {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func Max[T constraints.Integer | constraints.Float](a T, b T) T {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func Clamp[T constraints.Integer | constraints.Float](v T, min T, max T) T {
 	if v <= min {
 		return min
@@ -33,4 +47,9 @@ func Clamp[T constraints.Integer | constraints.Float](v T, min T, max T) T {
 		return max
 	}
 	return v
+}
+
+func TowardsSmooth[T constraints.Float](from *T, to T, step T, delta T) {
+	step = 1 / step
+	*from += (to - *from) / (step / delta)
 }

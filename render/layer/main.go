@@ -12,23 +12,22 @@ type Layer interface {
 }
 
 type MainLayer struct {
-	AllocatedMesh    []mr_mesh.Mesh
-	MeshInstanceList []mr_mesh.MeshInstance
-	VertexList       []float32
-	UvList           []float32
-	NormalList       []float32
-
+	VertexList   []float32
+	UvList       []float32
+	NormalList   []float32
 	PositionList []float32
 	RotationList []float32
 	ScaleList    []float32
 	ColorList    []float32
-
-	IndexList []uint16
+	IndexList    []uint16
 
 	VertexAmount int
-	IndexAmount  int
 	UvAmount     int
 	ColorAmount  int
+	IndexAmount  int
+
+	AllocatedMesh    []mr_mesh.Mesh
+	MeshInstanceList []mr_mesh.MeshInstance
 
 	Camera mr_camera.PerspectiveCamera
 

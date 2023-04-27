@@ -4,8 +4,8 @@ import (
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 )
 
-var ClickState = map[int]bool{}
-var State = map[int]bool{}
+var ClickState = [4]bool{false, false, false, false}
+var State = [4]bool{false, false, false, false}
 var Position = mmath_la.Vector2[float32]{}
 
 const (

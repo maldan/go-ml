@@ -6,8 +6,20 @@ import (
 )
 
 type Vector2[T constraints.Float] struct {
-	X T
-	Y T
+	X T `json:"x"`
+	Y T `json:"y"`
+}
+
+func (v Vector2[T]) Add(v2 Vector2[T]) Vector2[T] {
+	v.X += v2.X
+	v.Y += v2.Y
+	return v
+}
+
+func (v Vector2[T]) AddXY(x T, y T) Vector2[T] {
+	v.X += x
+	v.Y += y
+	return v
 }
 
 func (v *Vector2[T]) Clone() Vector2[T] {

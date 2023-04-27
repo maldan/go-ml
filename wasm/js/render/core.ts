@@ -5,13 +5,13 @@ class GoRender {
   static shaderSource: Record<string, string> = {};
   static layerList: GoRenderLayer[] = [];
 
-  static async setResolution(w: number, h: number) {
+  static setResolution(w: number, h: number) {
     this._canvas.setAttribute("width", `${w}`);
     this._canvas.setAttribute("height", `${h}`);
     this.onResize();
   }
 
-  static async scale(v: number) {
+  static scale(v: number) {
     const width = Number(this._canvas.getAttribute("width"));
     const height = Number(this._canvas.getAttribute("height"));
 
@@ -177,7 +177,7 @@ function loadTexture(gl: WebGLRenderingContext, url: string): WebGLTexture {
     );
     //
 
-    // gl.generateMipmap(gl.TEXTURE_2D);
+    gl.generateMipmap(gl.TEXTURE_2D);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

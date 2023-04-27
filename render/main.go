@@ -1,6 +1,7 @@
 package mrender
 
 import (
+	"fmt"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	mr_camera "github.com/maldan/go-ml/render/camera"
@@ -174,6 +175,49 @@ func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32],
 	DrawLine(tFrom, tTo, color)
 }
 
+func DrawCuboid(cuboid mmath_geom.Cuboid[float32], color ml_color.ColorRGB[float32]) {
+	from := mmath_la.Vector3[float32]{
+		cuboid.MinX, cuboid.MinY, cuboid.MinZ,
+	}
+	to := mmath_la.Vector3[float32]{
+		cuboid.MaxX, cuboid.MaxY, cuboid.MaxZ,
+	}
+
+	f1 := from
+	t1 := to
+	f1.Z = t1.Z
+	DrawRectangle(f1, t1, color)
+
+	f2 := from
+	t2 := to
+	t2.Z = f2.Z
+	DrawRectangle(f2, t2, color)
+
+	f := from
+	t := to
+	t.X = f.X
+	t.Y = f.Y
+	DrawLine(f, t, color)
+
+	f = from
+	t = to
+	f.X = to.X
+	t.Y = from.Y
+	DrawLine(f, t, color)
+
+	f = from
+	t = to
+	t.X = f.X
+	f.Y = t.Y
+	DrawLine(f, t, color)
+
+	f = from
+	t = to
+	f.X = to.X
+	f.Y = t.Y
+	DrawLine(f, t, color)
+}
+
 func DrawPoint(to mmath_la.Vector3[float32], size float32, color ml_color.ColorRGBA[float32]) {
 	State.Point.PointList = append(State.Point.PointList, mr_layer.Point{
 		Position: to,
@@ -192,6 +236,39 @@ func LoadFont(name string, charMap map[uint8]mmath_geom.Rectangle[float32]) {
 	}
 }
 
+func LoadUIFont(name string, font mr_layer.UITextFont) {
+	State.UI.FontMap[name] = font
+}
+
+func DrawUIText(fontName string, text string, pos mmath_la.Vector2[float32]) {
+	font, ok := State.UI.FontMap[fontName]
+	if !ok {
+		fmt.Printf("Font %v not found\n", fontName)
+	}
+
+	offsetX := float32(0)
+	for _, r := range text {
+		c := fmt.Sprintf("%c", r)
+
+		c2 := font.Symbol[c]
+
+		rect := mrender_uv.GetArea(c2.X, c2.Y, font.Size.X, font.Size.Y, 1024, 1024)
+
+		DrawUI(
+			rect,
+			pos.AddXY(offsetX, 0),
+			font.Size,
+			0,
+			mmath_la.Vector2[float32]{},
+		)
+
+		offsetX += font.SymbolSize[c].X
+	}
+	/*for i := 0; i < len(text); i++ {
+		font[text[i]]
+	}*/
+}
+
 func DrawText(font string, text string, size float32, pos mmath_la.Vector3[float32]) {
 	State.Text.TextList = append(State.Text.TextList, mr_layer.Text{
 		Font:     font,
@@ -203,14 +280,14 @@ func DrawText(font string, text string, size float32, pos mmath_la.Vector3[float
 
 func DrawUI(
 	uv mmath_geom.Rectangle[float32],
-	pos mmath_la.Vector3[float32],
+	pos mmath_la.Vector2[float32],
 	size mmath_la.Vector2[float32],
 	rotation float32,
 	pivot mmath_la.Vector2[float32],
 ) {
 	State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
 		UvArea:    uv,
-		Position:  pos,
+		Position:  mmath_la.Vector3[float32]{pos.X, pos.Y, 0},
 		Rotation:  mmath_la.Vector3[float32]{0, 0, rotation},
 		Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
 		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},

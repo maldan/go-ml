@@ -64,23 +64,13 @@ class GoRenderWasm {
         memory = wasmModule.instance.exports.memory.buffer;
       }
 
+      // @ts-ignore
+      window.go.memoryView = new DataView(memory);
+
       // Send golang data to webgl render
       GoRender.layerList.forEach((layer) => {
         layer.state = state;
-
-        if (wasmModule.instance.exports.mem) {
-          layer.setWasmData(
-            // @ts-ignore
-            wasmModule.instance.exports.mem.buffer,
-            state[layer.name + "Layer"]
-          );
-        } else {
-          layer.setWasmData(
-            // @ts-ignore
-            wasmModule.instance.exports.memory.buffer,
-            state[layer.name + "Layer"]
-          );
-        }
+        layer.setWasmData(memory, state[layer.name + "Layer"]);
       });
 
       // Draw scene

@@ -86,6 +86,13 @@ func (v Vector3[T]) Add(v2 Vector3[T]) Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) AddXYZ(x T, y T, z T) Vector3[T] {
+	v.X += x
+	v.Y += y
+	v.Z += z
+	return v
+}
+
 func (v Vector3[T]) Mul(v2 Vector3[T]) Vector3[T] {
 	v.X *= v2.X
 	v.Y *= v2.Y

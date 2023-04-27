@@ -28,8 +28,15 @@ type UIElement struct {
 	IsActive  bool
 }
 
+type UITextFont struct {
+	Size       mmath_la.Vector2[float32]            `json:"size"`
+	Symbol     map[string]mmath_la.Vector2[float32] `json:"symbol"`
+	SymbolSize map[string]mmath_la.Vector2[float32] `json:"symbolSize"`
+}
+
 type UILayer struct {
 	ElementList []UIElement
+	FontMap     map[string]UITextFont
 
 	VertexList []float32
 	UvList     []float32
@@ -66,6 +73,7 @@ func (l *UILayer) Init() {
 	l.ElementList = make([]UIElement, 0, 1024)
 	// l.MeshInstanceList = make([]mr_mesh.MeshInstance, 1024)
 	l.IndexList = make([]uint16, 65536)
+	l.FontMap = map[string]UITextFont{}
 
 	fmt.Printf("Render allocated %v\n", cap(l.VertexList)*4*6)
 }

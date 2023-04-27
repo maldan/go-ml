@@ -168,7 +168,8 @@ class GoRenderPointLayer extends GoRenderLayer {
     // Set projection
     this.setUniform("projectionMatrix");
 
-    this._gl.disable(this._gl.DEPTH_TEST);
+    // this._gl.disable(this._gl.DEPTH_TEST);
+    this._gl.enable(this._gl.DEPTH_TEST);
     this._gl.drawArrays(this._gl.POINTS, 0, this.dataList["vertex"].length / 4);
   }
 }
@@ -209,7 +210,8 @@ class GoRenderLineLayer extends GoRenderLayer {
     // Set projection
     this.setUniform("projectionMatrix");
 
-    this._gl.disable(this._gl.DEPTH_TEST);
+    this._gl.enable(this._gl.DEPTH_TEST);
+    // this._gl.disable(this._gl.DEPTH_TEST);
     this._gl.drawArrays(this._gl.LINES, 0, this.dataList["vertex"].length / 3);
   }
 }

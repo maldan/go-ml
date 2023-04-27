@@ -6,6 +6,7 @@ import (
 	ml_keyboard "github.com/maldan/go-ml/util/io/keyboard"
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
 	"syscall/js"
+	"unsafe"
 )
 
 func BindKeyboard() {
@@ -72,6 +73,9 @@ func BindMouse() {
 		ml_mouse.ClickState[args[0].Int()] = args[1].Bool()
 		return nil
 	})
+
+	ExportPointer("mousePosition", unsafe.Pointer(&ml_mouse.Position))
+	ExportPointer("mouseDown", unsafe.Pointer(&ml_mouse.State))
 }
 
 func ExportFunction(name string, fn func(a []js.Value) any) {
@@ -90,6 +94,16 @@ func ExportFunction2(name string, fn func(this js.Value, a []js.Value) any) {
 	}
 
 	js.Global().Get("window").Get("go").Set(name, js.FuncOf(fn))
+}
+
+func ExportPointer(name string, pointer unsafe.Pointer) {
+	if js.Global().Get("window").Get("go").IsUndefined() {
+		js.Global().Get("window").Set("go", map[string]any{})
+	}
+	if js.Global().Get("window").Get("go").Get("pointer").IsUndefined() {
+		js.Global().Get("window").Get("go").Set("pointer", map[string]any{})
+	}
+	js.Global().Get("window").Get("go").Get("pointer").Set(name, uintptr(pointer))
 }
 
 func InitRender(engine *mrender.RenderEngine) {
@@ -125,6 +139,8 @@ func InitRender(engine *mrender.RenderEngine) {
 		engine.UI.Camera.Area.Bottom = float32(args[1].Float())
 		return nil
 	})
+
+	ExportPointer("renderMainLayerState", unsafe.Pointer(&engine.Main))
 }
 
 func InitSound() {
