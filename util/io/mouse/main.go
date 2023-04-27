@@ -4,8 +4,8 @@ import (
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 )
 
-var ClickState = [4]bool{false, false, false, false}
-var State = [4]bool{false, false, false, false}
+var ClickState = [...]bool{false, false, false, false, false, false, false, false}
+var State = [...]bool{false, false, false, false, false, false, false, false}
 var Position = mmath_la.Vector2[float32]{}
 
 const (
@@ -15,10 +15,16 @@ const (
 )
 
 func IsMouseClick(key int) bool {
+	if key > len(ClickState)-1 {
+		return false
+	}
 	return ClickState[key]
 }
 
 func IsMouseDown(key int) bool {
+	if key > len(State)-1 {
+		return false
+	}
 	return State[key]
 }
 

@@ -1,7 +1,6 @@
 package mrender_layer
 
 import (
-	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	"reflect"
 	"unsafe"
@@ -12,7 +11,7 @@ type LineLayer struct {
 	VertexList   []float32
 	VertexAmount int
 	ColorList    []float32
-	Camera       mr_camera.PerspectiveCamera
+	// Camera       mr_camera.PerspectiveCamera
 
 	state map[string]any
 }
@@ -24,7 +23,7 @@ func (l *LineLayer) Init() {
 }
 
 func (l *LineLayer) Render() {
-	l.Camera.ApplyMatrix()
+	// l.Camera.ApplyMatrix()
 
 	// Fill points
 	vertexId := 0
@@ -60,11 +59,11 @@ func (l *LineLayer) GetState() map[string]any {
 
 	if l.state == nil {
 		l.state = map[string]any{
-			"vertexPointer":           vertexHeader.Data,
-			"vertexAmount":            l.VertexAmount,
-			"colorPointer":            colorHeader.Data,
-			"colorAmount":             l.VertexAmount,
-			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+			"vertexPointer": vertexHeader.Data,
+			"vertexAmount":  l.VertexAmount,
+			"colorPointer":  colorHeader.Data,
+			"colorAmount":   l.VertexAmount,
+			// "projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
 		l.state["vertexAmount"] = l.VertexAmount

@@ -2,7 +2,6 @@ package mrender_layer
 
 import (
 	"fmt"
-	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	"reflect"
 	"unsafe"
@@ -29,7 +28,7 @@ type MainLayer struct {
 	AllocatedMesh    []mr_mesh.Mesh
 	MeshInstanceList []mr_mesh.MeshInstance
 
-	Camera mr_camera.PerspectiveCamera
+	// Camera mr_camera.PerspectiveCamera
 
 	InstanceId int
 
@@ -38,8 +37,8 @@ type MainLayer struct {
 
 func (l *MainLayer) Init() {
 	l.VertexList = make([]float32, 65536*3)
-	l.NormalList = make([]float32, 65536*3)
 	l.UvList = make([]float32, 65536*2)
+	l.NormalList = make([]float32, 65536*3)
 	l.PositionList = make([]float32, 65536*3)
 	l.RotationList = make([]float32, 65536*3)
 	l.ScaleList = make([]float32, 65536*3)
@@ -53,7 +52,7 @@ func (l *MainLayer) Init() {
 }
 
 func (l *MainLayer) Render() {
-	l.Camera.ApplyMatrix()
+	// l.Camera.ApplyMatrix()
 
 	l.VertexAmount = 0
 	l.IndexAmount = 0
@@ -189,7 +188,7 @@ func (l *MainLayer) GetState() map[string]any {
 			"scaleAmount":    l.VertexAmount,
 			"colorAmount":    l.ColorAmount,
 
-			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+			// "projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
 		l.state["vertexAmount"] = l.VertexAmount

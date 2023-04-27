@@ -3,7 +3,6 @@ package mrender_layer
 import (
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
-	mr_camera "github.com/maldan/go-ml/render/camera"
 	"reflect"
 	"unsafe"
 )
@@ -38,7 +37,7 @@ type TextLayer struct {
 
 	InstanceId int
 
-	Camera mr_camera.PerspectiveCamera
+	//Camera mr_camera.PerspectiveCamera
 
 	state map[string]any
 }
@@ -194,7 +193,7 @@ func (l *TextLayer) GetState() map[string]any {
 			"positionAmount":  l.VertexAmount,
 			"colorAmount":     l.VertexAmount,
 
-			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
 		l.state["vertexAmount"] = l.VertexAmount

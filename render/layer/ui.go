@@ -4,7 +4,6 @@ import (
 	"fmt"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
-	mr_camera "github.com/maldan/go-ml/render/camera"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 	"reflect"
 	"unsafe"
@@ -54,7 +53,7 @@ type UILayer struct {
 	UvAmount     int
 	ColorAmount  int
 
-	Camera mr_camera.OrthographicCamera
+	//Camera mr_camera.OrthographicCamera
 
 	InstanceId int
 
@@ -79,7 +78,7 @@ func (l *UILayer) Init() {
 }
 
 func (l *UILayer) Render() {
-	l.Camera.ApplyMatrix()
+	//l.Camera.ApplyMatrix()
 
 	l.VertexAmount = 0
 	l.IndexAmount = 0
@@ -262,7 +261,7 @@ func (l *UILayer) GetState() map[string]any {
 			"scaleAmount":    l.VertexAmount,
 			"colorAmount":    l.ColorAmount,
 
-			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
 		l.state["vertexAmount"] = l.VertexAmount

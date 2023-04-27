@@ -13,6 +13,11 @@ declare global {
           pointer: Record<string, number>;
           memory: ArrayBuffer;
           memoryView: DataView;
+          memoryOperation: {
+            offset: number;
+            value: number;
+            type: string;
+          }[];
         };
   }
 }

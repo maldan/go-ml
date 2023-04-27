@@ -1,7 +1,6 @@
 package mrender_layer
 
 import (
-	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_mesh "github.com/maldan/go-ml/render/mesh"
 	"reflect"
 	"unsafe"
@@ -22,7 +21,7 @@ type StaticMeshLayer struct {
 
 	IsChanged bool
 
-	Camera mr_camera.PerspectiveCamera
+	//Camera mr_camera.PerspectiveCamera
 
 	state map[string]any
 }
@@ -104,7 +103,7 @@ func (l *StaticMeshLayer) Build() {
 }
 
 func (l *StaticMeshLayer) Render() {
-	l.Camera.ApplyMatrix()
+	//l.Camera.ApplyMatrix()
 	if l.IsChanged {
 		l.Build()
 		l.IsChanged = false
@@ -135,7 +134,7 @@ func (l *StaticMeshLayer) GetState() map[string]any {
 			"scaleAmount":    l.VertexAmount,
 			"colorAmount":    l.ColorAmount,
 
-			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
 		l.state["vertexAmount"] = l.VertexAmount

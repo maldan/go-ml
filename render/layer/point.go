@@ -2,7 +2,6 @@ package mrender_layer
 
 import (
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
-	mr_camera "github.com/maldan/go-ml/render/camera"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 	"reflect"
 	"unsafe"
@@ -19,7 +18,7 @@ type PointLayer struct {
 	VertexList   []float32
 	ColorList    []float32
 	VertexAmount int
-	Camera       mr_camera.PerspectiveCamera
+	// Camera       mr_camera.PerspectiveCamera
 
 	state map[string]any
 }
@@ -31,7 +30,7 @@ func (l *PointLayer) Init() {
 }
 
 func (l *PointLayer) Render() {
-	l.Camera.ApplyMatrix()
+	//l.Camera.ApplyMatrix()
 
 	// Fill points
 	vertexId := 0
@@ -69,7 +68,7 @@ func (l *PointLayer) GetState() map[string]any {
 			"vertexAmount": l.VertexAmount,
 			"colorAmount":  l.VertexAmount,
 
-			"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
+			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
 		l.state["vertexAmount"] = l.VertexAmount

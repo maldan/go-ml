@@ -59,7 +59,7 @@ func BindMouse() {
 	})
 	js.Global().Get("document").Call("addEventListener", "mouseup", mouseup)*/
 
-	ExportFunction("setMousePosition", func(args []js.Value) any {
+	/*ExportFunction("setMousePosition", func(args []js.Value) any {
 		ml_mouse.Position.X = float32(args[0].Float())
 		ml_mouse.Position.Y = float32(args[1].Float())
 		return nil
@@ -68,7 +68,8 @@ func BindMouse() {
 	ExportFunction("setMouseDown", func(args []js.Value) any {
 		ml_mouse.State[args[0].Int()] = args[1].Bool()
 		return nil
-	})
+	})*/
+
 	ExportFunction("setMouseClick", func(args []js.Value) any {
 		ml_mouse.ClickState[args[0].Int()] = args[1].Bool()
 		return nil
@@ -134,13 +135,25 @@ func InitRender(engine *mrender.RenderEngine) {
 		engine.ScreenSize.X = float32(args[0].Float())
 		engine.ScreenSize.Y = float32(args[1].Float())
 
-		engine.GlobalCamera.AspectRatio = float32(args[0].Float() / args[1].Float())
-		engine.UI.Camera.Area.Right = float32(args[0].Float())
-		engine.UI.Camera.Area.Bottom = float32(args[1].Float())
+		engine.Camera.AspectRatio = float32(args[0].Float() / args[1].Float())
+		engine.UICamera.Area.Right = float32(args[0].Float())
+		engine.UICamera.Area.Bottom = float32(args[1].Float())
 		return nil
 	})
 
-	ExportPointer("renderMainLayerState", unsafe.Pointer(&engine.Main))
+	// Export camera
+	ExportPointer("renderCamera_matrix", unsafe.Pointer(&engine.Camera.Matrix.Raw))
+	ExportPointer("renderUICamera_matrix", unsafe.Pointer(&engine.UICamera.Matrix.Raw))
+
+	// Export dynamic mesh layer
+	ExportPointer("renderDynamicMeshLayer_vertex", unsafe.Pointer(&engine.Main.VertexList))
+	ExportPointer("renderDynamicMeshLayer_uv", unsafe.Pointer(&engine.Main.UvList))
+	ExportPointer("renderDynamicMeshLayer_normal", unsafe.Pointer(&engine.Main.NormalList))
+	ExportPointer("renderDynamicMeshLayer_position", unsafe.Pointer(&engine.Main.PositionList))
+	ExportPointer("renderDynamicMeshLayer_rotation", unsafe.Pointer(&engine.Main.RotationList))
+	ExportPointer("renderDynamicMeshLayer_scale", unsafe.Pointer(&engine.Main.ScaleList))
+	ExportPointer("renderDynamicMeshLayer_color", unsafe.Pointer(&engine.Main.ColorList))
+	ExportPointer("renderDynamicMeshLayer_index", unsafe.Pointer(&engine.Main.IndexList))
 }
 
 func InitSound() {

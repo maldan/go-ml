@@ -20,21 +20,38 @@ class GoMouse {
         py /= fy;
       }
 
-      try {
-        const mp = window.go.pointer.mousePosition;
-        window.go.memoryView.setFloat32(mp, px, true);
-        window.go.memoryView.setFloat32(mp + 4, -py, true);
-      } catch {}
+      window.go.memoryOperation.push({
+        offset: window.go.pointer.mousePosition,
+        value: px,
+        type: "float32",
+      });
+      window.go.memoryOperation.push({
+        offset: window.go.pointer.mousePosition + 4,
+        value: -py,
+        type: "float32",
+      });
     });
 
     document.addEventListener("mousedown", (e: MouseEvent) => {
-      // @ts-ignore
-      window.go.setMouseDown(e.button, true);
+      if (e.button > 2) return;
+
+      const mp = window.go.pointer.mouseDown;
+      window.go.memoryOperation.push({
+        offset: mp + e.button,
+        value: 1,
+        type: "uint8",
+      });
     });
 
     document.addEventListener("mouseup", (e: MouseEvent) => {
-      // @ts-ignore
-      window.go.setMouseDown(e.button, false);
+      if (e.button > 2) return;
+
+      const mp = window.go.pointer.mouseDown;
+      window.go.memoryOperation.push({
+        offset: mp + e.button,
+        value: 0,
+        type: "uint8",
+      });
     });
 
     document.addEventListener("click", (e: MouseEvent) => {

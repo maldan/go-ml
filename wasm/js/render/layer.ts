@@ -395,6 +395,33 @@ class GoRenderDynamicMeshLayer extends GoRenderLayer {
     let shortArray = new Uint16Array(memory);
     let float32Array = new Float32Array(memory);
 
+    // Get pointers
+    const mv = (window as any).go.memoryView;
+    [
+      "vertex",
+      "uv",
+      "normal",
+      "position",
+      "rotation",
+      "scale",
+      "color",
+      "index",
+    ].forEach((x) => {
+      state[x + "Pointer"] = mv.getUint32(
+        (window as any).go.pointer[`renderDynamicMeshLayer_${x}`],
+        true
+      );
+    });
+
+    // Get camera matrix
+    state["projectionMatrixPointer"] = (window as any).go.pointer[
+      `renderCamera_matrix`
+    ];
+    console.log(
+      mv.getFloat32(state["projectionMatrixPointer"], true),
+      mv.getFloat32(state["projectionMatrixPointer"] + 4, true)
+    );
+
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("normal", state, float32Array);
     this.setDataArray("uv", state, float32Array);

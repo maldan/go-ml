@@ -22,6 +22,9 @@ class GoRenderWasm {
 
     let start = 0;
 
+    // @ts-ignore
+    window.go.memoryOperation = [];
+
     (window as any).exportWasmMemory = () => {
       const file = new Blob([memory], { type: "bin" });
 
@@ -54,7 +57,7 @@ class GoRenderWasm {
       this.wasmTime.push(performance.now() - pp);
 
       // Get state
-      let state = (window as any).go.renderState();
+      // let state = (window as any).go.renderState();
 
       if (wasmModule.instance.exports.mem) {
         // @ts-ignore
@@ -69,8 +72,9 @@ class GoRenderWasm {
 
       // Send golang data to webgl render
       GoRender.layerList.forEach((layer) => {
-        layer.state = state;
-        layer.setWasmData(memory, state[layer.name + "Layer"]);
+        layer.state = {};
+        // layer.setWasmData(memory, state[layer.name + "Layer"]);
+        layer.setWasmData(memory, {});
       });
 
       // Draw scene
@@ -87,6 +91,23 @@ class GoRenderWasm {
       // Reset Mouse click
       // @ts-ignore
       for (let i = 0; i < 4; i++) window.go.setMouseClick(i, false);
+
+      // Apply memory operations
+      if (memory.byteLength > 0) {
+        const dataView = new DataView(memory);
+
+        // @ts-ignore
+        window.go.memoryOperation.forEach((x: any) => {
+          if (x.type === "float32")
+            dataView.setFloat32(x.offset, x.value, true);
+          if (x.type === "int8") dataView.setInt8(x.offset, x.value);
+          if (x.type === "uint8") dataView.setUint8(x.offset, x.value);
+          if (x.type === "int16") dataView.setInt16(x.offset, x.value, true);
+          if (x.type === "int32") dataView.setInt32(x.offset, x.value, true);
+        });
+        // @ts-ignore
+        window.go.memoryOperation.length = 0;
+      }
     };
 
     window.requestAnimationFrame(step);

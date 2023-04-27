@@ -22,7 +22,8 @@ type RenderEngine struct {
 
 	ScreenSize mmath_la.Vector2[float32]
 
-	GlobalCamera mr_camera.PerspectiveCamera
+	Camera   mr_camera.PerspectiveCamera
+	UICamera mr_camera.OrthographicCamera
 }
 
 var State RenderEngine = RenderEngine{}
@@ -125,17 +126,16 @@ func Init() {
 	State.UI.Init()
 
 	// Init global camera
-	State.GlobalCamera = mr_camera.PerspectiveCamera{Fov: 45, AspectRatio: 1}
-	State.GlobalCamera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
-	State.GlobalCamera.Position.Z = 15.5
+	State.Camera = mr_camera.PerspectiveCamera{Fov: 45, AspectRatio: 1}
+	State.Camera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
+	State.Camera.Position.Z = 15.5
 
-	State.UI.Camera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
-	State.UI.Camera.Area.Left = 0
-	State.UI.Camera.Area.Right = 320
-	State.UI.Camera.Area.Top = 0
-	State.UI.Camera.Area.Bottom = 240
-
-	State.UI.Camera.ApplyMatrix()
+	State.UICamera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
+	State.UICamera.Area.Left = 0
+	State.UICamera.Area.Right = 320
+	State.UICamera.Area.Top = 0
+	State.UICamera.Area.Bottom = 240
+	State.UICamera.ApplyMatrix()
 }
 
 func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
@@ -342,12 +342,8 @@ func DrawButton(
 }
 
 func (r *RenderEngine) Render() {
-	r.GlobalCamera.ApplyMatrix()
-	r.Main.Camera = r.GlobalCamera
-	r.StaticMesh.Camera = r.GlobalCamera
-	r.Point.Camera = r.GlobalCamera
-	r.Line.Camera = r.GlobalCamera
-	r.Text.Camera = r.GlobalCamera
+	r.Camera.ApplyMatrix()
+	r.UICamera.ApplyMatrix()
 
 	r.Main.Render()
 	r.StaticMesh.Render()
