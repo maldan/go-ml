@@ -10,8 +10,11 @@ declare global {
     go:
       | any
       | {
+          instance: WebAssembly.Instance;
           pointer: Record<string, number>;
-          memory: ArrayBuffer;
+          memory: {
+            getMemory(): DataView;
+          };
           memoryView: DataView;
           memoryOperation: {
             offset: number;

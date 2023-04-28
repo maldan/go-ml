@@ -192,6 +192,24 @@ class GoRenderLineLayer extends GoRenderLayer {
   setWasmData(memory: ArrayBuffer, state: any) {
     let float32Array = new Float32Array(memory);
 
+    // Get pointers
+    const mv = (window as any).go.memoryView;
+    ["vertex", "color"].forEach((x) => {
+      state[x + "Pointer"] = mv.getUint32(
+        (window as any).go.pointer[`renderLineLayer_${x}`],
+        true
+      );
+      state[x + "Amount"] = mv.getUint32(
+        (window as any).go.pointer[`renderLineLayer_${x}`] + 8,
+        true
+      );
+    });
+
+    // Get camera matrix
+    state["projectionMatrixPointer"] = (window as any).go.pointer[
+      `renderCamera_matrix`
+    ];
+
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("color", state, float32Array);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
@@ -205,7 +223,7 @@ class GoRenderLineLayer extends GoRenderLayer {
     this.uploadData("any", "vertex");
     this.uploadData("any", "color");
     this.enableAttribute("vertex");
-    this.enableAttribute("color");
+    this.enableAttribute("color", 4);
 
     // Set projection
     this.setUniform("projectionMatrix");
@@ -385,9 +403,13 @@ class GoRenderDynamicMeshLayer extends GoRenderLayer {
     ].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
-    ["uProjectionMatrix", "uTexture"].forEach((x) => {
+    ["uProjectionMatrix", "uTexture", "uLight"].forEach((x) => {
       this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
     });
+
+    this.dataList["light"] = new Float32Array([
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]);
   }
 
   setWasmData(memory: ArrayBuffer, state: any) {
@@ -421,6 +443,19 @@ class GoRenderDynamicMeshLayer extends GoRenderLayer {
     state["projectionMatrixPointer"] = (window as any).go.pointer[
       `renderCamera_matrix`
     ];
+
+    // Set light
+    const w = window as any;
+    const lightPtr = w.go.pointer[`renderLight`];
+    for (let i = 0; i < 3; i++) {
+      this.dataList["light"][i] = w.go.memory.readF32(lightPtr + i * 4);
+      this.dataList["light"][i + 4] = w.go.memory.readF32(
+        lightPtr + 12 + i * 4
+      );
+      this.dataList["light"][i + 8] = w.go.memory.readF32(
+        lightPtr + 24 + i * 4
+      );
+    }
 
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("normal", state, float32Array);
@@ -458,6 +493,7 @@ class GoRenderDynamicMeshLayer extends GoRenderLayer {
 
     // Set projection
     this.setUniform("projectionMatrix");
+    this.setUniform("light");
 
     // Set texture
     this.setTexture();

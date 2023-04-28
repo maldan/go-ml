@@ -1,8 +1,8 @@
 attribute vec3 aVertex;
-attribute vec3 aColor;
+attribute vec4 aColor;
 uniform mat4 uProjectionMatrix;
 
-varying lowp vec3 vColor;
+varying lowp vec4 vColor;
 
 // LIB
 
@@ -12,8 +12,11 @@ void main() {
 }
 
 // Fragment
-varying lowp vec3 vColor;
+varying lowp vec4 vColor;
 
 void main() {
-    gl_FragColor = vec4(vColor, 1.0);
+    if (vColor.a <= 0.0) {
+        discard;
+    }
+    gl_FragColor = vColor;
 }

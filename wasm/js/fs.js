@@ -67,3 +67,27 @@ globalThis.fs.close = async function (fd, callback) {
 globalThis.process.cwd = function () {
   return "/";
 };
+
+if (!window.go) window.go = {};
+
+window.go.fs = {
+  files: {},
+  openFile: async function (path, sizePtr) {
+    const p = await fetch(path);
+    const b = await p.blob();
+    const body = await b.arrayBuffer();
+
+    // Set size
+    window.go.memory.writeI32(sizePtr, body.byteLength);
+
+    this.files[path] = new Uint8Array(body);
+  },
+  readFile(path, ptrLocation) {
+    const file = this.files[path];
+    if (!file) console.log(`File not "${path}" found`);
+
+    for (let i = 0; i < file.length; i++) {
+      window.go.memory.writeI8(ptrLocation + i, file[i]);
+    }
+  },
+};

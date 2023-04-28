@@ -15,24 +15,25 @@ varying highp vec3 vLighting;
 varying highp vec4 vColor;
 
 uniform mat4 uProjectionMatrix;
+uniform mat4 uLight;
 
 void main() {
-    mat4 rotationMatrix = rotate(aRotation);
+    mat4 modelViewMatrix = translate(aPosition) * rotate(aRotation) * scale(aScale);
 
     // Set position
-    vec3 position = aPosition;
-    gl_Position = uProjectionMatrix * translate(position) * rotationMatrix * scale(aScale) * vec4(aVertex, 1.0);
+    gl_Position = uProjectionMatrix * modelViewMatrix * vec4(aVertex, 1.0);
     vUv = aUv;
     vColor = aColor;
 
     // Apply lighting effect
-    highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
-    highp vec3 directionalLightColor = vec3(1, 1, 1);
-    highp vec3 directionalVector = normalize(vec3(0.3, 0.4, 0.8));
+    highp vec3 directionalVector = normalize(vec3(uLight[0][0], uLight[0][1], uLight[0][2]));
+    highp vec3 ambientLight = vec3(uLight[1][0], uLight[1][1], uLight[1][2]);
+    highp vec3 directionalLightColor = vec3(uLight[2][0], uLight[2][1], uLight[2][2]);
 
     // Prepare normal matrix
     mat4 normalMatrix = identity();
-    normalMatrix = inverse(rotationMatrix);
+    normalMatrix = inverse(modelViewMatrix);
+    normalMatrix = transpose(normalMatrix);
 
     // Calculate light
     highp vec4 transformedNormal = normalMatrix * vec4(aNormal.xyz, 1.0);

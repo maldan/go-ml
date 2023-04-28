@@ -5,7 +5,9 @@ import (
 	mrender "github.com/maldan/go-ml/render"
 	ml_keyboard "github.com/maldan/go-ml/util/io/keyboard"
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
+	"reflect"
 	"syscall/js"
+	"time"
 	"unsafe"
 )
 
@@ -144,6 +146,9 @@ func InitRender(engine *mrender.RenderEngine) {
 	// Render state
 	ExportPointer("renderState", unsafe.Pointer(&engine.State))
 
+	// Export light
+	ExportPointer("renderLight", unsafe.Pointer(&engine.Light))
+
 	// Export camera
 	ExportPointer("renderCamera_matrix", unsafe.Pointer(&engine.Camera.Matrix.Raw))
 	ExportPointer("renderUICamera_matrix", unsafe.Pointer(&engine.UICamera.Matrix.Raw))
@@ -164,6 +169,10 @@ func InitRender(engine *mrender.RenderEngine) {
 	ExportPointer("renderStaticMeshLayer_normal", unsafe.Pointer(&engine.StaticMesh.NormalList))
 	ExportPointer("renderStaticMeshLayer_color", unsafe.Pointer(&engine.StaticMesh.ColorList))
 	ExportPointer("renderStaticMeshLayer_index", unsafe.Pointer(&engine.StaticMesh.IndexList))
+
+	// Export line layer
+	ExportPointer("renderLineLayer_vertex", unsafe.Pointer(&engine.Line.VertexList))
+	ExportPointer("renderLineLayer_color", unsafe.Pointer(&engine.Line.ColorList))
 }
 
 func InitSound() {
@@ -174,4 +183,36 @@ func InitSound() {
 		maudio.Tick(args[0].Int())
 		return nil
 	})
+}
+
+var fileMap = map[string][]byte{}
+
+func LoadFile(path string) ([]byte, error) {
+	// Load from cache
+	_, ok := fileMap[path]
+	if ok {
+		return fileMap[path], nil
+	}
+
+	size := uint32(0)
+	js.Global().Get("window").Get("go").Get("fs").Call("openFile", path, uintptr(unsafe.Pointer(&size)))
+
+	// Wait until it's ready
+	for {
+		if size > 0 {
+			break
+		}
+		time.Sleep(time.Millisecond)
+	}
+
+	// Allocate size
+	fileMap[path] = make([]byte, size)
+	arr, _ := fileMap[path]
+	arr2 := (*reflect.SliceHeader)(unsafe.Pointer(&arr))
+
+	// Read to
+	js.Global().Get("window").Get("go").Get("fs").Call("readFile", path, arr2.Data)
+
+	// Done
+	return fileMap[path], nil
 }

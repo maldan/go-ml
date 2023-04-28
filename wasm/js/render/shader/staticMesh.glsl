@@ -26,6 +26,7 @@ void main() {
     // Prepare normal matrix
     mat4 normalMatrix = identity();
     normalMatrix = inverse(normalMatrix);
+    normalMatrix = transpose(normalMatrix);
 
     // Calculate light
     highp vec4 transformedNormal = normalMatrix * vec4(aNormal.xyz, 1.0);

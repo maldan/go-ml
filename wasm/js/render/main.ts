@@ -15,6 +15,7 @@ class GoRenderWasm {
     const go = new Go();
     const wasmModule = await WebAssembly.instantiate(wasmData, go.importObject);
     let memory = new ArrayBuffer(0);
+    (window as any).go.instance = wasmModule.instance;
     go.run(wasmModule.instance);
 
     // Init webgl render

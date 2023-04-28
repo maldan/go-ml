@@ -17,6 +17,12 @@ type RenderState struct {
 	Delta    float32
 }
 
+type RenderLight struct {
+	Direction mmath_la.Vector3[float32]
+	Ambient   mmath_la.Vector3[float32]
+	Color     ml_color.ColorRGB[float32]
+}
+
 type RenderEngine struct {
 	Main       mr_layer.MainLayer
 	StaticMesh mr_layer.StaticMeshLayer
@@ -29,6 +35,7 @@ type RenderEngine struct {
 
 	Camera   mr_camera.PerspectiveCamera
 	UICamera mr_camera.OrthographicCamera
+	Light    RenderLight
 
 	State RenderState
 }
@@ -137,6 +144,11 @@ func Init() {
 	State.Camera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
 	State.Camera.Position.Z = 15.5
 
+	// Default light
+	State.Light.Direction = mmath_la.Vector3[float32]{0.3, 0.4, 0.8}
+	State.Light.Ambient = mmath_la.Vector3[float32]{0.3, 0.3, 0.3}
+	State.Light.Color = ml_color.ColorRGB[float32]{1, 1, 1}
+
 	State.UICamera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
 	State.UICamera.Area.Left = 0
 	State.UICamera.Area.Right = 320
@@ -145,7 +157,7 @@ func Init() {
 	State.UICamera.ApplyMatrix()
 }
 
-func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
+func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGBA[float32]) {
 	State.Line.LineList = append(State.Line.LineList, mrender_mesh.Line{
 		From:  from,
 		To:    to,
@@ -153,7 +165,7 @@ func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], colo
 	})
 }
 
-func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGB[float32]) {
+func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGBA[float32]) {
 	tFrom := from
 	tTo := to
 	tFrom.Z = to.Z
@@ -182,7 +194,7 @@ func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32],
 	DrawLine(tFrom, tTo, color)
 }
 
-func DrawCuboid(cuboid mmath_geom.Cuboid[float32], color ml_color.ColorRGB[float32]) {
+func DrawCuboid(cuboid mmath_geom.Cuboid[float32], color ml_color.ColorRGBA[float32]) {
 	from := mmath_la.Vector3[float32]{
 		cuboid.MinX, cuboid.MinY, cuboid.MinZ,
 	}
@@ -354,8 +366,10 @@ func (r *RenderEngine) Render() {
 
 	r.Main.Render()
 	r.StaticMesh.Render()
-	/*r.Point.Render()
 	r.Line.Render()
+
+	/*r.Point.Render()
+
 	r.Text.Render()
 	r.UI.Render()*/
 }
