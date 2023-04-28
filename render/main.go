@@ -12,6 +12,11 @@ import (
 	ml_color "github.com/maldan/go-ml/util/media/color"
 )
 
+type RenderState struct {
+	IsRender bool
+	Delta    float32
+}
+
 type RenderEngine struct {
 	Main       mr_layer.MainLayer
 	StaticMesh mr_layer.StaticMeshLayer
@@ -24,6 +29,8 @@ type RenderEngine struct {
 
 	Camera   mr_camera.PerspectiveCamera
 	UICamera mr_camera.OrthographicCamera
+
+	State RenderState
 }
 
 var State RenderEngine = RenderEngine{}
@@ -347,8 +354,8 @@ func (r *RenderEngine) Render() {
 
 	r.Main.Render()
 	r.StaticMesh.Render()
-	r.Point.Render()
+	/*r.Point.Render()
 	r.Line.Render()
 	r.Text.Render()
-	r.UI.Render()
+	r.UI.Render()*/
 }

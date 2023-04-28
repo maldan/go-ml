@@ -17,8 +17,8 @@ type LineLayer struct {
 }
 
 func (l *LineLayer) Init() {
-	l.ColorList = make([]float32, 65536*3)
-	l.VertexList = make([]float32, 65536*3)
+	l.ColorList = make([]float32, 0, 1024)
+	l.VertexList = make([]float32, 0, 1024)
 	l.LineList = make([]mr_mesh.Line, 0, 1024)
 }
 

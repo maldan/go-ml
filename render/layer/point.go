@@ -24,8 +24,8 @@ type PointLayer struct {
 }
 
 func (l *PointLayer) Init() {
-	l.VertexList = make([]float32, 65536*3)
-	l.ColorList = make([]float32, 65536*3)
+	l.VertexList = make([]float32, 0, 1024)
+	l.ColorList = make([]float32, 0, 1024)
 	l.PointList = make([]Point, 0, 1024)
 }
 
@@ -54,6 +54,8 @@ func (l *PointLayer) Render() {
 	if len(l.PointList) > 0 {
 		l.PointList = l.PointList[:0]
 	}
+	// pps := (*reflect.SliceHeader)(unsafe.Pointer(&l.PointList))
+	// fmt.Printf("%+v\n", pps)
 }
 
 func (l *PointLayer) GetState() map[string]any {

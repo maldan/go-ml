@@ -56,7 +56,7 @@ class GoMouse {
 
     document.addEventListener("click", (e: MouseEvent) => {
       // @ts-ignore
-      window.go.setMouseClick(e.button, true);
+      // window.go.setMouseClick(e.button, true);
     });
   }
 }

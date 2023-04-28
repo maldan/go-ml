@@ -61,17 +61,17 @@ type UILayer struct {
 }
 
 func (l *UILayer) Init() {
-	l.VertexList = make([]float32, 65536*3)
-	l.NormalList = make([]float32, 65536*3)
-	l.UvList = make([]float32, 65536*2)
-	l.PositionList = make([]float32, 65536*3)
-	l.RotationList = make([]float32, 65536*3)
-	l.ScaleList = make([]float32, 65536*3)
-	l.ColorList = make([]float32, 65536*4)
+	l.VertexList = make([]float32, 0, 1024)
+	l.NormalList = make([]float32, 0, 1024)
+	l.UvList = make([]float32, 0, 1024)
+	l.PositionList = make([]float32, 0, 1024)
+	l.RotationList = make([]float32, 0, 1024)
+	l.ScaleList = make([]float32, 0, 1024)
+	l.ColorList = make([]float32, 0, 1024)
 
 	l.ElementList = make([]UIElement, 0, 1024)
 	// l.MeshInstanceList = make([]mr_mesh.MeshInstance, 1024)
-	l.IndexList = make([]uint16, 65536)
+	l.IndexList = make([]uint16, 0, 1024)
 	l.FontMap = map[string]UITextFont{}
 
 	fmt.Printf("Render allocated %v\n", cap(l.VertexList)*4*6)

@@ -43,11 +43,11 @@ type TextLayer struct {
 }
 
 func (l *TextLayer) Init() {
-	l.VertexList = make([]float32, 65536*3)
-	l.UvList = make([]float32, 65536*2)
-	l.PositionList = make([]float32, 65536*3)
-	l.ColorList = make([]float32, 65536*4)
-	l.IndexList = make([]uint16, 65536)
+	l.VertexList = make([]float32, 0, 1024)
+	l.UvList = make([]float32, 0, 1024)
+	l.PositionList = make([]float32, 0, 1024)
+	l.ColorList = make([]float32, 0, 1024)
+	l.IndexList = make([]uint16, 0, 1024)
 
 	l.TextList = make([]Text, 1024)
 	l.FontMap = map[string]TextFont{}

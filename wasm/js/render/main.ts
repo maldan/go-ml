@@ -48,13 +48,13 @@ class GoRenderWasm {
       this.stats.avgDelta.push(delta);
 
       // Calculate scene in golang
-      let pp = performance.now();
+      /*let pp = performance.now();
       (window as any).go.gameTick(delta);
-      this.calculateTime.push(performance.now() - pp);
+      this.calculateTime.push(performance.now() - pp);*/
 
-      pp = performance.now();
+      /* pp = performance.now();
       (window as any).go.renderFrame();
-      this.wasmTime.push(performance.now() - pp);
+      this.wasmTime.push(performance.now() - pp);*/
 
       // Get state
       // let state = (window as any).go.renderState();
@@ -70,6 +70,17 @@ class GoRenderWasm {
       // @ts-ignore
       window.go.memoryView = new DataView(memory);
 
+      // Set state to draw
+      (window as any).go.memoryView.setUint8(
+        (window as any).go.pointer.renderState,
+        1
+      );
+      (window as any).go.memoryView.setFloat32(
+        (window as any).go.pointer.renderState + 4,
+        delta,
+        true
+      );
+
       // Send golang data to webgl render
       GoRender.layerList.forEach((layer) => {
         layer.state = {};
@@ -78,7 +89,7 @@ class GoRenderWasm {
       });
 
       // Draw scene
-      pp = performance.now();
+      let pp = performance.now();
       GoRender.draw();
       this.jsTime.push(performance.now() - pp);
 
@@ -90,7 +101,7 @@ class GoRenderWasm {
 
       // Reset Mouse click
       // @ts-ignore
-      for (let i = 0; i < 4; i++) window.go.setMouseClick(i, false);
+      // for (let i = 0; i < 4; i++) window.go.setMouseClick(i, false);
 
       // Apply memory operations
       if (memory.byteLength > 0) {
@@ -113,8 +124,10 @@ class GoRenderWasm {
     window.requestAnimationFrame(step);
 
     // Timers
-    const avg = (x: number[]) =>
-      x.reduce((a: number, b: number) => a + b) / x.length;
+    const avg = (x: number[]) => {
+      if (x.length <= 0) return 0;
+      return x.reduce((a: number, b: number) => a + b) / x.length;
+    };
     setInterval(() => {
       const gameCalculate = avg(this.calculateTime);
       const renderCalculate = avg(this.wasmTime);

@@ -141,6 +141,9 @@ func InitRender(engine *mrender.RenderEngine) {
 		return nil
 	})
 
+	// Render state
+	ExportPointer("renderState", unsafe.Pointer(&engine.State))
+
 	// Export camera
 	ExportPointer("renderCamera_matrix", unsafe.Pointer(&engine.Camera.Matrix.Raw))
 	ExportPointer("renderUICamera_matrix", unsafe.Pointer(&engine.UICamera.Matrix.Raw))
