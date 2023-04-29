@@ -34,26 +34,17 @@ type UITextFont struct {
 }
 
 type UILayer struct {
-	ElementList []UIElement
-	FontMap     map[string]UITextFont
-
-	VertexList []float32
-	UvList     []float32
-	NormalList []float32
-
+	VertexList   []float32
+	UvList       []float32
+	NormalList   []float32
 	PositionList []float32
 	RotationList []float32
 	ScaleList    []float32
 	ColorList    []float32
+	IndexList    []uint16
 
-	IndexList []uint16
-
-	VertexAmount int
-	IndexAmount  int
-	UvAmount     int
-	ColorAmount  int
-
-	//Camera mr_camera.OrthographicCamera
+	ElementList []UIElement
+	FontMap     map[string]UITextFont
 
 	InstanceId int
 
@@ -78,152 +69,60 @@ func (l *UILayer) Init() {
 }
 
 func (l *UILayer) Render() {
-	//l.Camera.ApplyMatrix()
+	// Clear before start
+	l.VertexList = l.VertexList[:0]
+	l.UvList = l.UvList[:0]
+	l.NormalList = l.NormalList[:0]
+	l.PositionList = l.PositionList[:0]
+	l.RotationList = l.RotationList[:0]
+	l.ScaleList = l.ScaleList[:0]
+	l.ColorList = l.ColorList[:0]
+	l.IndexList = l.IndexList[:0]
 
-	l.VertexAmount = 0
-	l.IndexAmount = 0
-	l.UvAmount = 0
-	l.ColorAmount = 0
-
-	vertexId := 0
-	positionId := 0
-	rotationId := 0
-	scaleId := 0
-	indexId := 0
-	colorId := 0
-	uvId := 0
 	lastMaxIndex := uint16(0)
 	for i := 0; i < len(l.ElementList); i++ {
 		element := l.ElementList[i]
 
 		// Vertex
-		l.VertexList[vertexId] = -0.5 + element.Pivot.X
-		l.VertexList[vertexId+1] = -0.5 + element.Pivot.Y
-		l.VertexList[vertexId+2] = 0
-
-		l.VertexList[vertexId+3] = 0.5 + element.Pivot.X
-		l.VertexList[vertexId+4] = -0.5 + element.Pivot.Y
-		l.VertexList[vertexId+5] = 0
-
-		l.VertexList[vertexId+6] = 0.5 + element.Pivot.X
-		l.VertexList[vertexId+7] = 0.5 + element.Pivot.Y
-		l.VertexList[vertexId+8] = 0
-
-		l.VertexList[vertexId+9] = -0.5 + element.Pivot.X
-		l.VertexList[vertexId+10] = 0.5 + element.Pivot.Y
-		l.VertexList[vertexId+11] = 0
-
-		vertexId += 3 * 4
-		l.VertexAmount += 3 * 4
+		pv := element.Pivot
+		l.VertexList = append(l.VertexList,
+			-0.5+pv.X, -0.5+pv.Y, 0,
+			0.5+pv.X, -0.5+pv.Y, 0,
+			0.5+pv.X, 0.5+pv.Y, 0,
+			-0.5+pv.X, 0.5+pv.Y, 0,
+		)
 
 		// Position list
-		l.PositionList[positionId] = element.Position.X
-		l.PositionList[positionId+1] = element.Position.Y
-		l.PositionList[positionId+2] = element.Position.Z
-
-		l.PositionList[positionId+3] = element.Position.X
-		l.PositionList[positionId+4] = element.Position.Y
-		l.PositionList[positionId+5] = element.Position.Z
-
-		l.PositionList[positionId+6] = element.Position.X
-		l.PositionList[positionId+7] = element.Position.Y
-		l.PositionList[positionId+8] = element.Position.Z
-
-		l.PositionList[positionId+9] = element.Position.X
-		l.PositionList[positionId+10] = element.Position.Y
-		l.PositionList[positionId+11] = element.Position.Z
-
-		positionId += 3 * 4
+		p := element.Position
+		l.PositionList = append(l.PositionList, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z)
 
 		// Rotation list
-		l.RotationList[rotationId] = element.Rotation.X
-		l.RotationList[rotationId+1] = element.Rotation.Y
-		l.RotationList[rotationId+2] = element.Rotation.Z
-
-		l.RotationList[rotationId+3] = element.Rotation.X
-		l.RotationList[rotationId+4] = element.Rotation.Y
-		l.RotationList[rotationId+5] = element.Rotation.Z
-
-		l.RotationList[rotationId+6] = element.Rotation.X
-		l.RotationList[rotationId+7] = element.Rotation.Y
-		l.RotationList[rotationId+8] = element.Rotation.Z
-
-		l.RotationList[rotationId+9] = element.Rotation.X
-		l.RotationList[rotationId+10] = element.Rotation.Y
-		l.RotationList[rotationId+11] = element.Rotation.Z
-
-		rotationId += 3 * 4
+		r := element.Rotation
+		l.RotationList = append(l.RotationList, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z)
 
 		// Scale list
-		l.ScaleList[scaleId] = element.Scale.X
-		l.ScaleList[scaleId+1] = element.Scale.Y
-		l.ScaleList[scaleId+2] = element.Scale.Z
-
-		l.ScaleList[scaleId+3] = element.Scale.X
-		l.ScaleList[scaleId+4] = element.Scale.Y
-		l.ScaleList[scaleId+5] = element.Scale.Z
-
-		l.ScaleList[scaleId+6] = element.Scale.X
-		l.ScaleList[scaleId+7] = element.Scale.Y
-		l.ScaleList[scaleId+8] = element.Scale.Z
-
-		l.ScaleList[scaleId+9] = element.Scale.X
-		l.ScaleList[scaleId+10] = element.Scale.Y
-		l.ScaleList[scaleId+11] = element.Scale.Z
-
-		scaleId += 3 * 4
+		s := element.Scale
+		l.ScaleList = append(l.ScaleList, s.X, s.Y, s.Z, s.X, s.Y, s.Z, s.X, s.Y, s.Z, s.X, s.Y, s.Z)
 
 		// Color list
-		l.ColorList[colorId] = element.Color.R
-		l.ColorList[colorId+1] = element.Color.G
-		l.ColorList[colorId+2] = element.Color.B
-		l.ColorList[colorId+3] = element.Color.A
-
-		l.ColorList[colorId+4] = element.Color.R
-		l.ColorList[colorId+5] = element.Color.G
-		l.ColorList[colorId+6] = element.Color.B
-		l.ColorList[colorId+7] = element.Color.A
-
-		l.ColorList[colorId+8] = element.Color.R
-		l.ColorList[colorId+9] = element.Color.G
-		l.ColorList[colorId+10] = element.Color.B
-		l.ColorList[colorId+11] = element.Color.A
-
-		l.ColorList[colorId+12] = element.Color.R
-		l.ColorList[colorId+13] = element.Color.G
-		l.ColorList[colorId+14] = element.Color.B
-		l.ColorList[colorId+15] = element.Color.A
-
-		colorId += 4 * 4
-		l.ColorAmount += 4 * 4
+		c := element.Color
+		l.ColorList = append(l.ColorList, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A)
 
 		// Uv
-		l.UvList[uvId] = element.UvArea.Left
-		l.UvList[uvId+1] = element.UvArea.Bottom
-
-		l.UvList[uvId+2] = element.UvArea.Right
-		l.UvList[uvId+3] = element.UvArea.Bottom
-
-		l.UvList[uvId+4] = element.UvArea.Right
-		l.UvList[uvId+5] = element.UvArea.Top
-
-		l.UvList[uvId+6] = element.UvArea.Left
-		l.UvList[uvId+7] = element.UvArea.Top
-
-		uvId += 2 * 4
-		l.UvAmount += 2 * 4
+		l.UvList = append(l.UvList,
+			element.UvArea.Left, element.UvArea.Bottom,
+			element.UvArea.Right, element.UvArea.Bottom,
+			element.UvArea.Right, element.UvArea.Top,
+			element.UvArea.Left, element.UvArea.Top,
+		)
 
 		// Indices
-		l.IndexList[indexId] = 0 + lastMaxIndex
-		l.IndexList[indexId+1] = 1 + lastMaxIndex
-		l.IndexList[indexId+2] = 2 + lastMaxIndex
-		l.IndexList[indexId+3] = 0 + lastMaxIndex
-		l.IndexList[indexId+4] = 2 + lastMaxIndex
-		l.IndexList[indexId+5] = 3 + lastMaxIndex
+		l.IndexList = append(l.IndexList,
+			0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex,
+			0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex,
+		)
 
-		indexId += 6
 		lastMaxIndex += 4
-		l.IndexAmount += 6
 	}
 
 	if len(l.ElementList) > 0 {
@@ -252,26 +151,26 @@ func (l *UILayer) GetState() map[string]any {
 			"scalePointer":    scaleHeader.Data,
 			"colorPointer":    colorHeader.Data,
 
-			"vertexAmount":   l.VertexAmount,
+			/*"vertexAmount":   l.VertexAmount,
 			"normalAmount":   l.VertexAmount,
 			"uvAmount":       l.UvAmount,
 			"indexAmount":    l.IndexAmount,
 			"positionAmount": l.VertexAmount,
 			"rotationAmount": l.VertexAmount,
 			"scaleAmount":    l.VertexAmount,
-			"colorAmount":    l.ColorAmount,
+			"colorAmount":    l.ColorAmount,*/
 
 			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
-		l.state["vertexAmount"] = l.VertexAmount
+		/*l.state["vertexAmount"] = l.VertexAmount
 		l.state["normalAmount"] = l.VertexAmount
 		l.state["uvAmount"] = l.UvAmount
 		l.state["indexAmount"] = l.IndexAmount
 		l.state["positionAmount"] = l.VertexAmount
 		l.state["rotationAmount"] = l.VertexAmount
 		l.state["scaleAmount"] = l.VertexAmount
-		l.state["colorAmount"] = l.ColorAmount
+		l.state["colorAmount"] = l.ColorAmount*/
 	}
 
 	return l.state

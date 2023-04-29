@@ -83,12 +83,13 @@ class GoRender {
     this.layerList = [
       new GoRenderDynamicMeshLayer("dynamicMesh", this._gl),
       new GoRenderStaticMeshLayer("staticMesh", this._gl),
+      new GoRenderPointLayer("point", this._gl),
       new GoRenderLineLayer("line", this._gl),
+      new GoRenderUILayer("ui", this._gl),
 
-      /*new GoRenderPointLayer("point", this._gl),
-
+      /*
       new GoRenderTextLayer("text", this._gl),
-      new GoRenderUILayer("ui", this._gl),*/
+     */
     ].map((x) => {
       x.init(
         this.shaderSource[`./js/render/shader/${x.name}.vertex.glsl`],

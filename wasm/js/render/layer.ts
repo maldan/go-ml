@@ -149,6 +149,24 @@ class GoRenderPointLayer extends GoRenderLayer {
   setWasmData(memory: ArrayBuffer, state: any) {
     let float32Array = new Float32Array(memory);
 
+    // Get pointers
+    const mv = (window as any).go.memoryView;
+    ["vertex", "color"].forEach((x) => {
+      state[x + "Pointer"] = mv.getUint32(
+        (window as any).go.pointer[`renderPointLayer_${x}`],
+        true
+      );
+      state[x + "Amount"] = mv.getUint32(
+        (window as any).go.pointer[`renderPointLayer_${x}`] + 8,
+        true
+      );
+    });
+
+    // Get camera matrix
+    state["projectionMatrixPointer"] = (window as any).go.pointer[
+      `renderCamera_matrix`
+    ];
+
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("color", state, float32Array);
     this.setDataArray("projectionMatrix", state, float32Array, 16);
@@ -321,6 +339,26 @@ class GoRenderUILayer extends GoRenderLayer {
   setWasmData(memory: ArrayBuffer, state: any) {
     let shortArray = new Uint16Array(memory);
     let float32Array = new Float32Array(memory);
+
+    // Get pointers
+    const mv = (window as any).go.memoryView;
+    ["vertex", "uv", "position", "rotation", "scale", "color", "index"].forEach(
+      (x) => {
+        state[x + "Pointer"] = mv.getUint32(
+          (window as any).go.pointer[`renderUILayer_${x}`],
+          true
+        );
+        state[x + "Amount"] = mv.getUint32(
+          (window as any).go.pointer[`renderUILayer_${x}`] + 8,
+          true
+        );
+      }
+    );
+
+    // Get camera matrix
+    state["projectionMatrixPointer"] = (window as any).go.pointer[
+      `renderUICamera_matrix`
+    ];
 
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("uv", state, float32Array);

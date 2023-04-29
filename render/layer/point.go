@@ -14,13 +14,11 @@ type Point struct {
 }
 
 type PointLayer struct {
-	PointList    []Point
-	VertexList   []float32
-	ColorList    []float32
-	VertexAmount int
-	// Camera       mr_camera.PerspectiveCamera
+	VertexList []float32
+	ColorList  []float32
 
-	state map[string]any
+	PointList []Point
+	state     map[string]any
 }
 
 func (l *PointLayer) Init() {
@@ -30,32 +28,20 @@ func (l *PointLayer) Init() {
 }
 
 func (l *PointLayer) Render() {
-	//l.Camera.ApplyMatrix()
+	// Clear before start
+	l.VertexList = l.VertexList[:0]
+	l.ColorList = l.ColorList[:0]
 
-	// Fill points
-	vertexId := 0
 	for i := 0; i < len(l.PointList); i++ {
 		point := l.PointList[i]
 
-		l.VertexList[vertexId] = point.Position.X
-		l.VertexList[vertexId+1] = point.Position.Y
-		l.VertexList[vertexId+2] = point.Position.Z
-		l.VertexList[vertexId+3] = point.Size
-
-		l.ColorList[vertexId] = point.Color.R
-		l.ColorList[vertexId+1] = point.Color.G
-		l.ColorList[vertexId+2] = point.Color.B
-		l.ColorList[vertexId+3] = point.Color.A
-
-		vertexId += 4
+		l.VertexList = append(l.VertexList, point.Position.X, point.Position.Y, point.Position.Z, point.Size)
+		l.ColorList = append(l.ColorList, point.Color.R, point.Color.G, point.Color.B, point.Color.A)
 	}
-	l.VertexAmount = vertexId
 
 	if len(l.PointList) > 0 {
 		l.PointList = l.PointList[:0]
 	}
-	// pps := (*reflect.SliceHeader)(unsafe.Pointer(&l.PointList))
-	// fmt.Printf("%+v\n", pps)
 }
 
 func (l *PointLayer) GetState() map[string]any {
@@ -67,14 +53,14 @@ func (l *PointLayer) GetState() map[string]any {
 			"vertexPointer": vertexHeader.Data,
 			"colorPointer":  colorHeader.Data,
 
-			"vertexAmount": l.VertexAmount,
-			"colorAmount":  l.VertexAmount,
+			/*"vertexAmount": l.VertexAmount,
+			"colorAmount":  l.VertexAmount,*/
 
 			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
-		l.state["vertexAmount"] = l.VertexAmount
-		l.state["colorAmount"] = l.VertexAmount
+		/*l.state["vertexAmount"] = l.VertexAmount
+		l.state["colorAmount"] = l.VertexAmount*/
 	}
 
 	return l.state

@@ -45,6 +45,16 @@ func (v Vector3[T]) Normalize() Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) Dot(v2 Vector3[T]) T {
+	return v.X*v2.X + v.Y*v2.Y + v.Z*v2.Z
+}
+
+/*
+func (v Vector3[T]) Cross(v2 Vector3[T]) T {
+	return v.X*v2.X + v.Y*v2.Y + v.Z*v2.Z
+}
+*/
+
 func (v Vector3[T]) Divide(v2 T) Vector3[T] {
 	v.X /= v2
 	v.Y /= v2

@@ -366,10 +366,12 @@ func (r *RenderEngine) Render() {
 
 	r.Main.Render()
 	r.StaticMesh.Render()
+	r.Point.Render()
 	r.Line.Render()
+	r.UI.Render()
 
-	/*r.Point.Render()
+	/*
 
-	r.Text.Render()
-	r.UI.Render()*/
+		r.Text.Render()
+	*/
 }

@@ -173,6 +173,19 @@ func InitRender(engine *mrender.RenderEngine) {
 	// Export line layer
 	ExportPointer("renderLineLayer_vertex", unsafe.Pointer(&engine.Line.VertexList))
 	ExportPointer("renderLineLayer_color", unsafe.Pointer(&engine.Line.ColorList))
+
+	// Export point layer
+	ExportPointer("renderPointLayer_vertex", unsafe.Pointer(&engine.Point.VertexList))
+	ExportPointer("renderPointLayer_color", unsafe.Pointer(&engine.Point.ColorList))
+
+	// Export ui layer
+	ExportPointer("renderUILayer_vertex", unsafe.Pointer(&engine.UI.VertexList))
+	ExportPointer("renderUILayer_uv", unsafe.Pointer(&engine.UI.UvList))
+	ExportPointer("renderUILayer_position", unsafe.Pointer(&engine.UI.PositionList))
+	ExportPointer("renderUILayer_rotation", unsafe.Pointer(&engine.UI.RotationList))
+	ExportPointer("renderUILayer_scale", unsafe.Pointer(&engine.UI.ScaleList))
+	ExportPointer("renderUILayer_color", unsafe.Pointer(&engine.UI.ColorList))
+	ExportPointer("renderUILayer_index", unsafe.Pointer(&engine.UI.IndexList))
 }
 
 func InitSound() {
