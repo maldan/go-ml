@@ -1,8 +1,8 @@
 package mmath_geom
 
 import (
+	mmath "github.com/maldan/go-ml/math"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
-	ml_number "github.com/maldan/go-ml/util/number"
 	"golang.org/x/exp/constraints"
 )
 
@@ -44,12 +44,12 @@ func (c Cuboid[T]) Intersect(c2 Cuboid[T]) bool {
 
 func (c Cuboid[T]) Overlap(c2 Cuboid[T]) Cuboid[T] {
 	return Cuboid[T]{
-		MinX: ml_number.Max(c.MinX, c2.MinX),
-		MinY: ml_number.Max(c.MinY, c2.MinY),
-		MinZ: ml_number.Max(c.MinZ, c2.MinZ),
-		MaxX: ml_number.Min(c.MaxX, c2.MaxX),
-		MaxY: ml_number.Min(c.MaxY, c2.MaxY),
-		MaxZ: ml_number.Min(c.MaxZ, c2.MaxZ),
+		MinX: mmath.Max(c.MinX, c2.MinX),
+		MinY: mmath.Max(c.MinY, c2.MinY),
+		MinZ: mmath.Max(c.MinZ, c2.MinZ),
+		MaxX: mmath.Min(c.MaxX, c2.MaxX),
+		MaxY: mmath.Min(c.MaxY, c2.MaxY),
+		MaxZ: mmath.Min(c.MaxZ, c2.MaxZ),
 	}
 }
 

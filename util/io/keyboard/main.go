@@ -7,6 +7,7 @@ const (
 	KeyD         = "KeyD"
 	KeyW         = "KeyW"
 	KeyS         = "KeyS"
+	KeyE         = "KeyE"
 	Space        = "Space"
 )
 
