@@ -45,7 +45,7 @@ class GoRenderWasm {
       if (start === undefined) start = timestamp;
       let delta = (timestamp - start) / 1000;
       if (delta <= 0) delta = 1 / 1000;
-      if (delta > 0.1) delta = 0.1;
+      if (delta > 0.0334) delta = 0.0334; // Lower 30 fps
 
       // console.log(delta);
       this.stats.avgDelta.push(delta);
