@@ -137,17 +137,17 @@ func (l *TextLayer) Render() {
 		for j := 0; j < len(text.Content); j++ {
 			rect := l.FontMap[text.Font].Symbol[text.Content[j]]
 
-			l.UvList[uvId] = rect.Left
-			l.UvList[uvId+1] = rect.Bottom
+			l.UvList[uvId] = rect.MinX
+			l.UvList[uvId+1] = rect.MaxY
 
-			l.UvList[uvId+2] = rect.Right
-			l.UvList[uvId+3] = rect.Bottom
+			l.UvList[uvId+2] = rect.MaxX
+			l.UvList[uvId+3] = rect.MaxY
 
-			l.UvList[uvId+4] = rect.Right
-			l.UvList[uvId+5] = rect.Top
+			l.UvList[uvId+4] = rect.MaxX
+			l.UvList[uvId+5] = rect.MinY
 
-			l.UvList[uvId+6] = rect.Left
-			l.UvList[uvId+7] = rect.Top
+			l.UvList[uvId+6] = rect.MinX
+			l.UvList[uvId+7] = rect.MinY
 
 			uvId += 2 * 4
 			l.UvAmount += 2 * 4

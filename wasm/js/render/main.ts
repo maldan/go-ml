@@ -51,9 +51,9 @@ class GoRenderWasm {
       this.stats.avgDelta.push(delta);
 
       // Calculate scene in golang
-      /*let pp = performance.now();
+      let pp = performance.now();
       (window as any).go.gameTick(delta);
-      this.calculateTime.push(performance.now() - pp);*/
+      this.calculateTime.push(performance.now() - pp);
 
       /* pp = performance.now();
       (window as any).go.renderFrame();
@@ -85,6 +85,7 @@ class GoRenderWasm {
       );
 
       // Send golang data to webgl render
+      pp = performance.now();
       GoRender.layerList.forEach((layer) => {
         layer.state = {};
         // layer.setWasmData(memory, state[layer.name + "Layer"]);
@@ -92,15 +93,10 @@ class GoRenderWasm {
       });
 
       // Draw scene
-      let pp = performance.now();
       GoRender.draw();
       this.jsTime.push(performance.now() - pp);
 
       this.stats.requestAnimationFramePerSecond += 1;
-
-      // Request next frame
-      start = timestamp;
-      window.requestAnimationFrame(step);
 
       // Reset Mouse click
       // @ts-ignore
@@ -122,6 +118,10 @@ class GoRenderWasm {
         // @ts-ignore
         window.go.memoryOperation.length = 0;
       }
+
+      // Request next frame
+      start = timestamp;
+      window.requestAnimationFrame(step);
     };
 
     window.requestAnimationFrame(step);

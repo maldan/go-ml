@@ -110,10 +110,10 @@ func (l *UILayer) Render() {
 
 		// Uv
 		l.UvList = append(l.UvList,
-			element.UvArea.Left, element.UvArea.Bottom,
-			element.UvArea.Right, element.UvArea.Bottom,
-			element.UvArea.Right, element.UvArea.Top,
-			element.UvArea.Left, element.UvArea.Top,
+			element.UvArea.MinX, element.UvArea.MaxY,
+			element.UvArea.MaxX, element.UvArea.MaxY,
+			element.UvArea.MaxX, element.UvArea.MinY,
+			element.UvArea.MinX, element.UvArea.MinY,
 		)
 
 		// Indices

@@ -2,6 +2,7 @@ package mmath
 
 import (
 	"golang.org/x/exp/constraints"
+	"math"
 )
 
 func Min[T constraints.Integer | constraints.Float](a T, b T) T {
@@ -22,5 +23,10 @@ func Abs[T constraints.Integer | constraints.Float](a T) T {
 	if a < 0 {
 		return -a
 	}
+
 	return a
+}
+
+func CeilInt[T constraints.Float](a T) int {
+	return int(math.Ceil(float64(a)))
 }

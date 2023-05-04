@@ -2,7 +2,6 @@ package mrender_mesh
 
 import (
 	"encoding/binary"
-	"fmt"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 	ml_number "github.com/maldan/go-ml/util/number"
@@ -39,7 +38,7 @@ func New() Mesh {
 
 func BytesToMesh(bytes []byte) Mesh {
 	offset := 0
-	fmt.Printf("%v\n", len(bytes))
+	// fmt.Printf("%v\n", len(bytes))
 	out := New()
 
 	// Read vertex

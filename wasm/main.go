@@ -138,8 +138,8 @@ func InitRender(engine *mrender.RenderEngine) {
 		engine.ScreenSize.Y = float32(args[1].Float())
 
 		engine.Camera.AspectRatio = float32(args[0].Float() / args[1].Float())
-		engine.UICamera.Area.Right = float32(args[0].Float())
-		engine.UICamera.Area.Bottom = float32(args[1].Float())
+		engine.UICamera.Area.MaxX = float32(args[0].Float())
+		engine.UICamera.Area.MaxY = float32(args[1].Float())
 		return nil
 	})
 

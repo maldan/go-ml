@@ -42,7 +42,7 @@ type RenderEngine struct {
 
 var State RenderEngine = RenderEngine{}
 
-func AddStaticMesh(mesh mrender_mesh.Mesh, position mmath_la.Vector3[float32]) *mrender_mesh.Mesh {
+func AddStaticMesh(mesh mrender_mesh.Mesh, position mmath_la.Vector3[float32], rotation mmath_la.Vector3[float32]) *mrender_mesh.Mesh {
 	if mesh.Normal == nil {
 		for i := 0; i < len(mesh.Vertices); i++ {
 			mesh.Normal = append(mesh.Normal, mmath_la.Vector3[float32]{0, 0, 0})
@@ -75,6 +75,7 @@ func AddStaticMesh(mesh mrender_mesh.Mesh, position mmath_la.Vector3[float32]) *
 	copy(copyMesh.Indices, mesh.Indices)
 
 	// Apply matrix
+	copyMesh.RotateY(rotation.Y)
 	copyMesh.SetPosition(position)
 
 	State.StaticMesh.MeshList = append(State.StaticMesh.MeshList, copyMesh)
@@ -150,10 +151,10 @@ func Init() {
 	State.Light.Color = ml_color.ColorRGB[float32]{1, 1, 1}
 
 	State.UICamera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
-	State.UICamera.Area.Left = 0
-	State.UICamera.Area.Right = 320
-	State.UICamera.Area.Top = 0
-	State.UICamera.Area.Bottom = 240
+	State.UICamera.Area.MinX = 0
+	State.UICamera.Area.MaxX = 320
+	State.UICamera.Area.MinY = 0
+	State.UICamera.Area.MaxY = 240
 	State.UICamera.ApplyMatrix()
 }
 
@@ -163,6 +164,14 @@ func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], colo
 		To:    to,
 		Color: color,
 	})
+}
+
+func DrawRectangle2(r mmath_geom.Rectangle[float32], color ml_color.ColorRGBA[float32]) {
+	DrawRectangle(
+		mmath_la.Vector3[float32]{r.MinX, r.MinY, 0},
+		mmath_la.Vector3[float32]{r.MaxX, r.MaxY, 0},
+		color,
+	)
 }
 
 func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGBA[float32]) {
@@ -251,7 +260,7 @@ func LoadFont(name string, charMap map[uint8]mmath_geom.Rectangle[float32]) {
 	}
 
 	for c, r := range charMap {
-		State.Text.FontMap[name].Symbol[c] = mrender_uv.GetArea(r.Left, r.Top, r.Right, r.Bottom, 1024, 1024)
+		State.Text.FontMap[name].Symbol[c] = mrender_uv.GetArea(r.MinX, r.MinY, r.MaxX, r.MaxY, 1024, 1024)
 	}
 }
 
@@ -329,8 +338,8 @@ func DrawButton(
 	halfX := size.X / 2
 	halfY := size.Y / 2
 
-	rect := mmath_geom.Rectangle[float32]{Left: pos.X, Right: pos.X + size.X, Top: pos.Y, Bottom: pos.Y + size.Y}
-	rect = rect.Add(-halfX, -halfY)
+	rect := mmath_geom.Rectangle[float32]{MinX: pos.X, MaxX: pos.X + size.X, MinY: pos.Y, MaxY: pos.Y + size.Y}
+	rect = rect.AddXY(-halfX, -halfY)
 
 	if rect.IntersectPoint(mp) {
 		if ml_mouse.IsMouseDown(ml_mouse.LeftButton) {

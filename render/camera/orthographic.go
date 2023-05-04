@@ -16,5 +16,5 @@ type OrthographicCamera struct {
 
 func (p *OrthographicCamera) ApplyMatrix() {
 	p.Matrix.Identity()
-	p.Matrix.Orthographic(p.Area.Left, p.Area.Right, p.Area.Bottom, p.Area.Top, -400, 400)
+	p.Matrix.Orthographic(p.Area.MinX, p.Area.MaxX, p.Area.MaxY, p.Area.MinY, -400, 400)
 }

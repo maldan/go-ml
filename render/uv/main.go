@@ -12,10 +12,10 @@ func GetArea(x float32, y float32, sizeX float32, sizeY float32, textureWidth fl
 	y2 := (y + sizeY) / textureHeight
 
 	return mmath_geom.Rectangle[float32]{
-		Left:   x1,
-		Top:    1 - y1,
-		Right:  x2,
-		Bottom: 1 - y2,
+		MinX: x1,
+		MinY: 1 - y1,
+		MaxX: x2,
+		MaxY: 1 - y2,
 	}
 }
 
