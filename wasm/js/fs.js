@@ -72,7 +72,27 @@ if (!window.go) window.go = {};
 
 window.go.fs = {
   files: {},
-  openFile: async function (path, sizePtr) {
+  cacheFiles: async function (files) {
+    for (let i = 0; i < files.length; i++) {
+      const p = await fetch(files[i]);
+      const b = await p.blob();
+      const body = await b.arrayBuffer();
+      this.files[files[i]] = new Uint8Array(body);
+    }
+  },
+  getFileSize(path) {
+    const file = this.files[path];
+    if (!file) console.log(`File not "${path}" found`);
+
+    // console.log(path, file.length);
+
+    // Set size
+    // window.go.memory.writeI32(sizePtr, file.length);
+    return file.length;
+  },
+  /*openFile: async function (path, sizePtr) {
+    console.log("open file", path, sizePtr);
+
     const p = await fetch(path);
     const b = await p.blob();
     const body = await b.arrayBuffer();
@@ -81,13 +101,17 @@ window.go.fs = {
     window.go.memory.writeI32(sizePtr, body.byteLength);
 
     this.files[path] = new Uint8Array(body);
-  },
+    console.log("open file done", path, sizePtr);
+  },*/
   readFile(path, ptrLocation) {
+    console.log("read file", path, ptrLocation);
+
     const file = this.files[path];
     if (!file) console.log(`File not "${path}" found`);
+    window.go.memory.writeBytes(ptrLocation, file);
 
-    for (let i = 0; i < file.length; i++) {
+    /*for (let i = 0; i < file.length; i++) {
       window.go.memory.writeI8(ptrLocation + i, file[i]);
-    }
+    }*/
   },
 };

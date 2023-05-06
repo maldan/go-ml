@@ -4,6 +4,7 @@ import (
 	mmath "github.com/maldan/go-ml/math"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	"golang.org/x/exp/constraints"
+	"math"
 )
 
 type Cuboid[T constraints.Float] struct {
@@ -23,13 +24,23 @@ type Cuboid[T constraints.Float] struct {
 	MaxZ T
 }
 
-func (c Cuboid[T]) Translate(v mmath_la.Vector3[T]) Cuboid[T] {
+func (c Cuboid[T]) Add(v mmath_la.Vector3[T]) Cuboid[T] {
 	c.MinX += v.X
 	c.MaxX += v.X
 	c.MinY += v.Y
 	c.MaxY += v.Y
 	c.MinZ += v.Z
 	c.MaxZ += v.Z
+	return c
+}
+
+func (c Cuboid[T]) Round() Cuboid[T] {
+	c.MinX = T(math.Round(float64(c.MinX)))
+	c.MaxX = T(math.Round(float64(c.MaxX)))
+	c.MinY = T(math.Round(float64(c.MinY)))
+	c.MaxY = T(math.Round(float64(c.MaxY)))
+	c.MinZ = T(math.Round(float64(c.MinZ)))
+	c.MaxZ = T(math.Round(float64(c.MaxZ)))
 	return c
 }
 

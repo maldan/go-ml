@@ -9,19 +9,22 @@ attribute vec4 aColor;
 varying highp vec2 vUv;
 varying highp vec3 vLighting;
 varying highp vec4 vColor;
+varying highp vec4 vPosition;
 
 uniform mat4 uProjectionMatrix;
+uniform mat4 uLight;
 
 void main() {
     // Set position
     gl_Position = uProjectionMatrix * vec4(aVertex, 1.0);
     vUv = aUv;
     vColor = aColor;
+    vPosition = gl_Position;
 
     // Apply lighting effect
-    highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
-    highp vec3 directionalLightColor = vec3(1, 1, 1);
-    highp vec3 directionalVector = normalize(vec3(0.3, 0.4, 0.8));
+    highp vec3 directionalVector = normalize(vec3(uLight[0][0], uLight[0][1], uLight[0][2]));
+    highp vec3 ambientLight = vec3(uLight[1][0], uLight[1][1], uLight[1][2]);
+    highp vec3 directionalLightColor = vec3(uLight[2][0], uLight[2][1], uLight[2][2]);
 
     // Prepare normal matrix
     mat4 normalMatrix = identity();
@@ -40,6 +43,7 @@ precision highp float;
 varying vec4 vColor;
 varying vec2 vUv;
 varying vec3 vLighting;
+varying highp vec4 vPosition;
 
 uniform sampler2D uTexture;
 

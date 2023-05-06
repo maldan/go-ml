@@ -93,6 +93,22 @@ func BytesToMesh(bytes []byte) Mesh {
 	return out
 }
 
+func (m *Mesh) FlatShading() {
+	for i := 0; i < len(m.Indices); i += 3 {
+		p1 := m.Vertices[m.Indices[i]]
+		p2 := m.Vertices[m.Indices[i+1]]
+		p3 := m.Vertices[m.Indices[i+2]]
+
+		a := p2.Sub(p1)
+		b := p3.Sub(p1)
+		normal := a.Cross(b).Normalize()
+
+		m.Normal[m.Indices[i]] = normal
+		m.Normal[m.Indices[i+1]] = normal
+		m.Normal[m.Indices[i+2]] = normal
+	}
+}
+
 /*func (m *Mesh) ApplyMatrix() {
 	m.Matrix.Identity()
 	m.Matrix.Translate(m.Position)

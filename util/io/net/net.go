@@ -9,6 +9,7 @@ import (
 	"net/http"
 	net_url "net/url"
 	p_url "net/url"
+	"strings"
 )
 
 type RequestOptions struct {
@@ -19,6 +20,7 @@ type RequestOptions struct {
 
 type Response struct {
 	StatusCode int
+	Header     map[string]string
 	Body       io.ReadCloser
 	Error      error
 	Url        string
@@ -107,7 +109,7 @@ func Request(url string, method string, options *RequestOptions) Response {
 	inputData := make([]byte, 0)
 	if method == "POST" || method == "PATCH" || method == "PUT" {
 		// JSON by default
-		if options.Headers["Content-Type"] == "" {
+		if options.Headers["Content-Type"] == "" || options.Headers["Content-Type"] == "application/json" {
 			switch opts.Data.(type) {
 			case []byte:
 				inputData = opts.Data.([]byte)
@@ -155,6 +157,10 @@ func Request(url string, method string, options *RequestOptions) Response {
 	// Fill
 	response.StatusCode = resp.StatusCode
 	response.Body = resp.Body
+	response.Header = map[string]string{}
+	for k, v := range resp.Header {
+		response.Header[k] = strings.Join(v, ", ")
+	}
 
 	return response
 }

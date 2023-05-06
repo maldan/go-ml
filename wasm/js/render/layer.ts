@@ -560,9 +560,13 @@ class GoRenderStaticMeshLayer extends GoRenderLayer {
     ["aVertex", "aUv", "aNormal", "aColor"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
-    ["uProjectionMatrix", "uTexture"].forEach((x) => {
+    ["uProjectionMatrix", "uTexture", "uLight"].forEach((x) => {
       this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
     });
+
+    this.dataList["light"] = new Float32Array([
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]);
   }
 
   setWasmData(memory: ArrayBuffer, state: any) {
@@ -587,6 +591,19 @@ class GoRenderStaticMeshLayer extends GoRenderLayer {
     state["projectionMatrixPointer"] = (window as any).go.pointer[
       `renderCamera_matrix`
     ];
+
+    // Set light
+    const w = window as any;
+    const lightPtr = w.go.pointer[`renderLight`];
+    for (let i = 0; i < 3; i++) {
+      this.dataList["light"][i] = w.go.memory.readF32(lightPtr + i * 4);
+      this.dataList["light"][i + 4] = w.go.memory.readF32(
+        lightPtr + 12 + i * 4
+      );
+      this.dataList["light"][i + 8] = w.go.memory.readF32(
+        lightPtr + 24 + i * 4
+      );
+    }
 
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("uv", state, float32Array);
@@ -615,6 +632,7 @@ class GoRenderStaticMeshLayer extends GoRenderLayer {
 
     // Set projection
     this.setUniform("projectionMatrix");
+    this.setUniform("light");
 
     // Set texture
     this.setTexture();

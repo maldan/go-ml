@@ -55,8 +55,14 @@ class GoMouse {
     });
 
     document.addEventListener("click", (e: MouseEvent) => {
-      // @ts-ignore
-      // window.go.setMouseClick(e.button, true);
+      if (e.button > 2) return;
+
+      const mp = window.go.pointer.mouseClick;
+      window.go.memoryOperation.push({
+        offset: mp + e.button,
+        value: 1,
+        type: "uint8",
+      });
     });
   }
 }

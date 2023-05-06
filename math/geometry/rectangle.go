@@ -153,6 +153,23 @@ func (r Rectangle[T]) Intersect(r2 Rectangle[T]) bool {
 	r2.Bottom < r.Top)*/
 }
 
+func (r Rectangle[T]) Inside(r2 Rectangle[T]) bool {
+	if r.MinX < r2.MinX {
+		return false
+	}
+	if r.MaxX > r2.MaxX {
+		return false
+	}
+	if r.MinY < r2.MinY {
+		return false
+	}
+	if r.MaxY > r2.MaxY {
+		return false
+	}
+
+	return true
+}
+
 func (r Rectangle[T]) IntersectPoint(p mmath_la.Vector2[T]) bool {
 	if p.X > r.MinX && p.X < r.MaxX && p.Y > r.MinY && p.Y < r.MaxY {
 		return true

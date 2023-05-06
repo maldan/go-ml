@@ -11,6 +11,12 @@ window.go.memory = {
     const m = this.getMemory();
     m.setUint8(ptr, val);
   },
+  writeBytes(ptr: number, val: Uint8Array) {
+    const m = this.getMemory();
+    for (let i = 0; i < val.length; i++) {
+      m.setUint8(ptr + i, val[i]);
+    }
+  },
   writeI32(ptr: number, val: number) {
     const m = this.getMemory();
     m.setUint32(ptr, val, true);

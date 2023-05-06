@@ -49,6 +49,14 @@ func (v Vector3[T]) Dot(v2 Vector3[T]) T {
 	return v.X*v2.X + v.Y*v2.Y + v.Z*v2.Z
 }
 
+func (v Vector3[T]) Cross(v2 Vector3[T]) Vector3[T] {
+	out := Vector3[T]{}
+	out.X = v.Y*v2.Z - v.Z*v2.Y
+	out.Y = v.Z*v2.X - v.X*v2.Z
+	out.Z = v.X*v2.Y - v.Y*v2.X
+	return out
+}
+
 /*
 func (v Vector3[T]) Cross(v2 Vector3[T]) T {
 	return v.X*v2.X + v.Y*v2.Y + v.Z*v2.Z
@@ -114,6 +122,13 @@ func (v Vector3[T]) Sub(v2 Vector3[T]) Vector3[T] {
 	v.X -= v2.X
 	v.Y -= v2.Y
 	v.Z -= v2.Z
+	return v
+}
+
+func (v Vector3[T]) SubXYZ(x T, y T, z T) Vector3[T] {
+	v.X -= x
+	v.Y -= y
+	v.Z -= z
 	return v
 }
 

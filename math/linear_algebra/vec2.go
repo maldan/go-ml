@@ -1,6 +1,7 @@
 package mmath_la
 
 import (
+	mmath "github.com/maldan/go-ml/math"
 	"golang.org/x/exp/constraints"
 	"math"
 )
@@ -13,6 +14,24 @@ type Vector2[T constraints.Float] struct {
 func (v Vector2[T]) Add(v2 Vector2[T]) Vector2[T] {
 	v.X += v2.X
 	v.Y += v2.Y
+	return v
+}
+
+func (v Vector2[T]) Sub(v2 Vector2[T]) Vector2[T] {
+	v.X -= v2.X
+	v.Y -= v2.Y
+	return v
+}
+
+func (v Vector2[T]) Ceil() Vector2[T] {
+	v.X = mmath.Ceil(v.X)
+	v.Y = mmath.Ceil(v.Y)
+	return v
+}
+
+func (v Vector2[T]) Scale(v2 T) Vector2[T] {
+	v.X *= v2
+	v.Y *= v2
 	return v
 }
 

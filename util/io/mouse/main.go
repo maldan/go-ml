@@ -28,6 +28,12 @@ func IsMouseDown(key int) bool {
 	return State[key]
 }
 
+func ResetClickState() {
+	for i := 0; i < len(ClickState); i++ {
+		ClickState[i] = false
+	}
+}
+
 func GetPosition() mmath_la.Vector2[float32] {
 	return Position
 }

@@ -12,11 +12,13 @@ type PerspectiveCamera struct {
 	Scale       mmath_la.Vector3[float32]
 	Target      mmath_la.Vector3[float32]
 	Matrix      mmath_la.Matrix4x4[float32]
+	Near        float32
+	Far         float32
 }
 
 func (p *PerspectiveCamera) ApplyMatrix() {
 	proj := mmath_la.Matrix4x4[float32]{}
-	proj.Perspective((p.Fov*3.141592653589793)/180, p.AspectRatio, 0.1, 1000.0)
+	proj.Perspective((p.Fov*3.141592653589793)/180, p.AspectRatio, p.Near, p.Far)
 
 	position := p.Position
 	position.X *= -1

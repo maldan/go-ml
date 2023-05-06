@@ -88,8 +88,11 @@ func ClearStaticMesh() {
 	State.StaticMesh.IsChanged = true
 }
 
-func DeleteStaticMesh(mesh *mrender_mesh.Mesh) {
-
+func ClearDynamicMesh() {
+	State.Main.AllocatedMesh = State.Main.AllocatedMesh[:0]
+	for i := 0; i < len(State.Main.MeshInstanceList); i++ {
+		State.Main.MeshInstanceList[i].IsActive = false
+	}
 }
 
 func AllocateMesh(mesh mrender_mesh.Mesh) *mrender_mesh.Mesh {
@@ -144,6 +147,8 @@ func Init() {
 	State.Camera = mr_camera.PerspectiveCamera{Fov: 45, AspectRatio: 1}
 	State.Camera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
 	State.Camera.Position.Z = 15.5
+	State.Camera.Near = 0.01
+	State.Camera.Far = 1000
 
 	// Default light
 	State.Light.Direction = mmath_la.Vector3[float32]{0.3, 0.4, 0.8}
@@ -268,7 +273,7 @@ func LoadUIFont(name string, font mr_layer.UITextFont) {
 	State.UI.FontMap[name] = font
 }
 
-func DrawUIText(fontName string, text string, pos mmath_la.Vector2[float32]) {
+func DrawUIText(fontName string, text string, size float32, pos mmath_la.Vector2[float32]) {
 	font, ok := State.UI.FontMap[fontName]
 	if !ok {
 		fmt.Printf("Font %v not found\n", fontName)
@@ -285,12 +290,16 @@ func DrawUIText(fontName string, text string, pos mmath_la.Vector2[float32]) {
 		DrawUI(
 			rect,
 			pos.AddXY(offsetX, 0),
-			font.Size,
+			font.Size.Scale(size),
 			0,
 			mmath_la.Vector2[float32]{},
 		)
 
-		offsetX += font.SymbolSize[c].X
+		if font.SymbolSize[c].X == 0 {
+			offsetX += font.Size.X * size
+		} else {
+			offsetX += font.SymbolSize[c].X * size
+		}
 	}
 	/*for i := 0; i < len(text); i++ {
 		font[text[i]]
@@ -327,7 +336,7 @@ func DrawUI(
 
 func DrawButton(
 	uv mmath_geom.Rectangle[float32],
-	pos mmath_la.Vector3[float32],
+	pos mmath_la.Vector2[float32],
 	size mmath_la.Vector2[float32],
 	onClick func()) {
 
@@ -351,7 +360,7 @@ func DrawButton(
 
 		State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
 			UvArea:    uv,
-			Position:  pos,
+			Position:  mmath_la.Vector3[float32]{pos.X, pos.Y, 0},
 			Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
 			Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 0.8},
 			IsVisible: true,
@@ -360,7 +369,7 @@ func DrawButton(
 	} else {
 		State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
 			UvArea:    uv,
-			Position:  pos,
+			Position:  mmath_la.Vector3[float32]{pos.X, pos.Y, 0},
 			Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
 			Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
 			IsVisible: true,
@@ -369,6 +378,35 @@ func DrawButton(
 	}
 }
 
+func DrawMeshNormals(instance *mrender_mesh.MeshInstance) {
+	mesh := State.Main.AllocatedMesh[instance.Id]
+
+	for i := 0; i < len(mesh.Indices); i += 3 {
+		a := mesh.Vertices[mesh.Indices[i]]
+		an := mesh.Normal[mesh.Indices[i]]
+		DrawLine(
+			instance.Position.Add(a),
+			instance.Position.Add(a).Add(an),
+			ml_color.ColorRGBA[float32]{1, 0, 0, 1},
+		)
+
+		a = mesh.Vertices[mesh.Indices[i+1]]
+		an = mesh.Normal[mesh.Indices[i+1]]
+		DrawLine(
+			instance.Position.Add(a),
+			instance.Position.Add(a).Add(an),
+			ml_color.ColorRGBA[float32]{0, 1, 0, 1},
+		)
+
+		a = mesh.Vertices[mesh.Indices[i+2]]
+		an = mesh.Normal[mesh.Indices[i+2]]
+		DrawLine(
+			instance.Position.Add(a),
+			instance.Position.Add(a).Add(an),
+			ml_color.ColorRGBA[float32]{0, 0, 1, 1},
+		)
+	}
+}
 func (r *RenderEngine) Render() {
 	r.Camera.ApplyMatrix()
 	r.UICamera.ApplyMatrix()

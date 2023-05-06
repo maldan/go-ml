@@ -30,3 +30,7 @@ func Abs[T constraints.Integer | constraints.Float](a T) T {
 func CeilInt[T constraints.Float](a T) int {
 	return int(math.Ceil(float64(a)))
 }
+
+func Ceil[T constraints.Float](a T) T {
+	return T(math.Ceil(float64(a)))
+}

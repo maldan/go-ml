@@ -7,13 +7,13 @@ import (
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
 	"reflect"
 	"syscall/js"
-	"time"
 	"unsafe"
 )
 
 func BindKeyboard() {
 	cb := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		ml_keyboard.State[args[0].Get("code").String()] = true
+		ml_keyboard.PressState[args[0].Get("code").String()] = true
 		return nil
 	})
 	js.Global().Get("document").Call("addEventListener", "keydown", cb)
@@ -72,13 +72,14 @@ func BindMouse() {
 		return nil
 	})*/
 
-	ExportFunction("setMouseClick", func(args []js.Value) any {
+	/*ExportFunction("setMouseClick", func(args []js.Value) any {
 		ml_mouse.ClickState[args[0].Int()] = args[1].Bool()
 		return nil
-	})
+	})*/
 
 	ExportPointer("mousePosition", unsafe.Pointer(&ml_mouse.Position))
 	ExportPointer("mouseDown", unsafe.Pointer(&ml_mouse.State))
+	ExportPointer("mouseClick", unsafe.Pointer(&ml_mouse.ClickState))
 }
 
 func ExportFunction(name string, fn func(a []js.Value) any) {
@@ -207,16 +208,16 @@ func LoadFile(path string) ([]byte, error) {
 		return fileMap[path], nil
 	}
 
-	size := uint32(0)
-	js.Global().Get("window").Get("go").Get("fs").Call("openFile", path, uintptr(unsafe.Pointer(&size)))
+	size := js.Global().Get("window").Get("go").Get("fs").Call("getFileSize", path).Int()
 
 	// Wait until it's ready
-	for {
+	/*for {
+		fmt.Printf("%v\n", size)
 		if size > 0 {
 			break
 		}
-		time.Sleep(time.Millisecond)
-	}
+		time.Sleep(time.Millisecond * 100)
+	}*/
 
 	// Allocate size
 	fileMap[path] = make([]byte, size)
