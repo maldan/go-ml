@@ -23,6 +23,22 @@ func (v Vector2[T]) Sub(v2 Vector2[T]) Vector2[T] {
 	return v
 }
 
+func (v *Vector2[T]) Length() T {
+	ax := float64(v.X)
+	ay := float64(v.Y)
+	return T(math.Sqrt((ax * ax) + (ay * ay)))
+}
+
+func (v Vector2[T]) Normalize() Vector2[T] {
+	l := v.Length()
+	if l == 0 {
+		return Vector2[T]{}
+	}
+	v.X /= l
+	v.Y /= l
+	return v
+}
+
 func (v Vector2[T]) Ceil() Vector2[T] {
 	v.X = mmath.Ceil(v.X)
 	v.Y = mmath.Ceil(v.Y)
@@ -38,6 +54,12 @@ func (v Vector2[T]) Scale(v2 T) Vector2[T] {
 func (v Vector2[T]) AddXY(x T, y T) Vector2[T] {
 	v.X += x
 	v.Y += y
+	return v
+}
+
+func (v Vector2[T]) MulXY(x T, y T) Vector2[T] {
+	v.X *= x
+	v.Y *= y
 	return v
 }
 
@@ -61,6 +83,10 @@ func (v *Vector2[T]) DirectionFromAngle(rad T) {
 	v.Y = T(math.Sin(float64(rad)))
 }
 
-func (v *Vector2[T]) ToVector3() Vector3[T] {
+func (v *Vector2[T]) ToVector3XY() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, 0}
+}
+
+func (v *Vector2[T]) ToVector3XZ() Vector3[T] {
+	return Vector3[T]{v.X, 0, v.Y}
 }

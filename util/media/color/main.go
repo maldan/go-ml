@@ -18,6 +18,12 @@ type ColorRGBA[T constraints.Integer | constraints.Float] struct {
 	A T
 }
 
+func (c *ColorRGBA[T]) SetRGB(r T, g T, b T) {
+	c.R = r
+	c.G = g
+	c.B = b
+}
+
 func Lerp[T constraints.Integer | constraints.Float](from ColorRGBA[T], to ColorRGBA[T], t T) ColorRGBA[T] {
 	return ColorRGBA[T]{
 		A: ml_number.Lerp(from.A, to.A, t),

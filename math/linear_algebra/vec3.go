@@ -1,6 +1,7 @@
 package mmath_la
 
 import (
+	ml_random "github.com/maldan/go-ml/util/random"
 	"golang.org/x/exp/constraints"
 	"math"
 )
@@ -39,6 +40,9 @@ func (v *Vector3[T]) Length() T {
 
 func (v Vector3[T]) Normalize() Vector3[T] {
 	l := v.Length()
+	if l == 0 {
+		return Vector3[T]{}
+	}
 	v.X /= l
 	v.Y /= l
 	v.Z /= l
@@ -63,7 +67,24 @@ func (v Vector3[T]) Cross(v2 Vector3[T]) T {
 }
 */
 
+func (v Vector3[T]) Random(v2 Vector3[T]) Vector3[T] {
+	v.X = ml_random.Range[T](-v2.X, v2.X)
+	v.Y = ml_random.Range[T](-v2.Y, v2.Y)
+	v.Z = ml_random.Range[T](-v2.Z, v2.Z)
+	return v
+}
+
+func (v Vector3[T]) RandomXYZ(rx T, ry T, rz T) Vector3[T] {
+	v.X = ml_random.Range[T](-rx, rx)
+	v.Y = ml_random.Range[T](-ry, ry)
+	v.Z = ml_random.Range[T](-rz, rz)
+	return v
+}
+
 func (v Vector3[T]) Divide(v2 T) Vector3[T] {
+	if v2 == 0 {
+		return Vector3[T]{}
+	}
 	v.X /= v2
 	v.Y /= v2
 	v.Z /= v2
@@ -118,6 +139,13 @@ func (v Vector3[T]) Mul(v2 Vector3[T]) Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) MulXYZ(x T, y T, z T) Vector3[T] {
+	v.X *= x
+	v.Y *= y
+	v.Z *= z
+	return v
+}
+
 func (v Vector3[T]) Sub(v2 Vector3[T]) Vector3[T] {
 	v.X -= v2.X
 	v.Y -= v2.Y
@@ -132,11 +160,7 @@ func (v Vector3[T]) SubXYZ(x T, y T, z T) Vector3[T] {
 	return v
 }
 
-func (v Vector3[T]) ToVector2() Vector2[T] {
-	return Vector2[T]{v.X, v.Y}
-}
-
-func (v *Vector3[T]) DistanceTo(to Vector3[T]) T {
+func (v Vector3[T]) DistanceTo(to Vector3[T]) T {
 	a := float64(v.X - to.X)
 	b := float64(v.Y - to.Y)
 	c := float64(v.Z - to.Z)
@@ -152,3 +176,11 @@ func (v Vector3[T]) DirectionXZToAngle() T {
 	rad := math.Atan2(p2.Y-p1.Y, p2.X-p1.X)
 	return T(rad)
 }*/
+
+func (v Vector3[T]) ToVector2XY() Vector2[T] {
+	return Vector2[T]{v.X, v.Y}
+}
+
+func (v Vector3[T]) ToVector2XZ() Vector2[T] {
+	return Vector2[T]{v.X, v.Z}
+}

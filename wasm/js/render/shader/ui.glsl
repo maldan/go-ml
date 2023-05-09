@@ -1,25 +1,23 @@
 // LIB
 
 // Attributes
-attribute vec3 aVertex;
+attribute vec2 aVertex;
 attribute vec2 aUv;
 attribute vec4 aColor;
-attribute vec3 aPosition;
-attribute vec3 aRotation;
-attribute vec3 aScale;
+attribute vec2 aPosition;
+attribute float aRotation;
+attribute vec2 aScale;
 
-varying highp vec2 vUv;
-varying highp vec4 vColor;
+varying vec2 vUv;
+varying vec4 vColor;
 
 uniform mat4 uProjectionMatrix;
 
 void main() {
-    mat4 rotationMatrix = rotate(aRotation);
-
     // Set position
-    vec3 newScale = aScale;
+    vec3 newScale = vec3(aScale, 1.0);
     newScale.y *= -1.0;
-    gl_Position = uProjectionMatrix * translate(aPosition) * rotationMatrix * scale(newScale) * vec4(aVertex, 1.0);
+    gl_Position = uProjectionMatrix * translate(vec3(aPosition, 0.0)) * rotate(vec3(0.0, 0.0, aRotation)) * scale(newScale) * vec4(aVertex.x, aVertex.y, 0.0, 1.0);
 
     vUv = aUv;
     vColor = aColor;
@@ -34,14 +32,11 @@ varying vec2 vUv;
 uniform sampler2D uTexture;
 
 void main() {
-    highp vec4 texelColor = texture2D(uTexture, vUv);
+    vec4 texelColor = texture2D(uTexture, vUv);
     vec4 finalColor = texelColor * vColor.rgba;
     if (finalColor.a <= 0.0) {
         discard;
     }
 
     gl_FragColor = finalColor;
-
-    /*highp vec4 texelColor = texture2D(uTexture, vUv);
-    gl_FragColor = vec4(texelColor.rgb, texelColor.a);*/
 }

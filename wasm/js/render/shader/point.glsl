@@ -5,7 +5,7 @@ attribute vec4 aColor;
 
 uniform mat4 uProjectionMatrix;
 
-varying highp vec4 vColor;
+varying vec4 vColor;
 
 void main() {
     gl_Position = uProjectionMatrix * vec4(aVertex.xyz, 1.0);
@@ -15,7 +15,9 @@ void main() {
 }
 
 // Fragment
-varying highp vec4 vColor;
+precision highp float;
+
+varying vec4 vColor;
 
 void main() {
     if (vColor.a <= 0.0) {

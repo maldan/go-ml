@@ -2,7 +2,7 @@ attribute vec3 aVertex;
 attribute vec4 aColor;
 uniform mat4 uProjectionMatrix;
 
-varying lowp vec4 vColor;
+varying vec4 vColor;
 
 // LIB
 
@@ -12,7 +12,9 @@ void main() {
 }
 
 // Fragment
-varying lowp vec4 vColor;
+precision highp float;
+
+varying vec4 vColor;
 
 void main() {
     if (vColor.a <= 0.0) {

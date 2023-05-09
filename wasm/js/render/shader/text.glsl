@@ -7,8 +7,8 @@ attribute vec4 aColor;
 
 attribute vec3 aPosition;
 
-varying highp vec2 vUv;
-varying highp vec4 vColor;
+varying vec2 vUv;
+varying vec4 vColor;
 
 uniform mat4 uProjectionMatrix;
 
@@ -28,7 +28,7 @@ varying vec2 vUv;
 uniform sampler2D uTexture;
 
 void main() {
-    highp vec4 texelColor = texture2D(uTexture, vUv);
+    vec4 texelColor = texture2D(uTexture, vUv);
     vec4 finalColor = vec4(texelColor.rgb, texelColor.a) * vColor.rgba;
     if (finalColor.a <= 0.0) {
         discard;

@@ -3,6 +3,7 @@ package mwasm
 import (
 	maudio "github.com/maldan/go-ml/audio"
 	mrender "github.com/maldan/go-ml/render"
+	ml_gamepad "github.com/maldan/go-ml/util/io/gamepad"
 	ml_keyboard "github.com/maldan/go-ml/util/io/keyboard"
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
 	"reflect"
@@ -23,6 +24,11 @@ func BindKeyboard() {
 		return nil
 	})
 	js.Global().Get("document").Call("addEventListener", "keyup", cb2)
+}
+
+func BindGamepad() {
+	ExportPointer("gamepadKeyState_0", unsafe.Pointer(&ml_gamepad.KeyState0))
+	ExportPointer("gamepadAxisState_0", unsafe.Pointer(&ml_gamepad.AxisState0))
 }
 
 func BindMouse() {

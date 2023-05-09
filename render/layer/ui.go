@@ -15,16 +15,13 @@ type UI interface {
 type UIElement struct {
 	UvArea mmath_geom.Rectangle[float32]
 
-	Position mmath_la.Vector3[float32]
-	Rotation mmath_la.Vector3[float32]
-	Scale    mmath_la.Vector3[float32]
+	Position mmath_la.Vector2[float32]
+	Rotation float32
+	Scale    mmath_la.Vector2[float32]
 	UvOffset mmath_la.Vector2[float32]
 	Color    ml_color.ColorRGBA[float32]
 
 	Pivot mmath_la.Vector2[float32]
-
-	IsVisible bool
-	IsActive  bool
 }
 
 type UITextFont struct {
@@ -49,6 +46,26 @@ type UILayer struct {
 	InstanceId int
 
 	state map[string]any
+}
+
+type UIDrawArgs struct {
+	UV          mmath_geom.Rectangle[float32]
+	Position    mmath_la.Vector2[float32]
+	Size        mmath_la.Vector2[float32]
+	Rotation    float32
+	PivotOffset mmath_la.Vector2[float32]
+	Color       ml_color.ColorRGBA[float32]
+}
+
+func (l *UILayer) Draw(args UIDrawArgs) {
+	l.ElementList = append(l.ElementList, UIElement{
+		UvArea:   args.UV,
+		Position: args.Position,
+		Rotation: args.Rotation,
+		Scale:    args.Size,
+		Color:    args.Color,
+		Pivot:    args.PivotOffset,
+	})
 }
 
 func (l *UILayer) Init() {
@@ -86,23 +103,23 @@ func (l *UILayer) Render() {
 		// Vertex
 		pv := element.Pivot
 		l.VertexList = append(l.VertexList,
-			-0.5+pv.X, -0.5+pv.Y, 0,
-			0.5+pv.X, -0.5+pv.Y, 0,
-			0.5+pv.X, 0.5+pv.Y, 0,
-			-0.5+pv.X, 0.5+pv.Y, 0,
+			-0.5+pv.X, -0.5+pv.Y,
+			0.5+pv.X, -0.5+pv.Y,
+			0.5+pv.X, 0.5+pv.Y,
+			-0.5+pv.X, 0.5+pv.Y,
 		)
 
 		// Position list
 		p := element.Position
-		l.PositionList = append(l.PositionList, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z)
+		l.PositionList = append(l.PositionList, p.X, p.Y, p.X, p.Y, p.X, p.Y, p.X, p.Y)
 
 		// Rotation list
 		r := element.Rotation
-		l.RotationList = append(l.RotationList, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z)
+		l.RotationList = append(l.RotationList, r, r, r, r)
 
 		// Scale list
 		s := element.Scale
-		l.ScaleList = append(l.ScaleList, s.X, s.Y, s.Z, s.X, s.Y, s.Z, s.X, s.Y, s.Z, s.X, s.Y, s.Z)
+		l.ScaleList = append(l.ScaleList, s.X, s.Y, s.X, s.Y, s.X, s.Y, s.X, s.Y)
 
 		// Color list
 		c := element.Color

@@ -21,6 +21,10 @@ window.go.memory = {
     const m = this.getMemory();
     m.setUint32(ptr, val, true);
   },
+  writeF32(ptr: number, val: number) {
+    const m = this.getMemory();
+    m.setFloat32(ptr, val, true);
+  },
   readF32(ptr: number): number {
     const m = this.getMemory();
     return m.getFloat32(ptr, true);

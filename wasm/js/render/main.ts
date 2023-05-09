@@ -5,6 +5,7 @@ class GoRenderWasm {
   static jsTime: number[] = [];
   static calculateTime: number[] = [];
   static soundTime: number[] = [];
+  static afterFrame = () => {};
 
   static stats = {
     requestAnimationFramePerSecond: 0,
@@ -118,6 +119,9 @@ class GoRenderWasm {
         // @ts-ignore
         window.go.memoryOperation.length = 0;
       }
+
+      // After frame
+      this.afterFrame();
 
       // Request next frame
       start = timestamp;

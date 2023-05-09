@@ -323,16 +323,18 @@ func DrawUI(
 	pivot mmath_la.Vector2[float32],
 ) {
 	State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
-		UvArea:    uv,
-		Position:  mmath_la.Vector3[float32]{pos.X, pos.Y, 0},
-		Rotation:  mmath_la.Vector3[float32]{0, 0, rotation},
-		Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
-		Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
-		IsVisible: true,
-		IsActive:  true,
-		Pivot:     pivot,
+		UvArea:   uv,
+		Position: pos,
+		Rotation: rotation,
+		Scale:    size,
+		Color:    ml_color.ColorRGBA[float32]{1, 1, 1, 1},
+		Pivot:    pivot,
 	})
 }
+
+/*func DrawUI2(x struct{ Position mmath_la.Vector2[float32] }) {
+
+}*/
 
 func DrawButton(
 	uv mmath_geom.Rectangle[float32],
@@ -359,21 +361,17 @@ func DrawButton(
 		}
 
 		State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
-			UvArea:    uv,
-			Position:  mmath_la.Vector3[float32]{pos.X, pos.Y, 0},
-			Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
-			Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 0.8},
-			IsVisible: true,
-			IsActive:  true,
+			UvArea:   uv,
+			Position: pos,
+			Scale:    size,
+			Color:    ml_color.ColorRGBA[float32]{1, 1, 1, 0.8},
 		})
 	} else {
 		State.UI.ElementList = append(State.UI.ElementList, mr_layer.UIElement{
-			UvArea:    uv,
-			Position:  mmath_la.Vector3[float32]{pos.X, pos.Y, 0},
-			Scale:     mmath_la.Vector3[float32]{size.X, size.Y, 1},
-			Color:     ml_color.ColorRGBA[float32]{1, 1, 1, 1},
-			IsVisible: true,
-			IsActive:  true,
+			UvArea:   uv,
+			Position: pos,
+			Scale:    size,
+			Color:    ml_color.ColorRGBA[float32]{1, 1, 1, 1},
 		})
 	}
 }

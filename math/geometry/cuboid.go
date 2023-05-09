@@ -75,3 +75,23 @@ func (c Cuboid[T]) ToRelative() Cuboid[T] {
 		MaxZ: cz,
 	}
 }
+
+func (c Cuboid[T]) SizeX() T {
+	return mmath.Abs(c.MaxX - c.MinX)
+}
+
+func (c Cuboid[T]) SizeY() T {
+	return mmath.Abs(c.MaxY - c.MinY)
+}
+
+func (c Cuboid[T]) SizeZ() T {
+	return mmath.Abs(c.MaxZ - c.MinZ)
+}
+
+func (c Cuboid[T]) Size() mmath_la.Vector3[T] {
+	return mmath_la.Vector3[T]{
+		X: c.SizeX(),
+		Y: c.SizeY(),
+		Z: c.SizeZ(),
+	}
+}
