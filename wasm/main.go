@@ -193,6 +193,14 @@ func InitRender(engine *mrender.RenderEngine) {
 	ExportPointer("renderUILayer_scale", unsafe.Pointer(&engine.UI.ScaleList))
 	ExportPointer("renderUILayer_color", unsafe.Pointer(&engine.UI.ColorList))
 	ExportPointer("renderUILayer_index", unsafe.Pointer(&engine.UI.IndexList))
+
+	// Export text layer
+	ExportPointer("renderTextLayer_vertex", unsafe.Pointer(&engine.Text.VertexList))
+	ExportPointer("renderTextLayer_uv", unsafe.Pointer(&engine.Text.UvList))
+	ExportPointer("renderTextLayer_position", unsafe.Pointer(&engine.Text.PositionList))
+	ExportPointer("renderTextLayer_rotation", unsafe.Pointer(&engine.Text.RotationList))
+	ExportPointer("renderTextLayer_color", unsafe.Pointer(&engine.Text.ColorList))
+	ExportPointer("renderTextLayer_index", unsafe.Pointer(&engine.Text.IndexList))
 }
 
 func InitSound() {

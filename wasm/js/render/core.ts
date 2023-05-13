@@ -94,6 +94,7 @@ class GoRender {
       new GoRenderDynamicMeshLayer("dynamicMesh", this._gl),
       new GoRenderPointLayer("point", this._gl),
       new GoRenderLineLayer("line", this._gl),
+      new GoRenderTextLayer("text", this._gl),
       // new GoRenderPostProcessingLayer("postprocessing", this._gl),
       new GoRenderUILayer("ui", this._gl),
 
@@ -156,8 +157,8 @@ class GoRender {
     this._gl.clearDepth(1.0);
     this._gl.clear(this._gl.COLOR_BUFFER_BIT | this._gl.DEPTH_BUFFER_BIT);
 
-    this._gl.enable(this._gl.CULL_FACE);
-    this._gl.cullFace(this._gl.BACK);
+    //this._gl.enable(this._gl.CULL_FACE);
+    //this._gl.cullFace(this._gl.BACK);
 
     this._gl.enable(this._gl.BLEND);
     this._gl.blendFunc(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);

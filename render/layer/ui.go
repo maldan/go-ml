@@ -4,6 +4,7 @@ import (
 	"fmt"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
+	mrender_uv "github.com/maldan/go-ml/render/uv"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 	"reflect"
 	"unsafe"
@@ -57,6 +58,15 @@ type UIDrawArgs struct {
 	Color       ml_color.ColorRGBA[float32]
 }
 
+type UIDrawTextArgs struct {
+	FontName    string
+	Text        string
+	Position    mmath_la.Vector2[float32]
+	Size        float32
+	PivotOffset mmath_la.Vector2[float32]
+	Color       ml_color.ColorRGBA[float32]
+}
+
 func (l *UILayer) Draw(args UIDrawArgs) {
 	l.ElementList = append(l.ElementList, UIElement{
 		UvArea:   args.UV,
@@ -66,6 +76,41 @@ func (l *UILayer) Draw(args UIDrawArgs) {
 		Color:    args.Color,
 		Pivot:    args.PivotOffset,
 	})
+}
+
+func (l *UILayer) DrawText(args UIDrawTextArgs) {
+	font, ok := l.FontMap[args.FontName]
+	if !ok {
+		fmt.Printf("Font %v not found\n", args.FontName)
+	}
+
+	offsetX := float32(0)
+	for _, r := range args.Text {
+		c := fmt.Sprintf("%c", r)
+
+		c2 := font.Symbol[c]
+
+		rect := mrender_uv.GetArea(c2.X, c2.Y, font.Size.X, font.Size.Y, 1024, 1024)
+
+		l.Draw(
+			UIDrawArgs{
+				UV:          rect,
+				Position:    args.Position.AddXY(offsetX, 0),
+				Size:        font.Size.Scale(args.Size),
+				Color:       ml_color.ColorRGBA[float32]{1, 1, 1, 1},
+				PivotOffset: args.PivotOffset,
+			},
+		)
+
+		if font.SymbolSize[c].X == 0 {
+			offsetX += font.Size.X * args.Size
+		} else {
+			offsetX += font.SymbolSize[c].X * args.Size
+		}
+	}
+	/*for i := 0; i < len(text); i++ {
+		font[text[i]]
+	}*/
 }
 
 func (l *UILayer) Init() {

@@ -1,5 +1,11 @@
 class Preloader {
   static fileMap: Record<string, any> = {};
+  static state = {
+    totalFiles: 0,
+    loadedFiles: 0,
+    files: {},
+  } as any;
+  static isInit = false;
 
   static load(url: string) {
     return new Promise<any>((resolve, reject) => {
@@ -11,13 +17,24 @@ class Preloader {
         blob = new Blob([this.response]);
 
         if (url.includes(".js")) {
-          resolve(await blob.text());
+          Preloader.fileMap[url] = await blob.text();
+          resolve(true);
+          //resolve(await blob.text());
         } else {
-          resolve(await blob.arrayBuffer());
+          Preloader.fileMap[url] = await blob.arrayBuffer();
+          resolve(true);
         }
+
+        Preloader.state.loadedFiles += 1;
       };
       xmlHTTP.onprogress = function (pr) {
-        const percentage = (pr.loaded / pr.total) * 100;
+        if (!Preloader.state.files[url]) {
+          Preloader.state.files[url] = { total: pr.total, loaded: pr.loaded };
+        } else {
+          Preloader.state.files[url].loaded = pr.loaded;
+        }
+
+        /*const percentage = (pr.loaded / pr.total) * 100;
 
         const out = document.getElementById("preloader_" + url);
         if (out)
@@ -28,7 +45,7 @@ class Preloader {
             ${(pr.loaded / 1048576).toFixed(2)} MB / 
             ${(pr.total / 1048576).toFixed(2)} MB
            </div>
-        `;
+        `;*/
       };
       xmlHTTP.onloadend = function (e) {
         // onEnd();
@@ -37,7 +54,10 @@ class Preloader {
     });
   }
 
-  static init(list: string[]) {
+  static init() {
+    if (Preloader.isInit) return;
+    Preloader.isInit = true;
+
     const head = document.createElement("style");
     head.innerHTML = `
       #preloader {
@@ -48,6 +68,7 @@ class Preloader {
         border: 2px solid rgba(255, 255, 255, 0.25);
         padding: 5px;
         font-size: 12px;
+        height: 16px;
       }
     `;
     document.head.appendChild(head);
@@ -55,32 +76,56 @@ class Preloader {
     const div = document.createElement("div");
     document.body.appendChild(div);
 
-    div.innerHTML = `
-      <div id="preloader">
-        ${list
-          .map(
-            (x) =>
-              `<div style="width: 100%; height: 16px; position: relative; margin-bottom: 5px;" id="preloader_${x}"></div>`
-          )
-          .join("")} 
-      </div>
-    `;
+    div.innerHTML = `<div id="preloader"></div>`;
   }
 
   static async loadList(list: string[]) {
-    Preloader.init(list);
+    Preloader.init();
 
+    const intervalId = setInterval(() => {
+      const out = document.getElementById("preloader");
+      if (!out) return;
+      let totalSize = 0;
+      let loadedSize = 0;
+      let loaded = 0;
+      for (let key in Preloader.state.files) {
+        loadedSize += Preloader.state.files[key].loaded;
+        totalSize += Preloader.state.files[key].total;
+        if (loadedSize >= totalSize) loaded += 1;
+      }
+      const percentage = loadedSize / totalSize;
+
+      out.innerHTML = `
+          <div style="width: ${
+            percentage * 100
+          }%; background: #c32727; height: 100%;"></div>
+          
+          <div style="width: 100%; position: absolute; left: 0; top: 0; height: 100%; color: #fefefe; display: flex; align-items: center; justify-content: center;">
+          ${(loadedSize / 1048576).toFixed(2)} MB / 
+          ${(totalSize / 1048576).toFixed(2)} MB
+          ${loaded} / ${list.length}
+         </div>
+      `;
+    }, 16);
+
+    let list2 = [];
     for (let i = 0; i < list.length; i++) {
-      this.fileMap[list[i]] = await this.load(list[i]);
+      list2.push(this.load(list[i]));
+      // this.fileMap[list[i]] = await this.load(list[i]);
     }
+    await Promise.all(list2);
 
+    clearInterval(intervalId);
+  }
+
+  static hide() {
     const out = document.getElementById("preloader");
     if (out) out.style.display = `none`;
   }
 
   static injectJs() {
     for (const key in this.fileMap) {
-      if (key.includes(".js")) {
+      if (key.match(/\.js$/)) {
         const script = document.createElement("script");
         script.type = "text/javascript";
         document.body.prepend(script);

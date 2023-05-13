@@ -6,6 +6,7 @@ attribute vec2 aUv;
 attribute vec4 aColor;
 
 attribute vec3 aPosition;
+attribute vec3 aRotation;
 
 varying vec2 vUv;
 varying vec4 vColor;
@@ -13,14 +14,20 @@ varying vec4 vColor;
 uniform mat4 uProjectionMatrix;
 
 void main() {
+    mat4 modelViewMatrix = translate(aPosition) * rotate(aRotation) * scale(aScale);
+
     // Set position
-    gl_Position = uProjectionMatrix * translate(aPosition) * vec4(aVertex, 1.0);
+    gl_Position = uProjectionMatrix * modelViewMatrix * vec4(aVertex, 1.0);
     vUv = aUv;
     vColor = aColor;
 }
 
 // Fragment
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
+#else
+precision mediump float;
+#endif
 
 varying vec4 vColor;
 varying vec2 vUv;

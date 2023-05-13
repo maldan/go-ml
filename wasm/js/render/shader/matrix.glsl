@@ -1,4 +1,8 @@
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
+#endif
 
 mat4 identity()
 {
@@ -20,7 +24,7 @@ mat4 translate(vec3 delta)
     );
 }
 
-mat4 rotateX(float angle) {
+/*mat4 rotateX(float angle) {
     return mat4(
         1.0,		0,			0,			0,
         0, 	cos(angle),	-sin(angle),		0,
@@ -45,10 +49,26 @@ mat4 rotateZ(float angle) {
         0,				0,		        1,	0,
         0,				0,		        0,	1
     );
-}
+}*/
 
 mat4 rotate(vec3 angle) {
-    return rotateX(angle.x) * rotateY(angle.y) * rotateZ(angle.z);
+    return mat4(
+        1.0,		0,			0,			0,
+        0, 	cos(angle.x),	-sin(angle.x),		0,
+        0, 	sin(angle.x),	 cos(angle.x),		0,
+        0, 			0,			  0, 		1
+    ) * mat4(
+        cos(angle.y),		0,		sin(angle.y),	    0,
+        0,		            1.0,	0,	                0,
+        -sin(angle.y),	    0,		cos(angle.y),	    0,
+        0, 		            0,	    0,	                1
+    ) *mat4(
+        cos(angle.z),		-sin(angle.z),	0,	0,
+        sin(angle.z),		cos(angle.z),		0,	0,
+        0,				0,		        1,	0,
+        0,				0,		        0,	1
+    );
+    // return rotateX(angle.x) * rotateY(angle.y) * rotateZ(angle.z);
 }
 
 mat4 scale(vec3 size)

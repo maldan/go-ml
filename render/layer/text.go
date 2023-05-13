@@ -3,6 +3,7 @@ package mrender_layer
 import (
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
+	ml_color "github.com/maldan/go-ml/util/media/color"
 	"reflect"
 	"unsafe"
 )
@@ -12,6 +13,8 @@ type Text struct {
 	Content  string
 	Size     float32
 	Position mmath_la.Vector3[float32]
+	Rotation mmath_la.Vector3[float32]
+	Color    ml_color.ColorRGBA[float32]
 }
 
 type TextFont struct {
@@ -19,25 +22,15 @@ type TextFont struct {
 }
 
 type TextLayer struct {
+	VertexList   []float32
+	UvList       []float32
+	PositionList []float32
+	RotationList []float32
+	ColorList    []float32
+	IndexList    []uint16
+
 	TextList []Text
 	FontMap  map[string]TextFont
-
-	VertexList []float32
-	UvList     []float32
-
-	PositionList []float32
-	ColorList    []float32
-
-	IndexList []uint16
-
-	VertexAmount int
-	IndexAmount  int
-	UvAmount     int
-	ColorAmount  int
-
-	InstanceId int
-
-	//Camera mr_camera.PerspectiveCamera
 
 	state map[string]any
 }
@@ -46,6 +39,7 @@ func (l *TextLayer) Init() {
 	l.VertexList = make([]float32, 0, 1024)
 	l.UvList = make([]float32, 0, 1024)
 	l.PositionList = make([]float32, 0, 1024)
+	l.RotationList = make([]float32, 0, 1024)
 	l.ColorList = make([]float32, 0, 1024)
 	l.IndexList = make([]uint16, 0, 1024)
 
@@ -53,7 +47,7 @@ func (l *TextLayer) Init() {
 	l.FontMap = map[string]TextFont{}
 }
 
-func (l *TextLayer) Render() {
+/*func (l *TextLayer) Render() {
 	l.VertexAmount = 0
 	l.IndexAmount = 0
 	l.UvAmount = 0
@@ -171,6 +165,67 @@ func (l *TextLayer) Render() {
 	if len(l.TextList) > 0 {
 		l.TextList = l.TextList[:0]
 	}
+}*/
+
+func (l *TextLayer) Render() {
+	// Clear before start
+	l.VertexList = l.VertexList[:0]
+	l.UvList = l.UvList[:0]
+	l.PositionList = l.PositionList[:0]
+	l.RotationList = l.RotationList[:0]
+	l.ColorList = l.ColorList[:0]
+	l.IndexList = l.IndexList[:0]
+
+	lastMaxIndex := uint16(0)
+	for i := 0; i < len(l.TextList); i++ {
+		text := l.TextList[i]
+
+		// Vertex
+		for j := 0; j < len(text.Content); j++ {
+			l.VertexList = append(l.VertexList,
+				-0.5*text.Size, -0.5*text.Size, 0,
+				0.5*text.Size, -0.5*text.Size, 0,
+				0.5*text.Size, 0.5*text.Size, 0,
+				-0.5*text.Size, 0.5*text.Size, 0,
+			)
+		}
+
+		// Position list
+		p := text.Position
+		l.PositionList = append(l.PositionList, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z)
+
+		// Rotation list
+		r := text.Rotation
+		l.RotationList = append(l.RotationList, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z)
+
+		// Color list
+		c := text.Color
+		l.ColorList = append(l.ColorList, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A)
+
+		// Uv
+		for j := 0; j < len(text.Content); j++ {
+			rect := l.FontMap[text.Font].Symbol[text.Content[j]]
+
+			l.UvList = append(l.UvList,
+				rect.MinX, rect.MaxY,
+				rect.MaxX, rect.MaxY,
+				rect.MaxX, rect.MinY,
+				rect.MinX, rect.MinY,
+			)
+		}
+
+		// Indices
+		l.IndexList = append(l.IndexList,
+			0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex,
+			0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex,
+		)
+
+		lastMaxIndex += 4
+	}
+
+	if len(l.TextList) > 0 {
+		l.TextList = l.TextList[:0]
+	}
 }
 
 func (l *TextLayer) GetState() map[string]any {
@@ -187,21 +242,21 @@ func (l *TextLayer) GetState() map[string]any {
 			"indexPointer":    indexHeader.Data,
 			"positionPointer": positionHeader.Data,
 			"colorPointer":    colorHeader.Data,
-			"vertexAmount":    l.VertexAmount,
+			/*"vertexAmount":    l.VertexAmount,
 			"uvAmount":        l.UvAmount,
 			"indexAmount":     l.IndexAmount,
 			"positionAmount":  l.VertexAmount,
-			"colorAmount":     l.VertexAmount,
+			"colorAmount":     l.VertexAmount,*/
 
 			//"projectionMatrixPointer": uintptr(unsafe.Pointer(&l.Camera.Matrix.Raw)),
 		}
 	} else {
-		l.state["vertexAmount"] = l.VertexAmount
+		/*l.state["vertexAmount"] = l.VertexAmount
 		l.state["positionAmount"] = l.VertexAmount
 		l.state["colorAmount"] = l.VertexAmount
 
 		l.state["uvAmount"] = l.UvAmount
-		l.state["indexAmount"] = l.IndexAmount
+		l.state["indexAmount"] = l.IndexAmount*/
 	}
 
 	return l.state

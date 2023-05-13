@@ -10,6 +10,9 @@ class GoRenderWasm {
   static stats = {
     requestAnimationFramePerSecond: 0,
     avgDelta: [] as number[],
+    points: 0,
+    lines: 0,
+    dynamicTriangles: 0,
   };
 
   static async init(wasmData: ArrayBuffer) {
@@ -142,20 +145,29 @@ class GoRenderWasm {
       const avgDelta = avg(this.stats.avgDelta);
       // const soundTime = avg(this.soundTime);
 
+      const pointLayer = GoRender.layerList.find((x) => x.name === "point");
+      const dynamicMeshLayer = GoRender.layerList.find(
+        (x) => x.name === "dynamicMesh"
+      );
+      const staticMeshLayer = GoRender.layerList.find(
+        (x) => x.name === "staticMesh"
+      );
+
       const stats = document.getElementById("stats");
       if (stats) {
         stats.innerHTML = `
         <div>game calculate: ${gameCalculate.toFixed(2)}</div>
-        <div>render calculate: ${renderCalculate.toFixed(2)}</div>
         <div>render draw: ${renderDraw.toFixed(2)}</div> 
-        
         <div>total: ${(gameCalculate + renderCalculate + renderDraw).toFixed(
           2
         )}</div>
         <div>mem usage: ${(memory.byteLength / 1048576).toFixed(3)} mb</div>
         
         <div>fps: ${this.stats.requestAnimationFramePerSecond}</div>
-        <div>delta: ${avgDelta.toFixed(4)}</div>
+        
+        <div>points: ${pointLayer?.dataList["vertex"].length / 4}</div>
+         <div>static tr: ${staticMeshLayer?.dataList["index"].length / 3}</div>
+        <div>dynamic tr: ${dynamicMeshLayer?.dataList["index"].length / 3}</div>
       `;
       }
 

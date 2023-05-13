@@ -1,4 +1,4 @@
-var gas = {};
+/*var gas = {};
 var __fdCounter = 10;
 
 globalThis.fs.open = async function (path, flags, mode, callback) {
@@ -47,12 +47,12 @@ globalThis.fs.fstat = async function (fd, callback) {
     mtimeMs: 0,
     ctimeMs: 0,
 
-    /* GetSize() {
+    /!* GetSize() {
            return 10;
        },
        IsDir() {
            return false;
-       }*/
+       }*!/
   });
 };
 
@@ -66,7 +66,7 @@ globalThis.fs.close = async function (fd, callback) {
 
 globalThis.process.cwd = function () {
   return "/";
-};
+};*/
 
 if (!window.go) window.go = {};
 
@@ -78,6 +78,16 @@ window.go.fs = {
       const b = await p.blob();
       const body = await b.arrayBuffer();
       this.files[files[i]] = new Uint8Array(body);
+    }
+  },
+  cacheFilesFromData: function (fileMap) {
+    for (let key in fileMap) {
+      if (fileMap[key] instanceof ArrayBuffer) {
+        this.files[key] = new Uint8Array(fileMap[key]);
+      }
+      if (typeof fileMap[key] === "string") {
+        this.files[key] = new TextEncoder().encode(fileMap[key]);
+      }
     }
   },
   getFileSize(path) {

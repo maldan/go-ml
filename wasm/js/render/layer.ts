@@ -257,10 +257,10 @@ class GoRenderTextLayer extends GoRenderLayer {
   init(vertex: string, fragment: string) {
     this.shader = this.compileShader(vertex, fragment);
 
-    ["vertex", "index", "position", "uv", "color"].forEach((x) => {
+    ["vertex", "index", "position", "rotation", "uv", "color"].forEach((x) => {
       this.bufferList[x] = this._gl.createBuffer();
     });
-    ["aVertex", "aPosition", "aUv", "aColor"].forEach((x) => {
+    ["aVertex", "aPosition", "aRotation", "aUv", "aColor"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
     ["uProjectionMatrix", "uTexture"].forEach((x) => {
@@ -272,9 +272,28 @@ class GoRenderTextLayer extends GoRenderLayer {
     let shortArray = new Uint16Array(memory);
     let float32Array = new Float32Array(memory);
 
+    // Get pointers
+    const mv = (window as any).go.memoryView;
+    ["vertex", "uv", "position", "rotation", "color", "index"].forEach((x) => {
+      state[x + "Pointer"] = mv.getUint32(
+        (window as any).go.pointer[`renderTextLayer_${x}`],
+        true
+      );
+      state[x + "Amount"] = mv.getUint32(
+        (window as any).go.pointer[`renderTextLayer_${x}`] + 8,
+        true
+      );
+    });
+
+    // Get camera matrix
+    state["projectionMatrixPointer"] = (window as any).go.pointer[
+      `renderUICamera_matrix`
+    ];
+
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("uv", state, float32Array);
     this.setDataArray("position", state, float32Array);
+    this.setDataArray("rotation", state, float32Array);
     this.setDataArray("color", state, float32Array);
 
     this.setDataArray("index", state, shortArray);
@@ -290,13 +309,15 @@ class GoRenderTextLayer extends GoRenderLayer {
     this.uploadData("any", "vertex");
     this.uploadData("any", "uv");
     this.uploadData("any", "position");
+    this.uploadData("any", "rotation");
     this.uploadData("any", "color");
 
     // Enable attributes
     this.enableAttribute("vertex");
     this.enableAttribute("uv", 2);
     this.enableAttribute("position");
-    this.enableAttribute("color");
+    this.enableAttribute("rotation");
+    this.enableAttribute("color", 4);
 
     // Set projection
     this.setUniform("projectionMatrix");
