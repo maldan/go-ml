@@ -14,7 +14,7 @@ varying vec4 vColor;
 uniform mat4 uProjectionMatrix;
 
 void main() {
-    mat4 modelViewMatrix = translate(aPosition) * rotate(aRotation) * scale(aScale);
+    mat4 modelViewMatrix = translate(aPosition) * rotate(aRotation);
 
     // Set position
     gl_Position = uProjectionMatrix * modelViewMatrix * vec4(aVertex, 1.0);
@@ -37,6 +37,9 @@ uniform sampler2D uTexture;
 void main() {
     vec4 texelColor = texture2D(uTexture, vUv);
     vec4 finalColor = vec4(texelColor.rgb, texelColor.a) * vColor.rgba;
+    if (finalColor.a > 0.2) {
+        finalColor.rgb = vColor.rgb;
+    }
     if (finalColor.a <= 0.0) {
         discard;
     }

@@ -25,7 +25,7 @@ type UIElement struct {
 	Pivot mmath_la.Vector2[float32]
 }
 
-type UITextFont struct {
+type TextFont struct {
 	Size       mmath_la.Vector2[float32]            `json:"size"`
 	Symbol     map[string]mmath_la.Vector2[float32] `json:"symbol"`
 	SymbolSize map[string]mmath_la.Vector2[float32] `json:"symbolSize"`
@@ -42,7 +42,7 @@ type UILayer struct {
 	IndexList    []uint16
 
 	ElementList []UIElement
-	FontMap     map[string]UITextFont
+	FontMap     map[string]TextFont
 
 	InstanceId int
 
@@ -85,27 +85,31 @@ func (l *UILayer) DrawText(args UIDrawTextArgs) {
 	}
 
 	offsetX := float32(0)
-	for _, r := range args.Text {
-		c := fmt.Sprintf("%c", r)
-
-		c2 := font.Symbol[c]
-
-		rect := mrender_uv.GetArea(c2.X, c2.Y, font.Size.X, font.Size.Y, 1024, 1024)
+	offsetY := float32(0)
+	for _, ch := range args.Text {
+		if ch == '\n' {
+			offsetX = 0
+			offsetY += font.Size.Y
+			continue
+		}
+		ch2 := fmt.Sprintf("%c", ch)
+		char := font.Symbol[ch2]
+		rect := mrender_uv.GetArea(char.X, char.Y, font.Size.X, font.Size.Y, 1024, 1024)
 
 		l.Draw(
 			UIDrawArgs{
 				UV:          rect,
-				Position:    args.Position.AddXY(offsetX, 0),
+				Position:    args.Position.AddXY(offsetX, offsetY),
 				Size:        font.Size.Scale(args.Size),
-				Color:       ml_color.ColorRGBA[float32]{1, 1, 1, 1},
+				Color:       args.Color,
 				PivotOffset: args.PivotOffset,
 			},
 		)
 
-		if font.SymbolSize[c].X == 0 {
+		if font.SymbolSize[ch2].X == 0 {
 			offsetX += font.Size.X * args.Size
 		} else {
-			offsetX += font.SymbolSize[c].X * args.Size
+			offsetX += font.SymbolSize[ch2].X * args.Size
 		}
 	}
 	/*for i := 0; i < len(text); i++ {
@@ -125,7 +129,7 @@ func (l *UILayer) Init() {
 	l.ElementList = make([]UIElement, 0, 1024)
 	// l.MeshInstanceList = make([]mr_mesh.MeshInstance, 1024)
 	l.IndexList = make([]uint16, 0, 1024)
-	l.FontMap = map[string]UITextFont{}
+	l.FontMap = map[string]TextFont{}
 
 	fmt.Printf("Render allocated %v\n", cap(l.VertexList)*4*6)
 }

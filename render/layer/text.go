@@ -1,25 +1,27 @@
 package mrender_layer
 
 import (
-	mmath_geom "github.com/maldan/go-ml/math/geometry"
+	"fmt"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
+	mrender_uv "github.com/maldan/go-ml/render/uv"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 	"reflect"
 	"unsafe"
 )
 
 type Text struct {
-	Font     string
-	Content  string
-	Size     float32
-	Position mmath_la.Vector3[float32]
-	Rotation mmath_la.Vector3[float32]
-	Color    ml_color.ColorRGBA[float32]
+	Font             string
+	Content          string
+	Size             float32
+	Position         mmath_la.Vector3[float32]
+	Rotation         mmath_la.Vector3[float32]
+	NewLineDirection mmath_la.Vector3[float32]
+	Color            ml_color.ColorRGBA[float32]
 }
 
-type TextFont struct {
+/*type TextFont struct {
 	Symbol map[uint8]mmath_geom.Rectangle[float32]
-}
+}*/
 
 type TextLayer struct {
 	VertexList   []float32
@@ -33,6 +35,29 @@ type TextLayer struct {
 	FontMap  map[string]TextFont
 
 	state map[string]any
+}
+
+type TextDrawArgs struct {
+	FontName         string
+	Text             string
+	Position         mmath_la.Vector3[float32]
+	Rotation         mmath_la.Vector3[float32]
+	Size             float32
+	NewLineDirection mmath_la.Vector3[float32]
+	PivotOffset      mmath_la.Vector2[float32]
+	Color            ml_color.ColorRGBA[float32]
+}
+
+func (l *TextLayer) Draw(args TextDrawArgs) {
+	l.TextList = append(l.TextList, Text{
+		Font:             args.FontName,
+		Content:          args.Text,
+		Size:             args.Size,
+		Position:         args.Position,
+		Rotation:         args.Rotation,
+		NewLineDirection: args.NewLineDirection,
+		Color:            args.Color,
+	})
 }
 
 func (l *TextLayer) Init() {
@@ -179,48 +204,55 @@ func (l *TextLayer) Render() {
 	lastMaxIndex := uint16(0)
 	for i := 0; i < len(l.TextList); i++ {
 		text := l.TextList[i]
+		font := l.FontMap[text.Font]
 
-		// Vertex
-		for j := 0; j < len(text.Content); j++ {
+		textOffset := mmath_la.Vector3[float32]{}
+		for _, ch := range text.Content {
+			if ch == '\n' {
+				textOffset.X = 0
+				textOffset = textOffset.Add(text.NewLineDirection)
+				continue
+			}
+			char := font.Symbol[fmt.Sprintf("%c", ch)]
+			rect := mrender_uv.GetArea(char.X, char.Y, font.Size.X, font.Size.Y, 1024, 1024)
+
 			l.VertexList = append(l.VertexList,
 				-0.5*text.Size, -0.5*text.Size, 0,
 				0.5*text.Size, -0.5*text.Size, 0,
 				0.5*text.Size, 0.5*text.Size, 0,
 				-0.5*text.Size, 0.5*text.Size, 0,
 			)
-		}
 
-		// Position list
-		p := text.Position
-		l.PositionList = append(l.PositionList, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z)
+			// Position list
+			p := text.Position.Add(textOffset)
+			l.PositionList = append(l.PositionList, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z, p.X, p.Y, p.Z)
 
-		// Rotation list
-		r := text.Rotation
-		l.RotationList = append(l.RotationList, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z)
+			// Rotation list
+			r := text.Rotation
+			l.RotationList = append(l.RotationList, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z, r.X, r.Y, r.Z)
 
-		// Color list
-		c := text.Color
-		l.ColorList = append(l.ColorList, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A)
+			// Color list
+			c := text.Color
+			l.ColorList = append(l.ColorList, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A, c.R, c.G, c.B, c.A)
 
-		// Uv
-		for j := 0; j < len(text.Content); j++ {
-			rect := l.FontMap[text.Font].Symbol[text.Content[j]]
-
+			// Uv
 			l.UvList = append(l.UvList,
 				rect.MinX, rect.MaxY,
 				rect.MaxX, rect.MaxY,
 				rect.MaxX, rect.MinY,
 				rect.MinX, rect.MinY,
 			)
+
+			// Indices
+			l.IndexList = append(l.IndexList,
+				0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex,
+				0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex,
+			)
+
+			lastMaxIndex += 4
+
+			textOffset.X += text.Size
 		}
-
-		// Indices
-		l.IndexList = append(l.IndexList,
-			0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex,
-			0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex,
-		)
-
-		lastMaxIndex += 4
 	}
 
 	if len(l.TextList) > 0 {

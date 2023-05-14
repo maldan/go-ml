@@ -29,4 +29,8 @@ window.go.memory = {
     const m = this.getMemory();
     return m.getFloat32(ptr, true);
   },
+  readI8(ptr: number): number {
+    const m = this.getMemory();
+    return m.getInt8(ptr);
+  },
 };

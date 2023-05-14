@@ -287,7 +287,7 @@ class GoRenderTextLayer extends GoRenderLayer {
 
     // Get camera matrix
     state["projectionMatrixPointer"] = (window as any).go.pointer[
-      `renderUICamera_matrix`
+      `renderCamera_matrix`
     ];
 
     this.setDataArray("vertex", state, float32Array);

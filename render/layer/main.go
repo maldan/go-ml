@@ -78,6 +78,9 @@ func (l *MainLayer) Render() {
 		if instance.Id < 0 {
 			continue
 		}
+		if instance.Id >= len(l.AllocatedMesh) {
+			continue
+		}
 
 		mesh := l.AllocatedMesh[instance.Id]
 

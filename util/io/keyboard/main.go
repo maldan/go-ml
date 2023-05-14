@@ -9,6 +9,7 @@ const (
 	KeyW             = "KeyW"
 	KeyS             = "KeyS"
 	KeyE             = "KeyE"
+	KeyR             = "KeyR"
 	KeyP             = "KeyP"
 	KeyQ             = "KeyQ"
 	Space            = "Space"

@@ -1,13 +1,11 @@
 package mrender
 
 import (
-	"fmt"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mrender_mesh "github.com/maldan/go-ml/render/mesh"
-	mrender_uv "github.com/maldan/go-ml/render/uv"
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
 	ml_color "github.com/maldan/go-ml/util/media/color"
 )
@@ -89,7 +87,7 @@ func ClearStaticMesh() {
 }
 
 func ClearDynamicMesh() {
-	State.Main.AllocatedMesh = State.Main.AllocatedMesh[:0]
+	// State.Main.AllocatedMesh = State.Main.AllocatedMesh[:0]
 	for i := 0; i < len(State.Main.MeshInstanceList); i++ {
 		State.Main.MeshInstanceList[i].IsActive = false
 	}
@@ -259,21 +257,24 @@ func DrawPoint(to mmath_la.Vector3[float32], size float32, color ml_color.ColorR
 	})
 }
 
-func LoadFont(name string, charMap map[uint8]mmath_geom.Rectangle[float32]) {
-	State.Text.FontMap[name] = mr_layer.TextFont{
+func LoadFont(name string, font mr_layer.TextFont) {
+	/*State.Text.FontMap[name] = mr_layer.TextFont{
 		Symbol: map[uint8]mmath_geom.Rectangle[float32]{},
 	}
 
 	for c, r := range charMap {
 		State.Text.FontMap[name].Symbol[c] = mrender_uv.GetArea(r.MinX, r.MinY, r.MaxX, r.MaxY, 1024, 1024)
-	}
-}
-
-func LoadUIFont(name string, font mr_layer.UITextFont) {
+	}*/
+	State.Text.FontMap[name] = font
 	State.UI.FontMap[name] = font
 }
 
-func DrawUIText(fontName string, text string, size float32, pos mmath_la.Vector2[float32]) {
+/*func LoadUIFont(name string, font mr_layer.UITextFont) {
+	State.UI.FontMap[name] = font
+}
+*/
+
+/*func DrawUIText(fontName string, text string, size float32, pos mmath_la.Vector2[float32]) {
 	font, ok := State.UI.FontMap[fontName]
 	if !ok {
 		fmt.Printf("Font %v not found\n", fontName)
@@ -301,19 +302,16 @@ func DrawUIText(fontName string, text string, size float32, pos mmath_la.Vector2
 			offsetX += font.SymbolSize[c].X * size
 		}
 	}
-	/*for i := 0; i < len(text); i++ {
-		font[text[i]]
-	}*/
-}
+}*/
 
-func DrawText(font string, text string, size float32, pos mmath_la.Vector3[float32]) {
+/*func DrawText(font string, text string, size float32, pos mmath_la.Vector3[float32]) {
 	State.Text.TextList = append(State.Text.TextList, mr_layer.Text{
 		Font:     font,
 		Content:  text,
 		Size:     size,
 		Position: pos,
 	})
-}
+}*/
 
 func DrawUI(
 	uv mmath_geom.Rectangle[float32],
@@ -405,6 +403,7 @@ func DrawMeshNormals(instance *mrender_mesh.MeshInstance) {
 		)
 	}
 }
+
 func (r *RenderEngine) Render() {
 	r.Camera.ApplyMatrix()
 	r.UICamera.ApplyMatrix()
@@ -413,6 +412,7 @@ func (r *RenderEngine) Render() {
 	r.StaticMesh.Render()
 	r.Point.Render()
 	r.Line.Render()
+	r.Text.Render()
 	r.UI.Render()
 
 	/*
