@@ -31,6 +31,14 @@ func CeilInt[T constraints.Float](a T) int {
 	return int(math.Ceil(float64(a)))
 }
 
+func FloorInt[T constraints.Float](a T) int {
+	return int(math.Floor(float64(a)))
+}
+
 func Ceil[T constraints.Float](a T) T {
 	return T(math.Ceil(float64(a)))
+}
+
+func Floor[T constraints.Float](a T) T {
+	return T(math.Floor(float64(a)))
 }

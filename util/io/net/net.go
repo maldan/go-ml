@@ -61,6 +61,10 @@ func Post(url string, opts *RequestOptions) Response {
 	return Request(url, "POST", opts)
 }
 
+func Put(url string, opts *RequestOptions) Response {
+	return Request(url, "PUT", opts)
+}
+
 func Request(url string, method string, options *RequestOptions) Response {
 	response := Response{
 		Url: url,

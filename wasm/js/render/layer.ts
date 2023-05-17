@@ -257,13 +257,13 @@ class GoRenderTextLayer extends GoRenderLayer {
   init(vertex: string, fragment: string) {
     this.shader = this.compileShader(vertex, fragment);
 
-    ["vertex", "index", "position", "rotation", "uv", "color"].forEach((x) => {
+    ["vertex", "index", "position", "rotation", "color"].forEach((x) => {
       this.bufferList[x] = this._gl.createBuffer();
     });
-    ["aVertex", "aPosition", "aRotation", "aUv", "aColor"].forEach((x) => {
+    ["aVertex", "aPosition", "aRotation", "aColor"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
-    ["uProjectionMatrix", "uTexture"].forEach((x) => {
+    ["uPerspectiveCamera", "uUiCamera"].forEach((x) => {
       this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
     });
   }
@@ -274,7 +274,7 @@ class GoRenderTextLayer extends GoRenderLayer {
 
     // Get pointers
     const mv = (window as any).go.memoryView;
-    ["vertex", "uv", "position", "rotation", "color", "index"].forEach((x) => {
+    ["vertex", "position", "rotation", "color", "index"].forEach((x) => {
       state[x + "Pointer"] = mv.getUint32(
         (window as any).go.pointer[`renderTextLayer_${x}`],
         true
@@ -286,18 +286,23 @@ class GoRenderTextLayer extends GoRenderLayer {
     });
 
     // Get camera matrix
-    state["projectionMatrixPointer"] = (window as any).go.pointer[
+    state["perspectiveCameraPointer"] = (window as any).go.pointer[
       `renderCamera_matrix`
+    ];
+    state["uiCameraPointer"] = (window as any).go.pointer[
+      `renderUICamera_matrix`
     ];
 
     this.setDataArray("vertex", state, float32Array);
-    this.setDataArray("uv", state, float32Array);
+    // this.setDataArray("uv", state, float32Array);
     this.setDataArray("position", state, float32Array);
     this.setDataArray("rotation", state, float32Array);
     this.setDataArray("color", state, float32Array);
 
     this.setDataArray("index", state, shortArray);
-    this.setDataArray("projectionMatrix", state, float32Array, 16);
+
+    this.setDataArray("perspectiveCamera", state, float32Array, 16);
+    this.setDataArray("uiCamera", state, float32Array, 16);
   }
 
   draw() {
@@ -307,20 +312,21 @@ class GoRenderTextLayer extends GoRenderLayer {
     // Put main data
     this.uploadData("element", "index");
     this.uploadData("any", "vertex");
-    this.uploadData("any", "uv");
+    // this.uploadData("any", "uv");
     this.uploadData("any", "position");
     this.uploadData("any", "rotation");
     this.uploadData("any", "color");
 
     // Enable attributes
     this.enableAttribute("vertex");
-    this.enableAttribute("uv", 2);
+    // this.enableAttribute("uv", 2);
     this.enableAttribute("position");
     this.enableAttribute("rotation");
     this.enableAttribute("color", 4);
 
     // Set projection
-    this.setUniform("projectionMatrix");
+    this.setUniform("perspectiveCamera");
+    this.setUniform("uiCamera");
 
     // Set texture
     this.setTexture();

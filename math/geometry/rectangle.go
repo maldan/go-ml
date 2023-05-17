@@ -126,6 +126,14 @@ func (r Rectangle[T]) AddXY(x T, y T) Rectangle[T] {
 	return r
 }
 
+func (r Rectangle[T]) Floor() Rectangle[T] {
+	r.MinX = T(math.Floor(float64(r.MinX)))
+	r.MaxX = T(math.Floor(float64(r.MaxX)))
+	r.MinY = T(math.Floor(float64(r.MinY)))
+	r.MaxY = T(math.Floor(float64(r.MaxY)))
+	return r
+}
+
 func (r Rectangle[T]) Ceil() Rectangle[T] {
 	r.MinX = T(math.Ceil(float64(r.MinX)))
 	r.MaxX = T(math.Ceil(float64(r.MaxX)))

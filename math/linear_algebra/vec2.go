@@ -39,6 +39,12 @@ func (v Vector2[T]) Normalize() Vector2[T] {
 	return v
 }
 
+func (v Vector2[T]) Floor() Vector2[T] {
+	v.X = T(math.Floor(float64(v.X)))
+	v.Y = T(math.Floor(float64(v.Y)))
+	return v
+}
+
 func (v Vector2[T]) Ceil() Vector2[T] {
 	v.X = mmath.Ceil(v.X)
 	v.Y = mmath.Ceil(v.Y)
