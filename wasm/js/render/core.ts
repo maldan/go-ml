@@ -27,7 +27,7 @@ class GoRender {
     if (!this._canvas) throw new Error(`Canvas not found`);
 
     this._gl = this._canvas.getContext("webgl", {
-      antialias: false,
+      antialias: true,
       premultipliedAlpha: false,
       // alpha: false,
     }) as WebGLRenderingContext;
@@ -86,7 +86,8 @@ class GoRender {
     });
 
     // Main texture
-    const texture = loadTexture(this._gl, "./texture.png");
+    const textureLinear = loadTexture(this._gl, "./texture.png", true);
+    const textureNearest = loadTexture(this._gl, "./texture.png", false);
 
     // Compile shaders
     this.layerList = [
@@ -94,9 +95,10 @@ class GoRender {
       new GoRenderDynamicMeshLayer("dynamicMesh", this._gl),
       new GoRenderPointLayer("point", this._gl),
       new GoRenderLineLayer("line", this._gl),
-      new GoRenderTextLayer("text", this._gl),
+
       // new GoRenderPostProcessingLayer("postprocessing", this._gl),
       new GoRenderUILayer("ui", this._gl),
+      new GoRenderTextLayer("text", this._gl),
 
       /*
         new GoRenderTextLayer("text", this._gl),
@@ -106,7 +108,8 @@ class GoRender {
         this.shaderSource[`./js/render/shader/${x.name}.vertex.glsl`],
         this.shaderSource[`./js/render/shader/${x.name}.fragment.glsl`]
       );
-      x.texture = texture;
+      if (x.name === "ui") x.texture = textureNearest;
+      else x.texture = textureLinear;
       return x;
     });
 
@@ -210,7 +213,11 @@ class GoRender {
   }
 }
 
-function loadTexture(gl: WebGLRenderingContext, url: string): WebGLTexture {
+function loadTexture(
+  gl: WebGLRenderingContext,
+  url: string,
+  isLinear: boolean
+): WebGLTexture {
   const texture = gl.createTexture();
   if (!texture) throw new Error(`Can't create texture`);
   gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -252,17 +259,24 @@ function loadTexture(gl: WebGLRenderingContext, url: string): WebGLTexture {
     );
     //
 
-    gl.generateMipmap(gl.TEXTURE_2D);
+    if (isLinear) {
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(
+        gl.TEXTURE_2D,
+        gl.TEXTURE_MIN_FILTER,
+        gl.LINEAR_MIPMAP_LINEAR
+      );
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    } else {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    gl.texParameteri(
-      gl.TEXTURE_2D,
-      gl.TEXTURE_MIN_FILTER,
-      gl.LINEAR_MIPMAP_LINEAR
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    }
   };
   image.src = url;
 

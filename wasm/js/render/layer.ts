@@ -174,6 +174,8 @@ class GoRenderPointLayer extends GoRenderLayer {
   }
 
   draw() {
+    if (this.dataList["vertex"].length <= 0) return;
+
     // Set program
     this._gl.useProgram(this.shader);
 
@@ -187,7 +189,6 @@ class GoRenderPointLayer extends GoRenderLayer {
     // Set projection
     this.setUniform("projectionMatrix");
 
-    // this._gl.disable(this._gl.DEPTH_TEST);
     this._gl.enable(this._gl.DEPTH_TEST);
     this._gl.drawArrays(this._gl.POINTS, 0, this.dataList["vertex"].length / 4);
   }
@@ -235,6 +236,8 @@ class GoRenderLineLayer extends GoRenderLayer {
   }
 
   draw() {
+    if (this.dataList["vertex"].length <= 0) return;
+
     // Set program
     this._gl.useProgram(this.shader);
 
@@ -248,7 +251,6 @@ class GoRenderLineLayer extends GoRenderLayer {
     this.setUniform("projectionMatrix");
 
     this._gl.enable(this._gl.DEPTH_TEST);
-    // this._gl.disable(this._gl.DEPTH_TEST);
     this._gl.drawArrays(this._gl.LINES, 0, this.dataList["vertex"].length / 3);
   }
 }
@@ -306,6 +308,8 @@ class GoRenderTextLayer extends GoRenderLayer {
   }
 
   draw() {
+    if (this.dataList["vertex"].length <= 0) return;
+
     // Set program
     this._gl.useProgram(this.shader);
 
@@ -400,6 +404,8 @@ class GoRenderUILayer extends GoRenderLayer {
   }
 
   draw() {
+    if (this.dataList["vertex"].length <= 0) return;
+
     // Set program
     this._gl.useProgram(this.shader);
 
@@ -536,6 +542,8 @@ class GoRenderDynamicMeshLayer extends GoRenderLayer {
   }
 
   draw() {
+    if (this.dataList["vertex"].length <= 0) return;
+
     // Set program
     this._gl.useProgram(this.shader);
 
@@ -644,6 +652,8 @@ class GoRenderStaticMeshLayer extends GoRenderLayer {
   }
 
   draw() {
+    if (this.dataList["vertex"].length <= 0) return;
+
     // Set program
     this._gl.useProgram(this.shader);
 
@@ -663,55 +673,6 @@ class GoRenderStaticMeshLayer extends GoRenderLayer {
     // Set projection
     this.setUniform("projectionMatrix");
     this.setUniform("light");
-
-    // Set texture
-    this.setTexture();
-
-    this._gl.bindBuffer(
-      this._gl.ELEMENT_ARRAY_BUFFER,
-      this.bufferList["index"]
-    );
-
-    this._gl.drawElements(
-      this._gl.TRIANGLES,
-      this.dataList["index"].length,
-      this._gl.UNSIGNED_SHORT,
-      0
-    );
-  }
-}
-
-class GoRenderPostProcessingLayer extends GoRenderLayer {
-  init(vertex: string, fragment: string) {
-    this.shader = this.compileShader(vertex, fragment);
-
-    ["vertex", "index", "uv"].forEach((x) => {
-      this.bufferList[x] = this._gl.createBuffer();
-    });
-    ["aVertex", "aUv"].forEach((x) => {
-      this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
-    });
-    ["uTexture"].forEach((x) => {
-      this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
-    });
-
-    this.dataList["vertex"] = new Float32Array([-1, -1, 1, -1, 1, 1, -1, 1]);
-    this.dataList["index"] = new Uint16Array([0, 1, 2, 0, 2, 3]);
-    this.dataList["uv"] = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
-  }
-
-  draw() {
-    // Set program
-    this._gl.useProgram(this.shader);
-
-    // Put main data
-    this.uploadData("element", "index");
-    this.uploadData("any", "vertex");
-    this.uploadData("any", "uv");
-
-    // Enable attributes
-    this.enableAttribute("vertex", 2);
-    this.enableAttribute("uv", 2);
 
     // Set texture
     this.setTexture();

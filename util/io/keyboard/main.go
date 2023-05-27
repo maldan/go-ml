@@ -4,17 +4,19 @@ var State = map[string]bool{}
 var PressState = map[string]bool{}
 
 const (
-	KeyA      string = "KeyA"
-	KeyD             = "KeyD"
-	KeyW             = "KeyW"
-	KeyS             = "KeyS"
-	KeyE             = "KeyE"
-	KeyR             = "KeyR"
-	KeyP             = "KeyP"
-	KeyQ             = "KeyQ"
-	Space            = "Space"
-	ArrowDown        = "ArrowDown"
-	ArrowUp          = "ArrowUp"
+	KeyA       string = "KeyA"
+	KeyD              = "KeyD"
+	KeyW              = "KeyW"
+	KeyS              = "KeyS"
+	KeyE              = "KeyE"
+	KeyR              = "KeyR"
+	KeyP              = "KeyP"
+	KeyQ              = "KeyQ"
+	Space             = "Space"
+	ArrowDown         = "ArrowDown"
+	ArrowUp           = "ArrowUp"
+	ArrowLeft         = "ArrowLeft"
+	ArrowRight        = "ArrowRight"
 )
 
 func IsKeyDown(key string) bool {

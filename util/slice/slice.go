@@ -151,6 +151,13 @@ func PickRandom[T any](slice []T) T {
 	return slice[r.Intn(len(slice))]
 }
 
+func PickRandomIndex[T any](slice []T) int {
+	if len(slice) == 0 {
+		return -1
+	}
+	return r.Intn(len(slice))
+}
+
 func Combine[T any](slices ...[]T) []T {
 	finalSlice := make([]T, 0)
 

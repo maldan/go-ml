@@ -1,5 +1,11 @@
 package ml_time
 
+import "time"
+
+func SetTime(t time.Time, hour int, minute int, second int) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), hour, minute, second, t.Nanosecond(), t.Location())
+}
+
 /*type Time time.Time
 
 var timeParseTemplateList = []string{

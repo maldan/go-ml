@@ -90,7 +90,8 @@ func (l *TextLayer) Render() {
 		for _, ch := range text.Content {
 			if ch == '\n' {
 				textOffset.X = 0
-				textOffset = textOffset.Add(text.NewLineDirection)
+				s := text.NewLineDirection.Scale(text.Size * 2)
+				textOffset = textOffset.Add(s)
 				continue
 			}
 
@@ -106,14 +107,14 @@ func (l *TextLayer) Render() {
 
 			case '0':
 				letterVertexLength = 12
-				l.VertexList = append(l.VertexList, -0.75*size, -0.75*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.5*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 2+lastMaxIndex, 1+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex)
 				lastMaxIndex += 12
 				break
 
 			case '1':
 				letterVertexLength = 7
-				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI, -0.5*size, 0.25*size, isUI, -0.125*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI)
+				l.VertexList = append(l.VertexList, 0*size, -1*size, isUI, 0.25*size, -1*size, isUI, 0.25*size, 0.75*size, isUI, 0*size, 0.75*size, isUI, -0.25*size, 0.5*size, isUI, 0*size, 0.5*size, isUI, -0.25*size, 0.75*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 3+lastMaxIndex, 6+lastMaxIndex)
 				lastMaxIndex += 7
 				break
@@ -174,23 +175,93 @@ func (l *TextLayer) Render() {
 				lastMaxIndex += 16
 				break
 
+			case '!':
+				letterVertexLength = 8
+				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, -0.125*size, -0.5*size, isUI, 0.125*size, -0.5*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
+				lastMaxIndex += 8
+				break
+
+			case '(':
+				letterVertexLength = 8
+				l.VertexList = append(l.VertexList, -0.25*size, -1*size, isUI, 0*size, -1*size, isUI, -0.5*size, -0.75*size, isUI, -0.25*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, -0.25*size, 0.5*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 3+lastMaxIndex, 0+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
+				lastMaxIndex += 8
+				break
+
+			case ')':
+				letterVertexLength = 8
+				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.25*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, 0.25*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 3+lastMaxIndex, 0+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
+				lastMaxIndex += 8
+				break
+
+			case '+':
+				letterVertexLength = 8
+				l.VertexList = append(l.VertexList, -0.5*size, -0.125*size, isUI, 0.5*size, -0.125*size, isUI, 0.5*size, 0.125*size, isUI, -0.5*size, 0.125*size, isUI, -0.125*size, -0.5*size, isUI, 0.125*size, -0.5*size, isUI, 0.125*size, 0.5*size, isUI, -0.125*size, 0.5*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
+				lastMaxIndex += 8
+				break
+
+			case ',':
+				letterVertexLength = 5
+				l.VertexList = append(l.VertexList, -0.125*size, -0.75*size, isUI, 0.125*size, -0.75*size, isUI, 0.125*size, -0.5*size, isUI, -0.125*size, -0.5*size, isUI, -0.25*size, -1*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 1+lastMaxIndex, 0+lastMaxIndex)
+				lastMaxIndex += 5
+				break
+
+			case '-':
+				letterVertexLength = 4
+				l.VertexList = append(l.VertexList, -0.5*size, -0.125*size, isUI, 0.5*size, -0.125*size, isUI, 0.5*size, 0.125*size, isUI, -0.5*size, 0.125*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex)
+				lastMaxIndex += 4
+				break
+
+			case '.':
+				letterVertexLength = 4
+				l.VertexList = append(l.VertexList, -0.125*size, -0.75*size, isUI, 0.125*size, -0.75*size, isUI, 0.125*size, -0.5*size, isUI, -0.125*size, -0.5*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex)
+				lastMaxIndex += 4
+				break
+
+			case '/':
+				letterVertexLength = 4
+				l.VertexList = append(l.VertexList, -0.5*size, -1*size, isUI, -0.25*size, -1*size, isUI, 0.5*size, 0.75*size, isUI, 0.25*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex)
+				lastMaxIndex += 4
+				break
+
+			case '=':
+				letterVertexLength = 8
+				l.VertexList = append(l.VertexList, -0.5*size, 0.125*size, isUI, 0.5*size, 0.125*size, isUI, 0.5*size, 0.375*size, isUI, -0.5*size, 0.375*size, isUI, -0.5*size, -0.375*size, isUI, 0.5*size, -0.375*size, isUI, 0.5*size, -0.125*size, isUI, -0.5*size, -0.125*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
+				lastMaxIndex += 8
+				break
+
+			case '?':
+				letterVertexLength = 14
+				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, -0.125*size, -0.375*size, isUI, 0.125*size, -0.5*size, isUI, 0.75*size, 0*size, isUI, 0.5*size, 0.125*size, isUI, 0.5*size, 0.5*size, isUI, 0.75*size, 0.75*size, isUI, -0.5*size, 0.75*size, isUI, -0.25*size, 0.5*size, isUI, -0.5*size, 0*size, isUI, -0.25*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 10+lastMaxIndex)
+				lastMaxIndex += 14
+				break
+
 			case 'A':
 				letterVertexLength = 15
-				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, -0.5*size, isUI, 0.5*size, -0.5*size, isUI, 0.5*size, -0.25*size, isUI, -0.5*size, -0.25*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, -0.5*size, isUI, 0.5*size, -0.5*size, isUI, 0.5*size, -0.25*size, isUI, -0.5*size, -0.25*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 2+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 11+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex)
 				lastMaxIndex += 15
 				break
 
 			case 'B':
 				letterVertexLength = 18
-				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, 0.75*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, -0.75*size, isUI, 0.5*size, -0.25*size, isUI, 0.75*size, -0.25*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0*size, isUI, 0.75*size, 0*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, 0.75*size, 0.5*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, -0.75*size, isUI, 0.5*size, -0.25*size, isUI, 0.75*size, -0.25*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0*size, isUI, 0.75*size, 0*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 4+lastMaxIndex, 10+lastMaxIndex, 2+lastMaxIndex, 12+lastMaxIndex, 10+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 5+lastMaxIndex, 14+lastMaxIndex, 5+lastMaxIndex, 13+lastMaxIndex, 16+lastMaxIndex, 11+lastMaxIndex, 14+lastMaxIndex, 16+lastMaxIndex, 14+lastMaxIndex, 17+lastMaxIndex)
 				lastMaxIndex += 18
 				break
 
 			case 'C':
 				letterVertexLength = 10
-				l.VertexList = append(l.VertexList, -0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex)
 				lastMaxIndex += 10
 				break
@@ -204,7 +275,7 @@ func (l *TextLayer) Render() {
 
 			case 'E':
 				letterVertexLength = 14
-				l.VertexList = append(l.VertexList, -0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.25*size, isUI, 0.25*size, -0.25*size, isUI, 0.25*size, 0*size, isUI, -0.5*size, 0*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.25*size, isUI, 0.25*size, -0.25*size, isUI, 0.25*size, 0*size, isUI, -0.5*size, 0*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 10+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex)
 				lastMaxIndex += 14
 				break
@@ -218,7 +289,7 @@ func (l *TextLayer) Render() {
 
 			case 'G':
 				letterVertexLength = 16
-				l.VertexList = append(l.VertexList, -0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, -0.75*size, isUI, 0.75*size, -0.125*size, isUI, 0.5*size, 0*size, isUI, 0.25*size, 0*size, isUI, 0.25*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, -0.75*size, isUI, 0.75*size, -0.25*size, isUI, 0.5*size, 0*size, isUI, 0.25*size, 0*size, isUI, 0.25*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex, 10+lastMaxIndex, 2+lastMaxIndex, 11+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 12+lastMaxIndex, 14+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex)
 				lastMaxIndex += 16
 				break
@@ -232,7 +303,7 @@ func (l *TextLayer) Render() {
 
 			case 'I':
 				letterVertexLength = 8
-				l.VertexList = append(l.VertexList, -0.25*size, -1*size, isUI, 0.25*size, -1*size, isUI, 0.125*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, -0.125*size, 0.5*size, isUI, 0.125*size, 0.5*size, isUI, -0.25*size, 0.75*size, isUI, 0.25*size, 0.75*size, isUI)
+				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, -0.125*size, 0.5*size, isUI, 0.125*size, 0.5*size, isUI, -0.125*size, 0.75*size, isUI, 0.125*size, 0.75*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex)
 				lastMaxIndex += 8
 				break
@@ -246,7 +317,7 @@ func (l *TextLayer) Render() {
 
 			case 'K':
 				letterVertexLength = 10
-				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0*size, isUI, 0.25*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, 0.25*size, -1*size, isUI, 0.5*size, -1*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.375*size, isUI, -0.5*size, 0*size, isUI, 0.125*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, 0.125*size, -1*size, isUI, 0.5*size, -1*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 9+lastMaxIndex)
 				lastMaxIndex += 10
 				break
@@ -260,21 +331,21 @@ func (l *TextLayer) Render() {
 
 			case 'M':
 				letterVertexLength = 12
-				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0*size, 0.25*size, isUI, 0*size, 0*size, isUI, 0.5*size, 0.5*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, 0.375*size, isUI, 0*size, 0.25*size, isUI, 0*size, -0.125*size, isUI, 0.5*size, 0.375*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 2+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 9+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 7+lastMaxIndex)
 				lastMaxIndex += 12
 				break
 
 			case 'N':
 				letterVertexLength = 10
-				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, -0.5*size, 0.375*size, isUI, 0.5*size, -0.625*size, isUI, 0.5*size, 0.75*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, -0.5*size, 0.25*size, isUI, 0.5*size, -0.5*size, isUI, 0.5*size, 0.75*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 8+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 2+lastMaxIndex)
 				lastMaxIndex += 10
 				break
 
 			case 'O':
 				letterVertexLength = 12
-				l.VertexList = append(l.VertexList, -0.75*size, -0.75*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.5*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 2+lastMaxIndex, 1+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex)
 				lastMaxIndex += 12
 				break
@@ -288,14 +359,14 @@ func (l *TextLayer) Render() {
 
 			case 'Q':
 				letterVertexLength = 17
-				l.VertexList = append(l.VertexList, -0.75*size, -0.75*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI, 0.25*size, -0.625*size, isUI, 0.375*size, -0.5*size, isUI, 0.75*size, -1*size, isUI, 0.625*size, -0.875*size, isUI, 0.875*size, -1*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI, 0.25*size, -0.625*size, isUI, 0.375*size, -0.5*size, isUI, 0.75*size, -1*size, isUI, 0.625*size, -0.875*size, isUI, 0.875*size, -1*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 2+lastMaxIndex, 1+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 10+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex, 16+lastMaxIndex, 15+lastMaxIndex)
 				lastMaxIndex += 17
 				break
 
 			case 'R':
 				letterVertexLength = 16
-				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0.5*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI, 0.75*size, 0*size, isUI, -0.5*size, 0*size, isUI, 0.5*size, 0*size, isUI, 0.5*size, 0.5*size, isUI, -0.5*size, -0.5*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.25*size, isUI, 0.75*size, -0.25*size, isUI, 0.75*size, 0*size, isUI, -0.5*size, 0*size, isUI, 0.5*size, 0*size, isUI, 0.5*size, 0.5*size, isUI, -0.5*size, -0.5*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 6+lastMaxIndex, 0+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex, 11+lastMaxIndex, 5+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 13+lastMaxIndex, 15+lastMaxIndex, 7+lastMaxIndex)
 				lastMaxIndex += 16
 				break
@@ -336,10 +407,10 @@ func (l *TextLayer) Render() {
 				break
 
 			case 'X':
-				letterVertexLength = 11
-				l.VertexList = append(l.VertexList, 0*size, 0.125*size, isUI, 0*size, -0.125*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0*size, -0.375*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 3+lastMaxIndex, 0+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 4+lastMaxIndex, 1+lastMaxIndex, 0+lastMaxIndex, 4+lastMaxIndex, 0+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 6+lastMaxIndex, 8+lastMaxIndex, 1+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex)
-				lastMaxIndex += 11
+				letterVertexLength = 14
+				l.VertexList = append(l.VertexList, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, -0.25*size, -0.25*size, isUI, -0.25*size, 0*size, isUI, 0*size, 0*size, isUI, 0*size, -0.25*size, isUI, 0.25*size, -0.25*size, isUI, 0.25*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 4+lastMaxIndex, 5+lastMaxIndex, 11+lastMaxIndex, 4+lastMaxIndex, 11+lastMaxIndex, 8+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 12+lastMaxIndex, 6+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 13+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 0+lastMaxIndex, 8+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 8+lastMaxIndex, 13+lastMaxIndex, 9+lastMaxIndex)
+				lastMaxIndex += 14
 				break
 
 			case 'Y':
@@ -351,72 +422,226 @@ func (l *TextLayer) Render() {
 
 			case 'Z':
 				letterVertexLength = 10
-				l.VertexList = append(l.VertexList, -0.5*size, -1*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.375*size, -0.75*size, isUI, 0.375*size, 0.5*size, isUI)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.375*size, -0.75*size, isUI, 0.375*size, 0.5*size, isUI)
 				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 7+lastMaxIndex, 3+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex)
 				lastMaxIndex += 10
 				break
 
-			case '(':
-				letterVertexLength = 8
-				l.VertexList = append(l.VertexList, -0.25*size, -1*size, isUI, 0*size, -1*size, isUI, -0.5*size, -0.75*size, isUI, -0.25*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, -0.25*size, 0.5*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 3+lastMaxIndex, 0+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
-				lastMaxIndex += 8
+			case 'А':
+				letterVertexLength = 15
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, -0.5*size, isUI, 0.5*size, -0.5*size, isUI, 0.5*size, -0.25*size, isUI, -0.5*size, -0.25*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 2+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 11+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex)
+				lastMaxIndex += 15
 				break
 
-			case ')':
-				letterVertexLength = 8
-				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.25*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, 0.25*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 3+lastMaxIndex, 0+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
-				lastMaxIndex += 8
+			case 'Б':
+				letterVertexLength = 18
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, 0.75*size, 0.5*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -0.75*size, isUI, 0.5*size, 0*size, isUI, 0.75*size, 0*size, isUI, -0.75*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI, -0.75*size, 0*size, isUI, -0.5*size, 0*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, -0.25*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 13+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 13+lastMaxIndex, 15+lastMaxIndex, 4+lastMaxIndex, 3+lastMaxIndex, 16+lastMaxIndex, 17+lastMaxIndex, 3+lastMaxIndex, 17+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 18
 				break
 
-			case '!':
-				letterVertexLength = 8
-				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, -0.125*size, -0.5*size, isUI, 0.125*size, -0.5*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
-				lastMaxIndex += 8
+			case 'В':
+				letterVertexLength = 18
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, 0.75*size, 0.5*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, -0.75*size, isUI, 0.5*size, -0.25*size, isUI, 0.75*size, -0.25*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0*size, isUI, 0.75*size, 0*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 4+lastMaxIndex, 10+lastMaxIndex, 2+lastMaxIndex, 12+lastMaxIndex, 10+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 5+lastMaxIndex, 14+lastMaxIndex, 5+lastMaxIndex, 13+lastMaxIndex, 16+lastMaxIndex, 11+lastMaxIndex, 14+lastMaxIndex, 16+lastMaxIndex, 14+lastMaxIndex, 17+lastMaxIndex)
+				lastMaxIndex += 18
 				break
 
-			case '-':
-				letterVertexLength = 4
-				l.VertexList = append(l.VertexList, -0.5*size, -0.125*size, isUI, 0.5*size, -0.125*size, isUI, 0.5*size, 0.125*size, isUI, -0.5*size, 0.125*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex)
-				lastMaxIndex += 4
+			case 'Г':
+				letterVertexLength = 7
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.5*size, 0.5*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 3+lastMaxIndex, 1+lastMaxIndex, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 1+lastMaxIndex)
+				lastMaxIndex += 7
 				break
 
-			case '+':
-				letterVertexLength = 8
-				l.VertexList = append(l.VertexList, -0.5*size, -0.125*size, isUI, 0.5*size, -0.125*size, isUI, 0.5*size, 0.125*size, isUI, -0.5*size, 0.125*size, isUI, -0.125*size, -0.5*size, isUI, 0.125*size, -0.5*size, isUI, 0.125*size, 0.5*size, isUI, -0.125*size, 0.5*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
-				lastMaxIndex += 8
+			case 'Д':
+				letterVertexLength = 18
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.75*size, -0.5*size, isUI, -0.5*size, -0.5*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.5*size, -0.5*size, isUI, 0.75*size, -0.5*size, isUI, -0.5*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.25*size, 0.5*size, isUI, 0.25*size, 0.5*size, isUI, -0.75*size, -0.25*size, isUI, 0.75*size, -0.25*size, isUI, -0.5*size, -0.25*size, isUI, -0.25*size, -0.25*size, isUI, 0.25*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 3+lastMaxIndex, 0+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 9+lastMaxIndex, 8+lastMaxIndex, 2+lastMaxIndex, 7+lastMaxIndex, 13+lastMaxIndex, 2+lastMaxIndex, 13+lastMaxIndex, 12+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 10+lastMaxIndex, 14+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 16+lastMaxIndex, 17+lastMaxIndex, 9+lastMaxIndex, 16+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 18
 				break
 
-			case '.':
-				letterVertexLength = 4
-				l.VertexList = append(l.VertexList, -0.125*size, -0.75*size, isUI, 0.125*size, -0.75*size, isUI, 0.125*size, -0.5*size, isUI, -0.125*size, -0.5*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex)
-				lastMaxIndex += 4
-				break
-
-			case ',':
-				letterVertexLength = 5
-				l.VertexList = append(l.VertexList, -0.125*size, -0.75*size, isUI, 0.125*size, -0.75*size, isUI, 0.125*size, -0.5*size, isUI, -0.125*size, -0.5*size, isUI, -0.25*size, -1*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 1+lastMaxIndex, 0+lastMaxIndex)
-				lastMaxIndex += 5
-				break
-
-			case '=':
-				letterVertexLength = 8
-				l.VertexList = append(l.VertexList, -0.5*size, 0.125*size, isUI, 0.5*size, 0.125*size, isUI, 0.5*size, 0.375*size, isUI, -0.5*size, 0.375*size, isUI, -0.5*size, -0.375*size, isUI, 0.5*size, -0.375*size, isUI, 0.5*size, -0.125*size, isUI, -0.5*size, -0.125*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex)
-				lastMaxIndex += 8
-				break
-
-			case '?':
+			case 'Е':
 				letterVertexLength = 14
-				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, -0.125*size, -0.375*size, isUI, 0.125*size, -0.5*size, isUI, 0.75*size, 0*size, isUI, 0.5*size, 0.125*size, isUI, 0.5*size, 0.5*size, isUI, 0.75*size, 0.75*size, isUI, -0.5*size, 0.75*size, isUI, -0.25*size, 0.5*size, isUI, -0.5*size, 0*size, isUI, -0.25*size, 0*size, isUI)
-				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 10+lastMaxIndex)
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.25*size, isUI, 0.25*size, -0.25*size, isUI, 0.25*size, 0*size, isUI, -0.5*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 10+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex)
 				lastMaxIndex += 14
+				break
+
+			case 'Ж':
+				letterVertexLength = 18
+				l.VertexList = append(l.VertexList, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, -0.25*size, -0.25*size, isUI, -0.25*size, 0*size, isUI, 0*size, 0*size, isUI, 0*size, -0.25*size, isUI, 0.25*size, -0.25*size, isUI, 0.25*size, 0*size, isUI, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, -0.125*size, 0.75*size, isUI, 0.125*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 4+lastMaxIndex, 5+lastMaxIndex, 11+lastMaxIndex, 4+lastMaxIndex, 11+lastMaxIndex, 8+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 12+lastMaxIndex, 6+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 13+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 0+lastMaxIndex, 8+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 8+lastMaxIndex, 13+lastMaxIndex, 9+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 17+lastMaxIndex, 14+lastMaxIndex, 17+lastMaxIndex, 16+lastMaxIndex)
+				lastMaxIndex += 18
+				break
+
+			case 'З':
+				letterVertexLength = 20
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, 0.75*size, 0.5*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI, 0.5*size, 0*size, isUI, 0*size, 0*size, isUI, 0.5*size, -0.75*size, isUI, 0.5*size, 0.5*size, isUI, -0.75*size, -0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, -0.5*size, isUI, -0.75*size, 0.25*size, isUI, -0.5*size, 0.25*size, isUI, -0.5*size, 0.5*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 12+lastMaxIndex, 5+lastMaxIndex, 13+lastMaxIndex, 3+lastMaxIndex, 15+lastMaxIndex, 16+lastMaxIndex, 3+lastMaxIndex, 16+lastMaxIndex, 14+lastMaxIndex, 17+lastMaxIndex, 18+lastMaxIndex, 19+lastMaxIndex, 17+lastMaxIndex, 19+lastMaxIndex, 4+lastMaxIndex)
+				lastMaxIndex += 20
+				break
+
+			case 'И':
+				letterVertexLength = 12
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, -0.75*size, isUI, 0.5*size, 0.125*size, isUI, 0.5*size, 0.5*size, isUI, -0.5*size, -0.375*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 12
+				break
+
+			case 'Й':
+				letterVertexLength = 16
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, -0.75*size, isUI, 0.5*size, 0.125*size, isUI, 0.5*size, 0.5*size, isUI, -0.5*size, -0.375*size, isUI, -0.25*size, 0.75*size, isUI, 0.25*size, 0.75*size, isUI, -0.25*size, 1*size, isUI, 0.25*size, 1*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 15+lastMaxIndex, 12+lastMaxIndex, 15+lastMaxIndex, 14+lastMaxIndex)
+				lastMaxIndex += 16
+				break
+
+			case 'К':
+				letterVertexLength = 10
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0.125*size, isUI, 0.125*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, 0.125*size, -1*size, isUI, 0.5*size, -1*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 9+lastMaxIndex)
+				lastMaxIndex += 10
+				break
+
+			case 'Л':
+				letterVertexLength = 12
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, 0*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.125*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 12
+				break
+
+			case 'М':
+				letterVertexLength = 12
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, 0.375*size, isUI, 0*size, 0.25*size, isUI, 0*size, -0.125*size, isUI, 0.5*size, 0.375*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 2+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 9+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 7+lastMaxIndex)
+				lastMaxIndex += 12
+				break
+
+			case 'Н':
+				letterVertexLength = 12
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI, 0.5*size, 0*size, isUI, -0.5*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 12
+				break
+
+			case 'О':
+				letterVertexLength = 12
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.5*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 2+lastMaxIndex, 1+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 12
+				break
+
+			case 'П':
+				letterVertexLength = 12
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, -0.5*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 12
+				break
+
+			case 'Р':
+				letterVertexLength = 13
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.25*size, isUI, 0.75*size, -0.25*size, isUI, 0.75*size, 0*size, isUI, -0.5*size, 0*size, isUI, 0.5*size, 0*size, isUI, 0.5*size, 0.5*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 6+lastMaxIndex, 0+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex, 11+lastMaxIndex, 5+lastMaxIndex, 12+lastMaxIndex)
+				lastMaxIndex += 13
+				break
+
+			case 'С':
+				letterVertexLength = 10
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, 0.5*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 5+lastMaxIndex)
+				lastMaxIndex += 10
+				break
+
+			case 'Т':
+				letterVertexLength = 8
+				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, 0.5*size, isUI, -0.125*size, 0.5*size, isUI, -0.75*size, 0.5*size, isUI, 0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex)
+				lastMaxIndex += 8
+				break
+
+			case 'У':
+				letterVertexLength = 14
+				l.VertexList = append(l.VertexList, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.75*size, -0.25*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0.75*size, isUI, 0.5*size, -0.25*size, isUI, 0.5*size, 0*size, isUI, -0.5*size, 0*size, isUI, -0.75*size, -1*size, isUI, 0.5*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 6+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 0+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex)
+				lastMaxIndex += 14
+				break
+
+			case 'Ф':
+				letterVertexLength = 16
+				l.VertexList = append(l.VertexList, -0.125*size, -1*size, isUI, 0.125*size, -1*size, isUI, 0.125*size, 0.875*size, isUI, -0.125*size, 0.875*size, isUI, -0.75*size, 0.375*size, isUI, 0.75*size, 0.375*size, isUI, -0.75*size, 0.625*size, isUI, 0.75*size, 0.625*size, isUI, -0.75*size, -0.5*size, isUI, 0.75*size, -0.5*size, isUI, 0.75*size, -0.25*size, isUI, -0.75*size, -0.25*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0.375*size, isUI, 0.5*size, -0.25*size, isUI, 0.5*size, 0.375*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 4+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 11+lastMaxIndex, 13+lastMaxIndex, 4+lastMaxIndex, 14+lastMaxIndex, 10+lastMaxIndex, 5+lastMaxIndex, 14+lastMaxIndex, 5+lastMaxIndex, 15+lastMaxIndex)
+				lastMaxIndex += 16
+				break
+
+			case 'Х':
+				letterVertexLength = 14
+				l.VertexList = append(l.VertexList, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, -0.25*size, -0.25*size, isUI, -0.25*size, 0*size, isUI, 0*size, 0*size, isUI, 0*size, -0.25*size, isUI, 0.25*size, -0.25*size, isUI, 0.25*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 4+lastMaxIndex, 5+lastMaxIndex, 11+lastMaxIndex, 4+lastMaxIndex, 11+lastMaxIndex, 8+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 12+lastMaxIndex, 6+lastMaxIndex, 12+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 13+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 0+lastMaxIndex, 8+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 8+lastMaxIndex, 13+lastMaxIndex, 9+lastMaxIndex)
+				lastMaxIndex += 14
+				break
+
+			case 'Ц':
+				letterVertexLength = 12
+				l.VertexList = append(l.VertexList, -0.75*size, -0.75*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, 0.75*size, -0.75*size, isUI, 0.75*size, -0.5*size, isUI, -0.75*size, -0.5*size, isUI, -0.5*size, -0.5*size, isUI, 0.5*size, -0.5*size, isUI, 1*size, -1*size, isUI, 1*size, -0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 0+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 1+lastMaxIndex, 7+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 9+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 9+lastMaxIndex, 4+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 5+lastMaxIndex, 11+lastMaxIndex, 6+lastMaxIndex)
+				lastMaxIndex += 12
+				break
+
+			case 'Ч':
+				letterVertexLength = 11
+				l.VertexList = append(l.VertexList, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.75*size, -0.25*size, isUI, -0.5*size, -0.25*size, isUI, -0.5*size, 0.75*size, isUI, 0.5*size, -0.25*size, isUI, 0.5*size, 0*size, isUI, -0.5*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 5+lastMaxIndex, 7+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 6+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex)
+				lastMaxIndex += 11
+				break
+
+			case 'Ш':
+				letterVertexLength = 14
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, 0.125*size, -0.75*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 0+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 1+lastMaxIndex, 7+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 9+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 9+lastMaxIndex, 4+lastMaxIndex, 3+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 10+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex)
+				lastMaxIndex += 14
+				break
+
+			case 'Щ':
+				letterVertexLength = 14
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.75*size, isUI, 1*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.5*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, -0.125*size, -0.75*size, isUI, 0.125*size, -0.75*size, isUI, 0.125*size, 0.75*size, isUI, -0.125*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 0+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 1+lastMaxIndex, 7+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 9+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 9+lastMaxIndex, 4+lastMaxIndex, 3+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 10+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex)
+				lastMaxIndex += 14
+				break
+
+			case 'Ы':
+				letterVertexLength = 22
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.25*size, -1*size, isUI, 0.25*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0*size, -0.75*size, isUI, 0*size, 0*size, isUI, 0.25*size, 0*size, isUI, -0.75*size, -0.25*size, isUI, 0*size, -0.25*size, isUI, -0.75*size, 0*size, isUI, -0.5*size, 0*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, -0.25*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 13+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 13+lastMaxIndex, 15+lastMaxIndex, 4+lastMaxIndex, 3+lastMaxIndex, 16+lastMaxIndex, 17+lastMaxIndex, 3+lastMaxIndex, 17+lastMaxIndex, 11+lastMaxIndex, 18+lastMaxIndex, 19+lastMaxIndex, 20+lastMaxIndex, 18+lastMaxIndex, 20+lastMaxIndex, 21+lastMaxIndex)
+				lastMaxIndex += 22
+				break
+
+			case 'Ь':
+				letterVertexLength = 18
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, 0.5*size, -0.75*size, isUI, 0.5*size, 0*size, isUI, 0.75*size, 0*size, isUI, -0.75*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI, -0.75*size, 0*size, isUI, -0.5*size, 0*size, isUI, -0.5*size, 0.5*size, isUI, -0.5*size, -0.75*size, isUI, -0.5*size, -0.25*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 2+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 9+lastMaxIndex, 11+lastMaxIndex, 9+lastMaxIndex, 13+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 13+lastMaxIndex, 15+lastMaxIndex, 4+lastMaxIndex, 3+lastMaxIndex, 16+lastMaxIndex, 17+lastMaxIndex, 3+lastMaxIndex, 17+lastMaxIndex, 11+lastMaxIndex)
+				lastMaxIndex += 18
+				break
+
+			case 'Э':
+				letterVertexLength = 14
+				l.VertexList = append(l.VertexList, -0.75*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, -0.75*size, -0.75*size, isUI, -0.75*size, 0.5*size, isUI, 0.75*size, 0.5*size, isUI, 0.75*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI, 0.5*size, 0*size, isUI, -0.5*size, 0*size, isUI, 0.5*size, -0.75*size, isUI, 0.5*size, 0.5*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 10+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 2+lastMaxIndex, 5+lastMaxIndex, 12+lastMaxIndex, 5+lastMaxIndex, 13+lastMaxIndex)
+				lastMaxIndex += 14
+				break
+
+			case 'Ю':
+				letterVertexLength = 20
+				l.VertexList = append(l.VertexList, -0.25*size, -0.75*size, isUI, 0*size, -1*size, isUI, 0*size, 0.75*size, isUI, -0.25*size, 0.5*size, isUI, 0*size, 0.5*size, isUI, 0.5*size, 0.5*size, isUI, 0.5*size, 0.75*size, isUI, 0.75*size, 0.5*size, isUI, 0.5*size, -1*size, isUI, 0.75*size, -0.75*size, isUI, 0.5*size, -0.75*size, isUI, 0*size, -0.75*size, isUI, -0.75*size, -1*size, isUI, -0.5*size, -1*size, isUI, -0.5*size, 0.75*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, -0.25*size, isUI, -0.25*size, -0.25*size, isUI, -0.25*size, 0*size, isUI, -0.5*size, 0*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 8+lastMaxIndex, 9+lastMaxIndex, 7+lastMaxIndex, 8+lastMaxIndex, 7+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 2+lastMaxIndex, 1+lastMaxIndex, 8+lastMaxIndex, 10+lastMaxIndex, 1+lastMaxIndex, 10+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex, 12+lastMaxIndex, 14+lastMaxIndex, 15+lastMaxIndex, 16+lastMaxIndex, 17+lastMaxIndex, 18+lastMaxIndex, 16+lastMaxIndex, 18+lastMaxIndex, 19+lastMaxIndex)
+				lastMaxIndex += 20
+				break
+
+			case 'Я':
+				letterVertexLength = 16
+				l.VertexList = append(l.VertexList, 0.5*size, -1*size, isUI, 0.75*size, -1*size, isUI, 0.75*size, 0.75*size, isUI, 0.5*size, 0.75*size, isUI, -0.75*size, -0.25*size, isUI, 0.5*size, -0.25*size, isUI, 0.5*size, 0*size, isUI, -0.75*size, 0*size, isUI, 0.5*size, 0.5*size, isUI, -0.75*size, 0.5*size, isUI, -0.75*size, 0.75*size, isUI, -0.5*size, 0*size, isUI, -0.5*size, 0.5*size, isUI, -0.75*size, -1*size, isUI, -0.375*size, -1*size, isUI, 0.125*size, -0.25*size, isUI)
+				l.IndexList = append(l.IndexList, 0+lastMaxIndex, 1+lastMaxIndex, 2+lastMaxIndex, 0+lastMaxIndex, 2+lastMaxIndex, 3+lastMaxIndex, 4+lastMaxIndex, 5+lastMaxIndex, 6+lastMaxIndex, 4+lastMaxIndex, 6+lastMaxIndex, 7+lastMaxIndex, 9+lastMaxIndex, 8+lastMaxIndex, 3+lastMaxIndex, 9+lastMaxIndex, 3+lastMaxIndex, 10+lastMaxIndex, 7+lastMaxIndex, 11+lastMaxIndex, 12+lastMaxIndex, 7+lastMaxIndex, 12+lastMaxIndex, 9+lastMaxIndex, 13+lastMaxIndex, 14+lastMaxIndex, 5+lastMaxIndex, 13+lastMaxIndex, 5+lastMaxIndex, 15+lastMaxIndex)
+				lastMaxIndex += 16
 				break
 			}
 

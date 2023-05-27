@@ -89,7 +89,7 @@ func (v *Vector2[T]) DirectionFromAngle(rad T) {
 	v.Y = T(math.Sin(float64(rad)))
 }
 
-func (v *Vector2[T]) ToVector3XY() Vector3[T] {
+func (v Vector2[T]) ToVector3XY() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, 0}
 }
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	gosn_driver "github.com/maldan/go-ml/db/driver/gosn"
 	"github.com/maldan/go-ml/db/mdb"
 	ml_console "github.com/maldan/go-ml/util/io/console"
@@ -38,16 +37,14 @@ type User struct {
 }
 
 func main() {
-	userDb := mdb.New[User](".", "db2", &gosn_driver.Container{})
+	userDb := mdb.New(".", "db2", User{}, &gosn_driver.Container{})
 
 	// userDb.SetBackupSchedule("../../trash", time.Second)
 	// userDb.Insert(User{Username: "lox", Password: "oglox"})
 
-	sr := userDb.FindBy(mdb.ArgsFind[User]{
-		FieldList: "Username",
-		Where: func(u *User) bool {
-			fmt.Printf("%v\n", u)
-			return u.Username == "lox"
+	sr := userDb.FindBy(mdb.ArgsFind{
+		Where: func(u any) bool {
+			return u.(User).Username == "lox"
 		},
 	})
 	ml_console.PrettyPrint(sr.Result)
