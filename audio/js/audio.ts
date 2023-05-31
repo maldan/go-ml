@@ -1,4 +1,4 @@
-export const NoteFrequency: number[] = [
+const NoteFrequency: number[] = [
   ...[
     16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14,
     30.87,
@@ -36,7 +36,7 @@ export const NoteFrequency: number[] = [
   ], // 8
 ];
 
-export class MegaAudio {
+class MegaAudio {
   static _audioContext: AudioContext;
   static _player: AudioWorkletNode;
   static _analyzer: AnalyserNode;
@@ -50,12 +50,11 @@ export class MegaAudio {
       }
     );
 
-    await this._audioContext.audioWorklet.addModule("./js/audio_worklet.js");
+    await this._audioContext.audioWorklet.addModule(
+      "./js/audio/audio_worklet.js"
+    );
 
     // Load synth
-    const synth = await fetch("./js/synth.js");
-    const synthText = await synth.text();
-
     this._player = new AudioWorkletNode(
       this._audioContext,
       "my-audio-processor"
@@ -63,7 +62,10 @@ export class MegaAudio {
     this._player.port.postMessage({
       type: "init",
       sampleRate: this._audioContext.sampleRate,
-      synthText,
+      synthText: await (await fetch("./js/audio/synth.js")).text(),
+      samplePlayerText: await (
+        await fetch("./js/audio/sample_player.js")
+      ).text(),
     });
 
     this._analyzer = this._audioContext.createAnalyser();
@@ -81,6 +83,26 @@ export class MegaAudio {
     this._player.port.postMessage({
       ...data,
       type: "setChannelData",
+    });
+  }
+
+  static async loadSample(name: string, url: string) {
+    let buffer = await (await fetch(url)).arrayBuffer();
+    const audioBuffer = await this._audioContext.decodeAudioData(buffer);
+    const float32Array = audioBuffer.getChannelData(0);
+    // console.log(float32Array);
+    this._player.port.postMessage({
+      name,
+      data: float32Array,
+      type: "loadSample",
+    });
+  }
+
+  static playSample(name: string, channel: string) {
+    this._player.port.postMessage({
+      name,
+      channel,
+      type: "playSample",
     });
   }
 }
