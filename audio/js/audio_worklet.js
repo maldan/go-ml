@@ -4,10 +4,52 @@ class NumberHelper {
   }
 }
 
+class SamplePlayer {
+  main = undefined;
+  ch = "";
+
+  constructor(main, ch) {
+    this.main = main;
+    this.ch = ch;
+  }
+
+  do() {
+    let ch = this.ch;
+
+    if (this.main.queue[ch]) {
+      let sampleName = this.main.queue[ch].sampleName;
+      let offset = this.main.queue[ch].offset;
+      let volume = this.main.queue[ch].volume;
+      let v = this.main.sampleList[sampleName][~~offset];
+      let pitch = this.main.queue[ch].pitch;
+      this.main.queue[ch].offset += pitch;
+      if (v === undefined) {
+        delete this.main.queue[ch];
+      }
+
+      return v === undefined ? 0 : v * volume;
+
+      /*outList[4].push(v === undefined ? 0 : v * volume);
+      if (v === undefined) {
+        delete this.queue["sfx0"];
+      } else {
+        this.queue["sfx0"].offset += pitch;
+      }*/
+    } else {
+      // outList[4].push(0);
+      return 0;
+    }
+  }
+}
+
 class MyAudioProcessor extends AudioWorkletProcessor {
   sex = 0;
   sampleList = {};
   queue = {};
+  sfx0 = new SamplePlayer(this, "sfx0");
+  sfx1 = new SamplePlayer(this, "sfx1");
+  sfx2 = new SamplePlayer(this, "sfx2");
+  sfx3 = new SamplePlayer(this, "sfx3");
 
   constructor() {
     super();
@@ -22,6 +64,8 @@ class MyAudioProcessor extends AudioWorkletProcessor {
       this.ch1 = new AudioChannel(e.data.sampleRate);
       this.ch2 = new AudioChannel(e.data.sampleRate);
       this.ch3 = new AudioChannel(e.data.sampleRate);
+
+      // this.sfx0 = new SamplePlayer(this, "sfx0");
 
       /* this.sfx0 = new AudioSampleChannel(e.data.sampleRate);
       this.sfx1 = new AudioSampleChannel(e.data.sampleRate);
@@ -46,8 +90,26 @@ class MyAudioProcessor extends AudioWorkletProcessor {
       this.sampleList[e.data.name] = e.data.data;
     }
     if (e.data.type === "playSample") {
-      this.queue[e.data.channel] = { offset: 0, sampleName: e.data.name };
-      // this.sampleList[e.data.name] = e.data.data;
+      // Find free channel
+      if (e.data.channel === "sfx?") {
+        for (let i = 0; i < 4; i++) {
+          if (!this.queue["sfx" + i]) {
+            e.data.channel = "sfx" + i;
+            break;
+          }
+        }
+
+        // Not found any free channel
+        if (e.data.channel === "sfx?") {
+          e.data.channel = "sfx" + ~~(Math.random() * 4);
+        }
+      }
+      this.queue[e.data.channel] = {
+        offset: 0,
+        sampleName: e.data.name,
+        pitch: e.data.pitch === undefined ? 1 : e.data.pitch,
+        volume: e.data.volume === undefined ? 1 : e.data.volume,
+      };
     }
   }
 
@@ -85,29 +147,41 @@ class MyAudioProcessor extends AudioWorkletProcessor {
       }
     }
 
+    // Init
+    for (let i = 0; i < channel.length; ++i) {
+      channel[i] = 0;
+    }
+
     // Sfx
     for (let i = 0; i < channel.length; ++i) {
+      channel[i] += this.sfx0.do();
+      channel[i] += this.sfx1.do();
+      channel[i] += this.sfx2.do();
+      channel[i] += this.sfx3.do();
+    }
+
+    /*for (let i = 0; i < channel.length; ++i) {
       if (this.queue["sfx0"]) {
         let sampleName = this.queue["sfx0"].sampleName;
         let offset = this.queue["sfx0"].offset;
-        let v = this.sampleList[sampleName][offset];
-        outList[4].push(v === undefined ? 0 : v);
+        let volume = this.queue["sfx0"].volume;
+        let v = this.sampleList[sampleName][~~offset];
+        let pitch = this.queue["sfx0"].pitch;
+
+        outList[4].push(v === undefined ? 0 : v * volume);
         if (v === undefined) {
           delete this.queue["sfx0"];
         } else {
-          this.queue["sfx0"].offset += 1;
+          this.queue["sfx0"].offset += pitch;
         }
       } else {
         outList[4].push(0);
       }
-      //outList[4].push(this.sfx0.do());
-      //outList[5].push(this.sfx1.do());
-      //outList[6].push(this.bgm.do());
-    }
+    }*/
 
     // Combine channels
     for (let i = 0; i < channel.length; ++i) {
-      channel[i] = outList[4][i];
+      // channel[i] = outList[4][i];
       /*channel[i] =
         outList[0][i] +
         outList[1][i] +

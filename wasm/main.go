@@ -204,13 +204,15 @@ func InitRender(engine *mrender.RenderEngine) {
 }
 
 func InitSound() {
-	ExportFunction("soundState", func(args []js.Value) any {
+	ExportPointer("audioCommandList", unsafe.Pointer(&maudio.CommandList))
+
+	/*ExportFunction("soundState", func(args []js.Value) any {
 		return maudio.GetState()
 	})
 	ExportFunction("soundTick", func(args []js.Value) any {
 		maudio.Tick(args[0].Int())
 		return nil
-	})
+	})*/
 }
 
 var fileMap = map[string][]byte{}

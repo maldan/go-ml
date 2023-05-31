@@ -89,20 +89,29 @@ class MegaAudio {
   static async loadSample(name: string, url: string) {
     let buffer = await (await fetch(url)).arrayBuffer();
     const audioBuffer = await this._audioContext.decodeAudioData(buffer);
-    const float32Array = audioBuffer.getChannelData(0);
-    // console.log(float32Array);
+
     this._player.port.postMessage({
       name,
-      data: float32Array,
+      data: audioBuffer.getChannelData(0),
       type: "loadSample",
     });
   }
 
-  static playSample(name: string, channel: string) {
+  static playSample(
+    name: string,
+    channel: string,
+    volume: number,
+    pitch: number
+  ) {
     this._player.port.postMessage({
       name,
       channel,
+      pitch,
+      volume,
       type: "playSample",
     });
   }
 }
+
+// @ts-ignore
+window.MegaAudio = MegaAudio;

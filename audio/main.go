@@ -1,11 +1,6 @@
 package maudio
 
-import (
-	"reflect"
-	"unsafe"
-)
-
-type AudioEffect struct {
+/*type AudioEffect struct {
 	FromF float32
 	ToF   float32
 	Time  float32
@@ -65,4 +60,22 @@ func GetState() map[string]any {
 	externalState["sampleRate"] = State.SampleRate
 
 	return externalState
+}*/
+
+type SoundCommand struct {
+	IsSet      bool
+	SampleName string
+	Channel    string
+	Volume     float32
+	Pitch      float32
+}
+
+var CommandList = [3]SoundCommand{}
+
+func PlaySfx(name string, ch string, volume float32, pitch float32) {
+	CommandList[0].IsSet = true
+	CommandList[0].SampleName = name
+	CommandList[0].Channel = ch
+	CommandList[0].Volume = volume
+	CommandList[0].Pitch = pitch
 }
