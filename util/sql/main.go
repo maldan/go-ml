@@ -3,6 +3,7 @@ package ml_sql
 import (
 	"database/sql"
 	"fmt"
+	ml_slice "github.com/maldan/go-ml/util/slice"
 	"reflect"
 	"strconv"
 	"strings"
@@ -123,7 +124,7 @@ func CreateTable[T any](db *sql.DB, name string) error {
 	return err
 }
 
-func Insert[T any](db *sql.DB, table string, value T) error {
+func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	fields := getValueFieldNames(value, true)
 	values := getValues(value)
 	valuesQ := make([]string, len(values))
@@ -145,19 +146,24 @@ func Insert[T any](db *sql.DB, table string, value T) error {
 	// Prepare
 	statement, err := db.Prepare(query)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	fmt.Printf("%v\n", query)
 	fmt.Printf("%v\n", values[0])
 
 	// Execute statement
-	_, err = statement.Exec(values...)
+	r, err := statement.Exec(values...)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	lastId, err := r.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return lastId, nil
 }
 
 func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (T, error) {
@@ -323,4 +329,33 @@ func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]
 	}
 
 	return outList, err
+}
+
+type UpdateQuery struct {
+	DB        *sql.DB
+	Table     string
+	Where     string
+	WhereArgs []any
+	Set       string
+	SetArgs   []any
+}
+
+func Update(args UpdateQuery) error {
+	query := fmt.Sprintf("UPDATE %v SET %v WHERE %v", args.Table, args.Set, args.Where)
+	fmt.Printf("%v\n", query)
+	// Prepare
+	statement, err := args.DB.Prepare(query)
+	defer statement.Close()
+	if err != nil {
+		return err
+	}
+
+	// Execute statement
+	all := ml_slice.Combine(args.SetArgs, args.WhereArgs)
+	_, err = statement.Exec(all...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

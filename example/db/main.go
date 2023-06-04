@@ -63,7 +63,17 @@ func main() {
 	})
 	fmt.Printf("%v\n", err)*/
 
-	u, err := ml_sql.SelectMany[User](db, "user", "1=1", 1)
+	u, err := ml_sql.SelectMany[User](db, "user", "1=1")
 	ml_console.PrettyPrint(u)
+	fmt.Printf("%+v\n", err)
+
+	err = ml_sql.Update(ml_sql.UpdateQuery{
+		DB:        db,
+		Table:     "user",
+		Where:     "id = ?",
+		WhereArgs: []any{2},
+		Set:       "salon_name=?",
+		SetArgs:   []any{"ubluddok"},
+	})
 	fmt.Printf("%+v\n", err)
 }
