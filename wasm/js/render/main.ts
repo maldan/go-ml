@@ -124,34 +124,43 @@ class GoRenderWasm {
       }
 
       // Check sound
-      let goshan = (window as any).go;
-      let audioCommandPtr = goshan.pointer.audioCommandList;
-      let isSet = goshan.memory.readI8(audioCommandPtr);
-      if (isSet) {
-        // Sample
-        let strPointer = goshan.memory.readU32(audioCommandPtr + 8);
-        let strLen = goshan.memory.readU32(audioCommandPtr + 8 + 8);
-        let sampleName = goshan.memory.readString(strPointer, strLen);
+      if ((window as any).MegaAudio._player) {
+        for (let i = 0; i < 4; i++) {
+          let goshan = (window as any).go;
+          let audioCommandPtr =
+            goshan.pointer.audioCommandList + i * (32 + 8 + 4 + 4);
+          let isSet = goshan.memory.readI8(audioCommandPtr);
+          if (isSet) {
+            // Sample
+            let strPointer = goshan.memory.readU32(audioCommandPtr + 8);
+            let strLen = goshan.memory.readU32(audioCommandPtr + 8 + 8);
+            let sampleName = goshan.memory.readString(strPointer, strLen);
 
-        // Channel
-        strPointer = goshan.memory.readU32(audioCommandPtr + 8 + 8 + 8);
-        strLen = goshan.memory.readU32(audioCommandPtr + 8 + 8 + 8 + 8);
-        let channelName = goshan.memory.readString(strPointer, strLen);
+            // Channel
+            strPointer = goshan.memory.readU32(audioCommandPtr + 8 + 8 + 8);
+            strLen = goshan.memory.readU32(audioCommandPtr + 8 + 8 + 8 + 8);
+            let channelName = goshan.memory.readString(strPointer, strLen);
 
-        let volume = goshan.memory.readF32(audioCommandPtr + 8 + 8 + 8 + 8 + 8);
-        let pitch = goshan.memory.readF32(
-          audioCommandPtr + 8 + 8 + 8 + 8 + 8 + 4
-        );
+            let volume = goshan.memory.readF32(
+              audioCommandPtr + 8 + 8 + 8 + 8 + 8
+            );
+            let pitch = goshan.memory.readF32(
+              audioCommandPtr + 16 + 16 + 8 + 4
+            );
 
-        (window as any).MegaAudio.playSample(
-          sampleName,
-          channelName,
-          volume,
-          pitch
-        );
-      }
-      if (isSet) {
-        goshan.memory.writeI8(audioCommandPtr, 0);
+            // console.log(sampleName);
+
+            (window as any).MegaAudio.playSample(
+              sampleName,
+              channelName,
+              volume,
+              pitch
+            );
+          }
+          if (isSet) {
+            goshan.memory.writeI8(audioCommandPtr, 0);
+          }
+        }
       }
 
       // After frame

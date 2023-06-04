@@ -118,6 +118,14 @@ func (r Rectangle[T]) Sub(v mmath_la.Vector2[T]) Rectangle[T] {
 	return r.SubXY(v.X, v.Y)
 }
 
+func (r Rectangle[T]) MulXY(x T, y T) Rectangle[T] {
+	r.MinX *= x
+	r.MaxX *= x
+	r.MinY *= y
+	r.MaxY *= y
+	return r
+}
+
 func (r Rectangle[T]) AddXY(x T, y T) Rectangle[T] {
 	r.MinX += x
 	r.MaxX += x

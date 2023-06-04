@@ -1,14 +1,20 @@
 attribute vec3 aVertex;
 attribute vec4 aColor;
-uniform mat4 uProjectionMatrix;
+
+uniform mat4 uPerspectiveCamera;
+uniform mat4 uUiCamera;
 
 varying vec4 vColor;
 
-// LIB
-
 void main() {
     vColor = aColor;
-    gl_Position = uProjectionMatrix * vec4(aVertex, 1.0);
+
+    // Set position
+    if (aVertex.z >= 1000000.0) {
+        gl_Position = uUiCamera * vec4(aVertex.xy, 0.0, 1.0);
+    } else {
+        gl_Position = uPerspectiveCamera * vec4(aVertex, 1.0);
+    }
 }
 
 // Fragment

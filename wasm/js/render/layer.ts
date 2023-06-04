@@ -204,7 +204,7 @@ class GoRenderLineLayer extends GoRenderLayer {
     ["aVertex", "aColor"].forEach((x) => {
       this.attributeList[x] = this._gl.getAttribLocation(this.shader, x);
     });
-    ["uProjectionMatrix"].forEach((x) => {
+    ["uPerspectiveCamera", "uUiCamera"].forEach((x) => {
       this.uniformList[x] = this._gl.getUniformLocation(this.shader, x);
     });
   }
@@ -226,13 +226,17 @@ class GoRenderLineLayer extends GoRenderLayer {
     });
 
     // Get camera matrix
-    state["projectionMatrixPointer"] = (window as any).go.pointer[
+    state["perspectiveCameraPointer"] = (window as any).go.pointer[
       `renderCamera_matrix`
+    ];
+    state["uiCameraPointer"] = (window as any).go.pointer[
+      `renderUICamera_matrix`
     ];
 
     this.setDataArray("vertex", state, float32Array);
     this.setDataArray("color", state, float32Array);
-    this.setDataArray("projectionMatrix", state, float32Array, 16);
+    this.setDataArray("perspectiveCamera", state, float32Array, 16);
+    this.setDataArray("uiCamera", state, float32Array, 16);
   }
 
   draw() {
@@ -248,7 +252,8 @@ class GoRenderLineLayer extends GoRenderLayer {
     this.enableAttribute("color", 4);
 
     // Set projection
-    this.setUniform("projectionMatrix");
+    this.setUniform("perspectiveCamera");
+    this.setUniform("uiCamera");
 
     this._gl.enable(this._gl.DEPTH_TEST);
     this._gl.drawArrays(this._gl.LINES, 0, this.dataList["vertex"].length / 3);

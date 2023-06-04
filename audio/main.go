@@ -70,12 +70,17 @@ type SoundCommand struct {
 	Pitch      float32
 }
 
-var CommandList = [3]SoundCommand{}
+var strobe = 0
+var CommandList = [4]SoundCommand{}
 
 func PlaySfx(name string, ch string, volume float32, pitch float32) {
-	CommandList[0].IsSet = true
-	CommandList[0].SampleName = name
-	CommandList[0].Channel = ch
-	CommandList[0].Volume = volume
-	CommandList[0].Pitch = pitch
+	CommandList[strobe].IsSet = true
+	CommandList[strobe].SampleName = name
+	CommandList[strobe].Channel = ch
+	CommandList[strobe].Volume = volume
+	CommandList[strobe].Pitch = pitch
+	strobe += 1
+	if strobe >= len(CommandList)-1 {
+		strobe = 0
+	}
 }

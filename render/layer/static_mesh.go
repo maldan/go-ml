@@ -1,7 +1,9 @@
 package mrender_layer
 
 import (
-	mr_mesh "github.com/maldan/go-ml/render/mesh"
+	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
+	mrender_mesh "github.com/maldan/go-ml/render/mesh"
+	ml_color "github.com/maldan/go-ml/util/media/color"
 	"reflect"
 	"unsafe"
 )
@@ -20,10 +22,59 @@ type StaticMeshLayer struct {
 
 	IsChanged bool
 
-	MeshList []mr_mesh.Mesh
+	MeshList []mrender_mesh.Mesh
 	//Camera mr_camera.PerspectiveCamera
 
 	state map[string]any
+}
+
+type StatisMeshArgs struct {
+	Mesh     mrender_mesh.Mesh
+	Position mmath_la.Vector3[float32]
+	Rotation mmath_la.Vector3[float32]
+	UvOffset mmath_la.Vector2[float32]
+}
+
+func (l *StaticMeshLayer) Add(args StatisMeshArgs) *mrender_mesh.Mesh {
+	if args.Mesh.Normal == nil {
+		for i := 0; i < len(args.Mesh.Vertices); i++ {
+			args.Mesh.Normal = append(args.Mesh.Normal, mmath_la.Vector3[float32]{0, 0, 0})
+		}
+	}
+	if args.Mesh.UV == nil {
+		for i := 0; i < len(args.Mesh.Vertices); i++ {
+			args.Mesh.UV = append(args.Mesh.UV, mmath_la.Vector2[float32]{0, 0})
+		}
+	}
+	if args.Mesh.Color == nil {
+		for i := 0; i < len(args.Mesh.Vertices); i++ {
+			args.Mesh.Color = append(args.Mesh.Color, ml_color.ColorRGBA[float32]{1, 1, 1, 1})
+		}
+	}
+
+	// Create copy of mesh
+	copyMesh := mrender_mesh.Mesh{}
+	copyMesh.Vertices = make([]mmath_la.Vector3[float32], len(args.Mesh.Vertices))
+	copyMesh.UV = make([]mmath_la.Vector2[float32], len(args.Mesh.UV))
+	copyMesh.Normal = make([]mmath_la.Vector3[float32], len(args.Mesh.Normal))
+	copyMesh.Color = make([]ml_color.ColorRGBA[float32], len(args.Mesh.Color))
+	copyMesh.Indices = make([]uint16, len(args.Mesh.Indices))
+
+	// Copy vertices
+	copy(copyMesh.Vertices, args.Mesh.Vertices)
+	copy(copyMesh.Normal, args.Mesh.Normal)
+	copy(copyMesh.UV, args.Mesh.UV)
+	copy(copyMesh.Color, args.Mesh.Color)
+	copy(copyMesh.Indices, args.Mesh.Indices)
+
+	// Apply matrix
+	copyMesh.RotateY(args.Rotation.Y)
+	copyMesh.SetPosition(args.Position)
+	copyMesh.OffsetUv(args.UvOffset)
+
+	l.MeshList = append(l.MeshList, copyMesh)
+	l.IsChanged = true
+	return &l.MeshList[len(l.MeshList)-1]
 }
 
 func (l *StaticMeshLayer) Init() {
@@ -32,7 +83,7 @@ func (l *StaticMeshLayer) Init() {
 	l.UvList = make([]float32, 0, 1024)
 	l.ColorList = make([]float32, 0, 1024)
 
-	l.MeshList = make([]mr_mesh.Mesh, 0, 128)
+	l.MeshList = make([]mrender_mesh.Mesh, 0, 128)
 	l.IndexList = make([]uint16, 1024)
 }
 

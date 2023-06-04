@@ -31,15 +31,17 @@ type RenderEngine struct {
 
 	ScreenSize mmath_la.Vector2[float32]
 
-	Camera   mr_camera.PerspectiveCamera
-	UICamera mr_camera.OrthographicCamera
-	Light    RenderLight
-
-	State RenderState
+	Camera      mr_camera.PerspectiveCamera
+	UICamera    mr_camera.OrthographicCamera
+	Light       RenderLight
+	Scissors    mmath_geom.Rectangle[float32]
+	UseScissors bool
+	State       RenderState
 }
 
 var State RenderEngine = RenderEngine{}
 
+//func AddStaticMesh(mesh mrender_mesh.Mesh, position mmath_la.Vector3[float32], rotation mmath_la.Vector3[float32]) *mrender_mesh.Mesh {
 func AddStaticMesh(mesh mrender_mesh.Mesh, position mmath_la.Vector3[float32], rotation mmath_la.Vector3[float32]) *mrender_mesh.Mesh {
 	if mesh.Normal == nil {
 		for i := 0; i < len(mesh.Vertices); i++ {
@@ -161,23 +163,79 @@ func Init() {
 	State.UICamera.ApplyMatrix()
 }
 
-func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGBA[float32]) {
+func DrawLine(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGBA[float32], isUi bool) {
+	if isUi && State.UseScissors {
+		isOutFX := false
+		isOutFY := false
+		isOutTX := false
+		isOutTY := false
+
+		if from.X < State.Scissors.MinX {
+			from.X = State.Scissors.MinX
+			isOutFX = true
+		}
+		if from.X > State.Scissors.MaxX {
+			from.X = State.Scissors.MaxX
+			isOutFX = true
+		}
+		if from.Y < State.Scissors.MinY {
+			from.Y = State.Scissors.MinY
+			isOutFY = true
+		}
+		if from.Y > State.Scissors.MaxY {
+			from.Y = State.Scissors.MaxY
+			isOutFY = true
+		}
+
+		if to.X < State.Scissors.MinX {
+			to.X = State.Scissors.MinX
+			isOutTX = true
+		}
+		if to.X > State.Scissors.MaxX {
+			to.X = State.Scissors.MaxX
+			isOutTX = true
+		}
+		if to.Y < State.Scissors.MinY {
+			to.Y = State.Scissors.MinY
+			isOutTY = true
+		}
+		if to.Y > State.Scissors.MaxY {
+			to.Y = State.Scissors.MaxY
+			isOutTY = true
+		}
+
+		if isOutFX && isOutTX && isOutFY && isOutTY {
+			return
+		}
+	}
+
 	State.Line.LineList = append(State.Line.LineList, mrender_mesh.Line{
 		From:  from,
 		To:    to,
 		Color: color,
+		IsUi:  isUi,
 	})
 }
 
-func DrawRectangle2(r mmath_geom.Rectangle[float32], color ml_color.ColorRGBA[float32]) {
+func EnableScissors(r mmath_geom.Rectangle[float32]) {
+	State.Scissors = r
+	State.UseScissors = true
+}
+
+func DisableScissors() {
+	State.UseScissors = false
+}
+
+func DrawRectangle2(r mmath_geom.Rectangle[float32], color ml_color.ColorRGBA[float32], isUi bool) {
 	DrawRectangle(
 		mmath_la.Vector3[float32]{r.MinX, r.MinY, 0},
 		mmath_la.Vector3[float32]{r.MaxX, r.MaxY, 0},
 		color,
+		isUi,
 	)
 }
 
-func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGBA[float32]) {
+func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32], color ml_color.ColorRGBA[float32], isUi bool) {
 	tFrom := from
 	tTo := to
 	tFrom.Z = to.Z
@@ -185,12 +243,12 @@ func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32],
 	// Top line
 	tFrom.Y = from.Y
 	tTo.Y = from.Y
-	DrawLine(tFrom, tTo, color)
+	DrawLine(tFrom, tTo, color, isUi)
 
 	// Bottom line
 	tFrom.Y = to.Y
 	tTo.Y = to.Y
-	DrawLine(tFrom, tTo, color)
+	DrawLine(tFrom, tTo, color, isUi)
 
 	tFrom = from
 	tTo = to
@@ -198,15 +256,15 @@ func DrawRectangle(from mmath_la.Vector3[float32], to mmath_la.Vector3[float32],
 	// Left line
 	tFrom.X = from.X
 	tTo.X = from.X
-	DrawLine(tFrom, tTo, color)
+	DrawLine(tFrom, tTo, color, isUi)
 
 	// To line
 	tFrom.X = to.X
 	tTo.X = to.X
-	DrawLine(tFrom, tTo, color)
+	DrawLine(tFrom, tTo, color, isUi)
 }
 
-func DrawCuboid(cuboid mmath_geom.Cuboid[float32], color ml_color.ColorRGBA[float32]) {
+func DrawCuboid(cuboid mmath_geom.Cuboid[float32], color ml_color.ColorRGBA[float32], isUi bool) {
 	from := mmath_la.Vector3[float32]{
 		cuboid.MinX, cuboid.MinY, cuboid.MinZ,
 	}
@@ -217,36 +275,36 @@ func DrawCuboid(cuboid mmath_geom.Cuboid[float32], color ml_color.ColorRGBA[floa
 	f1 := from
 	t1 := to
 	f1.Z = t1.Z
-	DrawRectangle(f1, t1, color)
+	DrawRectangle(f1, t1, color, isUi)
 
 	f2 := from
 	t2 := to
 	t2.Z = f2.Z
-	DrawRectangle(f2, t2, color)
+	DrawRectangle(f2, t2, color, isUi)
 
 	f := from
 	t := to
 	t.X = f.X
 	t.Y = f.Y
-	DrawLine(f, t, color)
+	DrawLine(f, t, color, isUi)
 
 	f = from
 	t = to
 	f.X = to.X
 	t.Y = from.Y
-	DrawLine(f, t, color)
+	DrawLine(f, t, color, isUi)
 
 	f = from
 	t = to
 	t.X = f.X
 	f.Y = t.Y
-	DrawLine(f, t, color)
+	DrawLine(f, t, color, isUi)
 
 	f = from
 	t = to
 	f.X = to.X
 	f.Y = t.Y
-	DrawLine(f, t, color)
+	DrawLine(f, t, color, isUi)
 }
 
 func DrawPoint(to mmath_la.Vector3[float32], size float32, color ml_color.ColorRGBA[float32]) {
@@ -384,6 +442,7 @@ func DrawMeshNormals(instance *mrender_mesh.MeshInstance) {
 			instance.Position.Add(a),
 			instance.Position.Add(a).Add(an),
 			ml_color.ColorRGBA[float32]{1, 0, 0, 1},
+			false,
 		)
 
 		a = mesh.Vertices[mesh.Indices[i+1]]
@@ -392,6 +451,7 @@ func DrawMeshNormals(instance *mrender_mesh.MeshInstance) {
 			instance.Position.Add(a),
 			instance.Position.Add(a).Add(an),
 			ml_color.ColorRGBA[float32]{0, 1, 0, 1},
+			false,
 		)
 
 		a = mesh.Vertices[mesh.Indices[i+2]]
@@ -400,6 +460,7 @@ func DrawMeshNormals(instance *mrender_mesh.MeshInstance) {
 			instance.Position.Add(a),
 			instance.Position.Add(a).Add(an),
 			ml_color.ColorRGBA[float32]{0, 0, 1, 1},
+			false,
 		)
 	}
 }

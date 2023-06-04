@@ -97,6 +97,13 @@ class MegaAudio {
     });
   }
 
+  static setMasterVolume(volume: number) {
+    this._player.port.postMessage({
+      volume,
+      type: "setMasterVolume",
+    });
+  }
+
   static playSample(
     name: string,
     channel: string,

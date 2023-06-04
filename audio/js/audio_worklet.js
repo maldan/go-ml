@@ -7,6 +7,7 @@ class NumberHelper {
 class SamplePlayer {
   main = undefined;
   ch = "";
+  loop = false;
 
   constructor(main, ch) {
     this.main = main;
@@ -18,13 +19,20 @@ class SamplePlayer {
 
     if (this.main.queue[ch]) {
       let sampleName = this.main.queue[ch].sampleName;
+      if (!this.main.sampleList[sampleName]) return 0;
+
       let offset = this.main.queue[ch].offset;
       let volume = this.main.queue[ch].volume;
       let v = this.main.sampleList[sampleName][~~offset];
       let pitch = this.main.queue[ch].pitch;
       this.main.queue[ch].offset += pitch;
+
       if (v === undefined) {
-        delete this.main.queue[ch];
+        if (this.loop) {
+          this.main.queue[ch].offset = 0;
+        } else {
+          delete this.main.queue[ch];
+        }
       }
 
       return v === undefined ? 0 : v * volume;
@@ -50,11 +58,14 @@ class MyAudioProcessor extends AudioWorkletProcessor {
   sfx1 = new SamplePlayer(this, "sfx1");
   sfx2 = new SamplePlayer(this, "sfx2");
   sfx3 = new SamplePlayer(this, "sfx3");
+  bgm = new SamplePlayer(this, "bgm");
+  masterVolume = 1;
 
   constructor() {
     super();
 
     this.port.onmessage = this.onmessage.bind(this);
+    this.bgm.loop = true;
   }
 
   async onmessage(e) {
@@ -88,6 +99,9 @@ class MyAudioProcessor extends AudioWorkletProcessor {
     }
     if (e.data.type === "loadSample") {
       this.sampleList[e.data.name] = e.data.data;
+    }
+    if (e.data.type === "setMasterVolume") {
+      this.masterVolume = e.data.volume;
     }
     if (e.data.type === "playSample") {
       // Find free channel
@@ -158,6 +172,8 @@ class MyAudioProcessor extends AudioWorkletProcessor {
       channel[i] += this.sfx1.do();
       channel[i] += this.sfx2.do();
       channel[i] += this.sfx3.do();
+      channel[i] += this.bgm.do();
+      channel[i] *= this.masterVolume;
     }
 
     /*for (let i = 0; i < channel.length; ++i) {

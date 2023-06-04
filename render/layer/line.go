@@ -30,10 +30,17 @@ func (l *LineLayer) Render() {
 	for i := 0; i < len(l.LineList); i++ {
 		line := l.LineList[i]
 
-		l.VertexList = append(l.VertexList,
-			line.From.X, line.From.Y, line.From.Z,
-			line.To.X, line.To.Y, line.To.Z,
-		)
+		if line.IsUi {
+			l.VertexList = append(l.VertexList,
+				line.From.X, line.From.Y, line.From.Z+1_000_000,
+				line.To.X, line.To.Y, line.To.Z+1_000_000,
+			)
+		} else {
+			l.VertexList = append(l.VertexList,
+				line.From.X, line.From.Y, line.From.Z,
+				line.To.X, line.To.Y, line.To.Z,
+			)
+		}
 
 		l.ColorList = append(l.ColorList,
 			line.Color.R, line.Color.G, line.Color.B, line.Color.A,

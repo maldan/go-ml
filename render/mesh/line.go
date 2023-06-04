@@ -9,4 +9,5 @@ type Line struct {
 	From  mmath_la.Vector3[float32]
 	To    mmath_la.Vector3[float32]
 	Color ml_color.ColorRGBA[float32]
+	IsUi  bool
 }
