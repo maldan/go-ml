@@ -109,6 +109,7 @@ func AllocateMesh(mesh mrender_mesh.Mesh) *mrender_mesh.Mesh {
 		}
 	}
 
+	// mesh.Color = ml_color.ColorRGBA[float32]{1, 1, 1, 1}
 	State.Main.AllocatedMesh = append(State.Main.AllocatedMesh, mesh)
 	return &State.Main.AllocatedMesh[len(State.Main.AllocatedMesh)-1]
 }

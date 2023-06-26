@@ -72,12 +72,26 @@ type SoundCommand struct {
 
 var strobe = 0
 var CommandList = [4]SoundCommand{}
+var SfxVolume = float32(1.0)
+var BgmVolume = float32(1.0)
 
 func PlaySfx(name string, ch string, volume float32, pitch float32) {
 	CommandList[strobe].IsSet = true
 	CommandList[strobe].SampleName = name
 	CommandList[strobe].Channel = ch
-	CommandList[strobe].Volume = volume
+	CommandList[strobe].Volume = volume * SfxVolume
+	CommandList[strobe].Pitch = pitch
+	strobe += 1
+	if strobe >= len(CommandList)-1 {
+		strobe = 0
+	}
+}
+
+func PlayBGM(name string, ch string, volume float32, pitch float32) {
+	CommandList[strobe].IsSet = true
+	CommandList[strobe].SampleName = name
+	CommandList[strobe].Channel = ch
+	CommandList[strobe].Volume = volume * BgmVolume
 	CommandList[strobe].Pitch = pitch
 	strobe += 1
 	if strobe >= len(CommandList)-1 {

@@ -20,16 +20,18 @@ class GoMouse {
         py /= fy;
       }
 
-      window.go.memoryOperation.push({
-        offset: window.go.pointer.mousePosition,
-        value: px,
-        type: "float32",
-      });
-      window.go.memoryOperation.push({
-        offset: window.go.pointer.mousePosition + 4,
-        value: -py,
-        type: "float32",
-      });
+      if (window.go.memoryOperation) {
+        window.go.memoryOperation.push({
+          offset: window.go.pointer.mousePosition,
+          value: px,
+          type: "float32",
+        });
+        window.go.memoryOperation.push({
+          offset: window.go.pointer.mousePosition + 4,
+          value: -py,
+          type: "float32",
+        });
+      }
     });
 
     document.addEventListener("mousedown", (e: MouseEvent) => {

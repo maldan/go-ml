@@ -31,7 +31,15 @@ func (v *Vector3[T]) Clone() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, v.Z}
 }
 
-func (v *Vector3[T]) Length() T {
+func (v Vector3[T]) Invert() Vector3[T] {
+	return Vector3[T]{
+		X: -v.X,
+		Y: -v.Y,
+		Z: -v.Z,
+	}
+}
+
+func (v Vector3[T]) Length() T {
 	ax := float64(v.X)
 	ay := float64(v.Y)
 	az := float64(v.Z)

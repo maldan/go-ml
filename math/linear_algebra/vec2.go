@@ -23,6 +23,12 @@ func (v Vector2[T]) Sub(v2 Vector2[T]) Vector2[T] {
 	return v
 }
 
+func (v Vector2[T]) SubXY(x T, y T) Vector2[T] {
+	v.X -= x
+	v.Y -= y
+	return v
+}
+
 func (v *Vector2[T]) Length() T {
 	ax := float64(v.X)
 	ay := float64(v.Y)
@@ -73,7 +79,7 @@ func (v *Vector2[T]) Clone() Vector2[T] {
 	return Vector2[T]{v.X, v.Y}
 }
 
-func (v *Vector2[T]) DistanceTo(to Vector2[T]) T {
+func (v Vector2[T]) DistanceTo(to Vector2[T]) T {
 	a := float64(v.X - to.X)
 	b := float64(v.Y - to.Y)
 

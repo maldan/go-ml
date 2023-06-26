@@ -5,6 +5,20 @@ import (
 	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 )
 
+func FromBytes[T any](str []byte) (T, error) {
+	outStruct := new(T)
+
+	// Parse
+	err := json.Unmarshal(str, outStruct)
+	return *outStruct, err
+}
+
+func ToBytes(v any) ([]byte, error) {
+	// Parse
+	bytes, err := json.Marshal(v)
+	return bytes, err
+}
+
 func FromFile[T any](path string) (T, error) {
 	outStruct := new(T)
 

@@ -37,7 +37,7 @@ func virtualCall(fn reflect.Method, args ...any) reflect.Value {
 	return reflect.ValueOf("")
 }
 
-func callMethod(method reflect.Method, controller any, params map[string]any) reflect.Value {
+func callMethod(method reflect.Method, context *Context, controller any, params map[string]any) reflect.Value {
 	functionType := reflect.TypeOf(method.Func.Interface())
 
 	// Has 0 arg
@@ -85,7 +85,7 @@ func callMethod(method reflect.Method, controller any, params map[string]any) re
 
 		// Is struct
 		if argType.Kind() == reflect.Struct {
-			return virtualCall(method, controller, &Context{}, argValue.Elem().Interface())
+			return virtualCall(method, controller, context, argValue.Elem().Interface())
 		} else {
 			panic("Argument must be struct type")
 		}
@@ -206,8 +206,19 @@ func (a API) Handle(args *Args) {
 		})
 	}
 
+	// Get client ip
+	remoteIp := ""
+	if len(args.Request.Header["X-Forwarded-For"]) > 0 {
+		remoteIp = args.Request.Header["X-Forwarded-For"][0]
+	}
+
 	// Call method
-	reflectValue := callMethod(method.(reflect.Method), controller, params)
+	reflectValue := callMethod(method.(reflect.Method), &Context{
+		AccessToken: authorization,
+		Response:    args.Response,
+		Request:     args.Request,
+		RemoteIP:    remoteIp,
+	}, controller, params)
 	value := reflectValue.Interface()
 
 	switch value.(type) {

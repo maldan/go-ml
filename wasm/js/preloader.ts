@@ -28,8 +28,16 @@ class Preloader {
         Preloader.state.loadedFiles += 1;
       };
       xmlHTTP.onprogress = function (pr) {
+        // console.log(pr);
         if (!Preloader.state.files[url]) {
-          Preloader.state.files[url] = { total: pr.total, loaded: pr.loaded };
+          const contentLength = Number.parseInt(
+            xmlHTTP.getResponseHeader("Content-Length") || "0"
+          );
+          console.log(contentLength);
+          Preloader.state.files[url] = {
+            total: pr.total || contentLength,
+            loaded: pr.loaded,
+          };
         } else {
           Preloader.state.files[url].loaded = pr.loaded;
         }
@@ -93,7 +101,10 @@ class Preloader {
         totalSize += Preloader.state.files[key].total;
         if (loadedSize >= totalSize) loaded += 1;
       }
-      const percentage = loadedSize / totalSize;
+      let percentage = loadedSize / totalSize;
+      if (percentage > 1.0) {
+        percentage = 1.0;
+      }
 
       out.innerHTML = `
           <div style="width: ${

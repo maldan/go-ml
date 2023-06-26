@@ -14,8 +14,10 @@ type Text struct {
 	Position         mmath_la.Vector3[float32]
 	Rotation         mmath_la.Vector3[float32]
 	NewLineDirection mmath_la.Vector3[float32]
+	NewLineChars     string
 	Color            ml_color.ColorRGBA[float32]
 	IsUI             bool
+	MaxWidth         int
 }
 
 /*type TextFont struct {
@@ -43,9 +45,11 @@ type TextDrawArgs struct {
 	Rotation         mmath_la.Vector3[float32]
 	Size             float32
 	NewLineDirection mmath_la.Vector3[float32]
+	NewLineChars     string
 	PivotOffset      mmath_la.Vector2[float32]
 	Color            ml_color.ColorRGBA[float32]
 	IsUI             bool
+	MaxWidth         int
 }
 
 func (l *TextLayer) Draw(args TextDrawArgs) {
@@ -56,8 +60,10 @@ func (l *TextLayer) Draw(args TextDrawArgs) {
 		Position:         args.Position,
 		Rotation:         args.Rotation,
 		NewLineDirection: args.NewLineDirection,
+		NewLineChars:     args.NewLineChars,
 		Color:            args.Color,
 		IsUI:             args.IsUI,
+		MaxWidth:         args.MaxWidth,
 	})
 }
 
@@ -88,13 +94,6 @@ func (l *TextLayer) Render() {
 
 		textOffset := mmath_la.Vector3[float32]{}
 		for _, ch := range text.Content {
-			if ch == '\n' {
-				textOffset.X = 0
-				s := text.NewLineDirection.Scale(text.Size * 2)
-				textOffset = textOffset.Add(s)
-				continue
-			}
-
 			letter := ch
 			size := text.Size
 			isUI := float32(0)
@@ -689,6 +688,24 @@ func (l *TextLayer) Render() {
 			lastMaxIndex += 4*/
 
 			textOffset.X += (text.Size * 2)
+
+			// New line
+			if text.MaxWidth > 0 && int(textOffset.X) > text.MaxWidth {
+				textOffset.X = 0
+				s := text.NewLineDirection.Scale(text.Size * 2)
+				textOffset = textOffset.Add(s)
+				continue
+			}
+
+			// New line
+			for _, newLineChar := range text.NewLineChars {
+				if ch == newLineChar {
+					textOffset.X = 0
+					s := text.NewLineDirection.Scale(text.Size * 2)
+					textOffset = textOffset.Add(s)
+					break
+				}
+			}
 		}
 	}
 

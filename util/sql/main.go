@@ -53,6 +53,9 @@ func getValueFieldNames[T any](v T, useQuotes bool) []string {
 		fieldName := typeOf.Field(i).Name
 		if typeOf.Field(i).Tag.Get("json") != "" {
 			fieldName = typeOf.Field(i).Tag.Get("json")
+			if fieldName == "-" {
+				continue
+			}
 		}
 		if useQuotes {
 			out = append(out, "`"+fieldName+"`")
@@ -65,11 +68,20 @@ func getValueFieldNames[T any](v T, useQuotes bool) []string {
 }
 
 func getValues[T any](v T) []any {
-	typeOf := reflect.ValueOf(v)
+	typeOf := reflect.TypeOf(v)
+	valueOf := reflect.ValueOf(v)
 	out := make([]any, 0)
 
-	for i := 0; i < typeOf.NumField(); i++ {
-		fieldValue := typeOf.Field(i).Interface()
+	for i := 0; i < valueOf.NumField(); i++ {
+		// Check name
+		if typeOf.Field(i).Tag.Get("json") != "" {
+			fieldName := typeOf.Field(i).Tag.Get("json")
+			if fieldName == "-" {
+				continue
+			}
+		}
+
+		fieldValue := valueOf.Field(i).Interface()
 		out = append(out, fieldValue)
 	}
 
@@ -100,6 +112,9 @@ func CreateTable[T any](db *sql.DB, name string) error {
 
 		if typeOf.Field(i).Tag.Get("json") != "" {
 			fieldName = typeOf.Field(i).Tag.Get("json")
+			if fieldName == "-" {
+				continue
+			}
 		}
 
 		out += fmt.Sprintf("\t\t`%v` %v %v", fieldName, fieldType, opts)
@@ -166,7 +181,7 @@ func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	return lastId, nil
 }
 
-func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (T, error) {
+func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (*T, error) {
 	out := *new(T)
 	outType := reflect.TypeOf(&out).Elem()
 
@@ -183,22 +198,28 @@ func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (T, 
 	statement, err := db.Prepare(query)
 	defer statement.Close()
 	if err != nil {
-		return out, err
+		return nil, err
 	}
 
 	// Execute statement
 	rows, err := statement.Query(values...)
 	defer rows.Close()
 	if err != nil {
-		return out, err
+		return nil, err
 	}
 
 	// Scan rows
+	found := false
 	for rows.Next() {
 		err2 := rows.Scan(destForScan...)
 		if err2 != nil {
-			return out, err2
+			return nil, err2
 		}
+		found = true
+	}
+
+	if !found {
+		return nil, nil
 	}
 
 	// Copy result
@@ -237,6 +258,12 @@ func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (T, 
 			t, err2 := time.Parse("2006-01-02T15:04:05.999999-07:00", string(rawResult[i]))
 			if err2 != nil {
 				fmt.Printf("%v\n", err2)
+				t2, err3 := time.Parse("2006-01-02T15:04:05Z", string(rawResult[i]))
+				if err3 != nil {
+					fmt.Printf("%v\n", err3)
+				} else {
+					t = t2
+				}
 			}
 
 			ptr := unsafe.Add(unsafe.Pointer(&out), outType.Field(i).Offset)
@@ -244,7 +271,7 @@ func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (T, 
 		}
 	}
 
-	return out, err
+	return &out, err
 }
 
 func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]T, error) {
@@ -318,6 +345,12 @@ func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]
 				t, err2 := time.Parse("2006-01-02T15:04:05.999999-07:00", string(rawResult[i]))
 				if err2 != nil {
 					fmt.Printf("%v\n", err2)
+					t2, err3 := time.Parse("2006-01-02T15:04:05Z", string(rawResult[i]))
+					if err3 != nil {
+						fmt.Printf("%v\n", err3)
+					} else {
+						t = t2
+					}
 				}
 
 				ptr := unsafe.Add(unsafe.Pointer(&out), outType.Field(i).Offset)
@@ -329,6 +362,41 @@ func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]
 	}
 
 	return outList, err
+}
+
+func Count(db *sql.DB, from string, where string, values ...any) (int, error) {
+	query := fmt.Sprintf("SELECT COUNT(*) FROM %v WHERE %v LIMIT 1", from, where)
+	count := 0
+
+	// Prepare
+	statement, err := db.Prepare(query)
+	defer statement.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	// Execute statement
+	rows, err := statement.Query(values...)
+	defer rows.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	// Scan rows
+	found := false
+	for rows.Next() {
+		err2 := rows.Scan(&count)
+		if err2 != nil {
+			return 0, err2
+		}
+		found = true
+	}
+
+	if !found {
+		return 0, nil
+	}
+
+	return count, err
 }
 
 type UpdateQuery struct {

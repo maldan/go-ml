@@ -48,7 +48,8 @@ type RouteHandler struct {
 
 type Context struct {
 	AccessToken string
-	Headers     map[string]string
-	Response    http.ResponseWriter
-	Request     *http.Request
+	// Headers     map[string]string
+	Response http.ResponseWriter
+	Request  *http.Request
+	RemoteIP string
 }
