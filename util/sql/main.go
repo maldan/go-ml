@@ -99,8 +99,13 @@ func CreateTable[T any](db *sql.DB, name string) error {
 		opts := ""
 
 		if typeOf.Field(i).Name == "Id" {
-			fieldType = "INTEGER"
-			opts += "PRIMARY KEY AUTOINCREMENT "
+			if typeOf.Field(i).Type.Kind() == reflect.String {
+				fieldType = "TEXT"
+				opts += "PRIMARY KEY "
+			} else {
+				fieldType = "INTEGER"
+				opts += "PRIMARY KEY AUTOINCREMENT "
+			}
 		} else {
 			if typeOf.Field(i).Type.Name() == "string" {
 				opts += "DEFAULT \"\" "
@@ -399,13 +404,19 @@ func Count(db *sql.DB, from string, where string, values ...any) (int, error) {
 	return count, err
 }
 
-type UpdateQuery struct {
-	DB        *sql.DB
-	Table     string
-	Where     string
-	WhereArgs []any
-	Set       string
-	SetArgs   []any
+func Delete(args DeleteQuery) error {
+	query := fmt.Sprintf("DELETE FROM %v WHERE %v", args.Table, args.Where)
+
+	// Prepare
+	statement, err := args.DB.Prepare(query)
+	defer statement.Close()
+	if err != nil {
+		return err
+	}
+
+	// Execute statement
+	_, err = statement.Exec(args.WhereArgs...)
+	return err
 }
 
 func Update(args UpdateQuery) error {
@@ -426,4 +437,127 @@ func Update(args UpdateQuery) error {
 	}
 
 	return nil
+}
+
+func Select[T any](args SelectQuery) SelectResponse[T] {
+	fields := getValueFieldNames(*new(T), false)
+	query := fmt.Sprintf(
+		"SELECT %v FROM %v",
+		strings.Join(fields, ","),
+		args.Table,
+	)
+
+	// Where
+	if args.Where != "" {
+		query += fmt.Sprintf(" WHERE %v", args.Where)
+	}
+
+	// Order
+	if args.OrderBy != "" {
+		query += fmt.Sprintf(" ORDER BY %v", args.OrderBy)
+	}
+
+	// Set limit
+	if args.Limit > 0 {
+		query += fmt.Sprintf(" LIMIT %v", args.Limit)
+	}
+
+	// Offset
+	if args.Offset > 0 {
+		query += fmt.Sprintf(" OFFSET %v", args.Offset)
+	}
+
+	response := SelectResponse[T]{}
+
+	destForScan := make([]any, len(fields))
+	rawResult := make([]sql.RawBytes, len(fields))
+	for i, _ := range destForScan {
+		destForScan[i] = &rawResult[i]
+	}
+
+	// Prepare
+	statement, err := args.DB.Prepare(query)
+	defer statement.Close()
+	if err != nil {
+		response.Error = err
+		return response
+	}
+
+	// Execute statement
+	if args.WhereArgs == nil {
+		args.WhereArgs = make([]any, 0)
+	}
+
+	rows, err := statement.Query(args.WhereArgs...)
+	defer rows.Close()
+	if err != nil {
+		response.Error = err
+		return response
+	}
+
+	// Scan rows
+	for rows.Next() {
+		err2 := rows.Scan(destForScan...)
+		if err2 != nil {
+			fmt.Printf("%v\n", err2)
+		}
+
+		out := *new(T)
+		outType := reflect.TypeOf(&out).Elem()
+
+		// Copy result
+		for i := 0; i < len(fields); i++ {
+			if outType.Field(i).Type.Kind() == reflect.Int8 ||
+				outType.Field(i).Type.Kind() == reflect.Int16 ||
+				outType.Field(i).Type.Kind() == reflect.Int32 ||
+				outType.Field(i).Type.Kind() == reflect.Int ||
+				outType.Field(i).Type.Kind() == reflect.Int64 {
+				str := string(rawResult[i])
+				n, _ := strconv.Atoi(str)
+				reflect.ValueOf(&out).Elem().Field(i).SetInt(int64(n))
+			}
+
+			if outType.Field(i).Type.Kind() == reflect.Uint8 ||
+				outType.Field(i).Type.Kind() == reflect.Uint16 ||
+				outType.Field(i).Type.Kind() == reflect.Uint32 ||
+				outType.Field(i).Type.Kind() == reflect.Uint ||
+				outType.Field(i).Type.Kind() == reflect.Uint64 {
+				str := string(rawResult[i])
+				n, _ := strconv.Atoi(str)
+				reflect.ValueOf(&out).Elem().Field(i).SetUint(uint64(n))
+			}
+
+			if outType.Field(i).Type.Kind() == reflect.Bool {
+				if len(rawResult[i]) > 0 {
+					reflect.ValueOf(&out).Elem().Field(i).SetBool(rawResult[i][0] == 49)
+				}
+			}
+			if outType.Field(i).Type.Kind() == reflect.String {
+				if len(rawResult[i]) > 0 {
+					reflect.ValueOf(&out).Elem().Field(i).SetString(string(rawResult[i]))
+				}
+			}
+			if outType.Field(i).Type.Name() == "Time" {
+				t, err2 := time.Parse("2006-01-02T15:04:05.999999-07:00", string(rawResult[i]))
+				if err2 != nil {
+					fmt.Printf("%v - %v\n", err2, string(rawResult[i]))
+					t2, err3 := time.Parse("2006-01-02T15:04:05Z", string(rawResult[i]))
+					if err3 != nil {
+						fmt.Printf("%v - %v\n", err3, string(rawResult[i]))
+					} else {
+						t = t2
+					}
+				}
+
+				ptr := unsafe.Add(unsafe.Pointer(&out), outType.Field(i).Offset)
+				*(*time.Time)(ptr) = t
+			}
+		}
+
+		response.IsFound = true
+		response.Result = append(response.Result, out)
+		// outList = append(outList, out)
+	}
+
+	return response
 }

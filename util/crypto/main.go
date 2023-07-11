@@ -9,7 +9,7 @@ import (
 )
 
 var m runtime.MemStats
-var a = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+var a = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
 var a2 = "0123456789"
 var al = len(a)
 var al2 = len(a2)

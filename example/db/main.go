@@ -1,11 +1,6 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	ml_console "github.com/maldan/go-ml/util/io/console"
-	ml_sql "github.com/maldan/go-ml/util/sql"
-	_ "modernc.org/sqlite"
 	"time"
 )
 
@@ -50,8 +45,8 @@ func main() {
 	})
 	ml_console.PrettyPrint(sr.Result)*/
 
-	db, err := sql.Open("sqlite", "sas.db")
-	fmt.Printf("%v\n", err)
+	/*db, err := sql.Open("sqlite", "sas.db")
+	fmt.Printf("%v\n", err)*/
 	/*fmt.Printf("%v\n", db)
 	err = ml_sql.CreateTable[User](db, "user")
 	fmt.Printf("%v\n", err)
@@ -63,7 +58,7 @@ func main() {
 	})
 	fmt.Printf("%v\n", err)*/
 
-	u, err := ml_sql.SelectMany[User](db, "user", "1=1")
+	/*u, err := ml_sql.SelectMany[User](db, "user", "1=1")
 	ml_console.PrettyPrint(u)
 	fmt.Printf("%+v\n", err)
 
@@ -75,5 +70,5 @@ func main() {
 		Set:       "salon_name=?",
 		SetArgs:   []any{"ubluddok"},
 	})
-	fmt.Printf("%+v\n", err)
+	fmt.Printf("%+v\n", err)*/
 }
