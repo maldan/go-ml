@@ -31,6 +31,8 @@ func typeToSqlType(t string, size string) string {
 		return "BIGINT"
 	case "uint64":
 		return "BIGINT UNSIGNED"
+	case "float32", "float64":
+		return "REAL"
 	case "string":
 		if size == "" {
 			return "TEXT"
@@ -81,8 +83,14 @@ func getValues[T any](v T) []any {
 			}
 		}
 
-		fieldValue := valueOf.Field(i).Interface()
-		out = append(out, fieldValue)
+		// Time
+		if typeOf.Field(i).Type.Name() == "Time" {
+			fieldValue := valueOf.Field(i).Interface().(time.Time).UTC()
+			out = append(out, fieldValue.Format("2006-01-02 15:04:05.000-07:00"))
+		} else {
+			fieldValue := valueOf.Field(i).Interface()
+			out = append(out, fieldValue)
+		}
 	}
 
 	return out
@@ -169,8 +177,8 @@ func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 		return 0, err
 	}
 
-	fmt.Printf("%v\n", query)
-	fmt.Printf("%v\n", values[0])
+	// fmt.Printf("%v\n", query)
+	// fmt.Printf("%v\n", values[0])
 
 	// Execute statement
 	r, err := statement.Exec(values...)
@@ -186,7 +194,7 @@ func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	return lastId, nil
 }
 
-func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (*T, error) {
+/*func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (*T, error) {
 	out := *new(T)
 	outType := reflect.TypeOf(&out).Elem()
 
@@ -277,9 +285,9 @@ func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (*T,
 	}
 
 	return &out, err
-}
+}*/
 
-func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]T, error) {
+/*func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]T, error) {
 	fields := getValueFieldNames(*new(T), false)
 	query := fmt.Sprintf("SELECT %v FROM %v WHERE %v", strings.Join(fields, ","), from, where)
 
@@ -367,7 +375,7 @@ func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]
 	}
 
 	return outList, err
-}
+}*/
 
 func Count(db *sql.DB, from string, where string, values ...any) (int, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %v WHERE %v LIMIT 1", from, where)
@@ -527,6 +535,13 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 				reflect.ValueOf(&out).Elem().Field(i).SetUint(uint64(n))
 			}
 
+			if outType.Field(i).Type.Kind() == reflect.Float32 ||
+				outType.Field(i).Type.Kind() == reflect.Float64 {
+				str := string(rawResult[i])
+				n, _ := strconv.ParseFloat(str, 64)
+				reflect.ValueOf(&out).Elem().Field(i).SetFloat(n)
+			}
+
 			if outType.Field(i).Type.Kind() == reflect.Bool {
 				if len(rawResult[i]) > 0 {
 					reflect.ValueOf(&out).Elem().Field(i).SetBool(rawResult[i][0] == 49)
@@ -540,10 +555,10 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 			if outType.Field(i).Type.Name() == "Time" {
 				t, err2 := time.Parse("2006-01-02T15:04:05.999999-07:00", string(rawResult[i]))
 				if err2 != nil {
-					fmt.Printf("%v - %v\n", err2, string(rawResult[i]))
+					// fmt.Printf("%v - %v\n", err2, string(rawResult[i]))
 					t2, err3 := time.Parse("2006-01-02T15:04:05Z", string(rawResult[i]))
 					if err3 != nil {
-						fmt.Printf("%v - %v\n", err3, string(rawResult[i]))
+						// fmt.Printf("%v - %v\n", err3, string(rawResult[i]))
 					} else {
 						t = t2
 					}

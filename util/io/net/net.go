@@ -170,9 +170,9 @@ func Request(url string, method string, options *RequestOptions) Response {
 }
 
 func buildQuery(data map[string]any) string {
-	out := "?"
+	params := p_url.Values{}
 	for k, v := range data {
-		out += fmt.Sprintf("%v=%v&", k, v)
+		params.Add(k, fmt.Sprintf("%v", v))
 	}
-	return out
+	return "?" + params.Encode()
 }
