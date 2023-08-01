@@ -1,6 +1,7 @@
 package ml_fs
 
 import (
+	ml_crypto "github.com/maldan/go-ml/util/crypto"
 	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	"io"
 	"os"
@@ -163,4 +164,8 @@ func ListAll(path string) ([]FileInfo, error) {
 
 func DeleteFile(path string) error {
 	return ml_file.New(path).Delete()
+}
+
+func GetTempFilePath() string {
+	return os.TempDir() + "/" + ml_crypto.UID(16)
 }

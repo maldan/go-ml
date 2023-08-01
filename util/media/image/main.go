@@ -3,13 +3,17 @@ package ml_image
 import (
 	"errors"
 	"fmt"
+	ml_fs "github.com/maldan/go-ml/util/io/fs"
+	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	ml_color "github.com/maldan/go-ml/util/media/color"
+	ml_process "github.com/maldan/go-ml/util/process"
 	"golang.org/x/image/webp"
 	"image"
 	"image/jpeg"
 	"image/png"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Image struct {
@@ -214,4 +218,27 @@ func FromFile(path string) (Image, error) {
 	}
 
 	return imageOut, nil
+}
+
+func ImageMagickConvertFromBytes(data []byte, ext string) ([]byte, error) {
+	// Create temp file
+	tempFile := ml_fs.GetTempFilePath()
+	f1 := ml_file.New(tempFile)
+	err := f1.Write(data)
+	if err != nil {
+		return nil, err
+	}
+	defer f1.Delete()
+
+	outFilePath := ml_fs.GetTempFilePath() + "." + ext
+
+	// Store photo
+	ml_process.Exec("magick", tempFile, "-quality", "70", outFilePath)
+	time.Sleep(time.Millisecond * 500)
+
+	// Read
+	f2 := ml_file.New(outFilePath)
+	defer f2.Delete()
+	dataOut, err := f2.ReadAll()
+	return dataOut, err
 }

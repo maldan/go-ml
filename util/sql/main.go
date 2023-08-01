@@ -573,6 +573,22 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 		response.Result = append(response.Result, out)
 		// outList = append(outList, out)
 	}
+	response.Count = len(response.Result)
 
 	return response
+}
+
+func AlterTableAddColumn(db *sql.DB, table string, name string, kind string, defaultValue string) error {
+	query := fmt.Sprintf("ALTER TABLE %v ADD COLUMN %v %v DEFAULT %v NOT NULL", table, name, kind, defaultValue)
+
+	// Prepare
+	statement, err := db.Prepare(query)
+	defer statement.Close()
+	if err != nil {
+		return err
+	}
+
+	// Execute statement
+	_, err = statement.Exec()
+	return err
 }
