@@ -59,3 +59,20 @@ func ToHumanReadableSize[T any](something T) string {
 	}
 	return fmt.Sprintf("%d", length)
 }
+
+func BytesToHumanReadable[T int | uint | int32 | uint32 | int64 | uint64](b T) string {
+	units := []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
+	bytes := float64(b)
+
+	if bytes == 0 {
+		return "0 B"
+	}
+
+	i := 0
+	for bytes >= 1024 && i < len(units)-1 {
+		bytes /= 1024
+		i++
+	}
+
+	return fmt.Sprintf("%.2f %s", bytes, units[i])
+}

@@ -159,6 +159,16 @@ func TestZA(t *testing.T) {
 	ml_console.PrettyPrint(newArray3)
 }
 
+func TestPullFirst(t *testing.T) {
+	list := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	fmt.Printf("%v\n", ml_slice.PullFirst(&list, 9))
+	fmt.Printf("%v\n", list)
+	fmt.Printf("%v\n", ml_slice.PullFirst(&list, 9))
+	fmt.Printf("%v\n", list)
+	fmt.Printf("%v\n", ml_slice.PullFirst(&list, 9))
+	fmt.Printf("%v\n", list)
+}
+
 func BenchmarkOne(b *testing.B) {
 	newArray := []int{1, 2, 3, 4, 5}
 	for i := 0; i < b.N; i++ {

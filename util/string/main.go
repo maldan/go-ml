@@ -55,3 +55,7 @@ func NonNull(str any) string {
 	}
 	return fmt.Sprintf("%v", str)
 }
+
+func FromAny(a any) string {
+	return fmt.Sprintf("%v", a)
+}

@@ -152,6 +152,52 @@ func CreateTable[T any](db *sql.DB, name string) error {
 	return err
 }
 
+func InsertMany[T any](db *sql.DB, table string, value []T) error {
+	fields := getValueFieldNames(value[0], true)
+	query := fmt.Sprintf("INSERT INTO '%v'(\n", table)
+	query += "" + strings.Join(fields, ", ") + "\n) \n"
+	query += "VALUES\n"
+
+	allValues := make([]any, 0)
+
+	for j := 0; j < len(value); j++ {
+		values := getValues(value[j])
+		valuesQ := make([]string, len(values))
+		for i := 0; i < len(fields); i++ {
+			if fields[i] == "`id`" && reflect.ValueOf(values[i]).IsZero() {
+				values[i] = nil
+			}
+
+			// fields[i] = "\t" + fields[i]
+			valuesQ[i] = "?"
+		}
+		query += "(" + strings.Join(valuesQ, ",") + ")"
+		if j == len(value)-1 {
+			query += ";\n"
+		} else {
+			query += ",\n"
+		}
+		allValues = append(allValues, values...)
+	}
+
+	// query += "VALUES(\n" + strings.Join(valuesQ, ",\n") + "\n)"
+	// fmt.Printf("%v\n", query)
+
+	// Prepare
+	statement, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	// Execute statement
+	_, err = statement.Exec(allValues...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	fields := getValueFieldNames(value, true)
 	values := getValues(value)

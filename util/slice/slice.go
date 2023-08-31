@@ -247,3 +247,16 @@ func Permutation[T any](slice []T) [][]T {
 	}, 0)
 	return out
 }
+
+// PullFirst elements and remove from slice
+func PullFirst[T any](slice *[]T, n int) []T {
+	if n >= len(*slice) {
+		result := append([]T{}, *slice...)
+		*slice = (*slice)[:0] // очищаем исходный срез
+		return result
+	}
+
+	result := (*slice)[:n]
+	*slice = (*slice)[n:]
+	return result
+}
