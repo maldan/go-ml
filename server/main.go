@@ -116,9 +116,9 @@ func injectDebug(config *Config) {
 						HasLogTab:      config.Debug.UseLogs,
 						HasRequestLogs: config.Debug.UseRequestLogs,
 					},
-					ms_panel.Log{
+					/*ms_panel.Log{
 						Path: config.LogFile,
-					},
+					},*/
 					ms_panel.Request{},
 					ms_panel.Router{
 						List: config.Router,
@@ -180,12 +180,12 @@ func Start(config Config) {
 	})
 
 	// Start logger
-	if config.Debug.UseLogs {
+	/*if config.Debug.UseLogs {
 		ms_log.InitLogs(config.LogFile)
 	}
 	if config.Debug.UseRequestLogs {
 		ms_log.InitRequestLogs(config.LogFile)
-	}
+	}*/
 
 	ms_log.Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
 

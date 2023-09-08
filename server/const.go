@@ -33,6 +33,10 @@ type DebugConfig struct {
 	UseRequestLogs bool
 }
 
+type LogConfig struct {
+	OnLog func()
+}
+
 type DataBaseConfig struct {
 	Path      string
 	DataBase  *map[string]*mdb.DataTable
@@ -40,12 +44,13 @@ type DataBaseConfig struct {
 }
 
 type Config struct {
-	Host     string
-	Router   []ms_handler.RouteHandler
-	TLS      SecureConfig
-	Debug    DebugConfig
-	Panel    PanelConfig
-	LogFile  string
+	Host   string
+	Router []ms_handler.RouteHandler
+	TLS    SecureConfig
+	Debug  DebugConfig
+	Panel  PanelConfig
+	// LogFile  string
+	Log      LogConfig
 	DataBase DataBaseConfig
 	// TableList []TableConfig
 }
