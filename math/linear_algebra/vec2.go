@@ -1,6 +1,7 @@
 package mmath_la
 
 import (
+	"encoding/binary"
 	mmath "github.com/maldan/go-ml/math"
 	"golang.org/x/exp/constraints"
 	"math"
@@ -101,4 +102,10 @@ func (v Vector2[T]) ToVector3XY() Vector3[T] {
 
 func (v *Vector2[T]) ToVector3XZ() Vector3[T] {
 	return Vector3[T]{v.X, 0, v.Y}
+}
+
+func (v Vector2[T]) FromBytes(data []byte) Vector2[T] {
+	v.X = T(math.Float32frombits(binary.LittleEndian.Uint32(data[0:4])))
+	v.Y = T(math.Float32frombits(binary.LittleEndian.Uint32(data[0+4 : 4+4])))
+	return v
 }

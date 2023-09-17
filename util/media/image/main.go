@@ -126,6 +126,14 @@ func (i *Image) Map(fn func(x int, y int, color ml_color.ColorRGBA[uint8]) ml_co
 	}
 }
 
+func (i *Image) Clear() {
+	for y := 0; y < i.Height; y++ {
+		for x := 0; x < i.Width; x++ {
+			i.Pixels[x][y] = ml_color.ColorRGBA[uint8]{0, 0, 0, 255}
+		}
+	}
+}
+
 func (i *Image) Save(filePath string, options ImageOptions) error {
 	err := os.MkdirAll(path.Dir(filePath), 0777)
 	if err != nil {
@@ -164,6 +172,23 @@ func (i *Image) Save(filePath string, options ImageOptions) error {
 	default:
 		return errors.New("unsupported format")
 	}
+}
+
+func New(width int, height int) Image {
+	img := Image{}
+	img.Width = width
+	img.Height = height
+	img.Pixels = make([][]ml_color.ColorRGBA[uint8], width)
+	for i := 0; i < width; i++ {
+		img.Pixels[i] = make([]ml_color.ColorRGBA[uint8], height)
+	}
+
+	for i := 0; i < width; i++ {
+		for j := 0; j < height; j++ {
+			img.Pixels[i][j].A = 255
+		}
+	}
+	return img
 }
 
 func FromFile(path string) (Image, error) {

@@ -206,6 +206,10 @@ func SortAZBy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N,
 	})
 }
 
+func Last[T any](slice []T) T {
+	return slice[len(slice)-1]
+}
+
 func SortZABy[T any, N constraints.Ordered](slice []T, fn func(i int, j int) (N, N)) {
 	sort.SliceStable(slice, func(i, j int) bool {
 		a, b := fn(i, j)

@@ -39,6 +39,11 @@ func Mkdir(path string) error {
 	return nil
 }
 
+func (f FileInfo) ReadAll() ([]byte, error) {
+	content, err := os.ReadFile(f.FullPath)
+	return content, err
+}
+
 /*func ReadFile(path string) ([]byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

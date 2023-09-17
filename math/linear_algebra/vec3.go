@@ -1,6 +1,7 @@
 package mmath_la
 
 import (
+	"encoding/binary"
 	ml_random "github.com/maldan/go-ml/util/random"
 	"golang.org/x/exp/constraints"
 	"math"
@@ -191,4 +192,11 @@ func (v Vector3[T]) ToVector2XY() Vector2[T] {
 
 func (v Vector3[T]) ToVector2XZ() Vector2[T] {
 	return Vector2[T]{v.X, v.Z}
+}
+
+func (v Vector3[T]) FromBytes(data []byte) Vector3[T] {
+	v.X = T(math.Float32frombits(binary.LittleEndian.Uint32(data[0:4])))
+	v.Y = T(math.Float32frombits(binary.LittleEndian.Uint32(data[0+4 : 4+4])))
+	v.Z = T(math.Float32frombits(binary.LittleEndian.Uint32(data[0+4+4 : 4+4+4])))
+	return v
 }

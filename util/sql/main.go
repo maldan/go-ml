@@ -625,6 +625,9 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 }
 
 func AlterTableAddColumn(db *sql.DB, table string, name string, kind string, defaultValue string) error {
+	if defaultValue == "" {
+		defaultValue = "\"\""
+	}
 	query := fmt.Sprintf("ALTER TABLE %v ADD COLUMN %v %v DEFAULT %v NOT NULL", table, name, kind, defaultValue)
 
 	// Prepare
