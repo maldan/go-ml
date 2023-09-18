@@ -28,6 +28,18 @@ func (v Vector3[T]) TransformMatrix4x4(mx Matrix4x4[T]) Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) TransformMatrix3x3(mx Matrix3x3[T]) Vector3[T] {
+	x := v.X
+	y := v.Y
+	z := v.Z
+
+	v.X = mx.Raw[0]*x + mx.Raw[1]*y + mx.Raw[2]*z
+	v.Y = mx.Raw[3]*x + mx.Raw[4]*y + mx.Raw[5]*z
+	v.Z = mx.Raw[6]*x + mx.Raw[7]*y + mx.Raw[8]*z
+
+	return v
+}
+
 func (v *Vector3[T]) Clone() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, v.Z}
 }
@@ -155,6 +167,13 @@ func (v Vector3[T]) MulXYZ(x T, y T, z T) Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) MulScalar(s T) Vector3[T] {
+	v.X *= s
+	v.Y *= s
+	v.Z *= s
+	return v
+}
+
 func (v Vector3[T]) Sub(v2 Vector3[T]) Vector3[T] {
 	v.X -= v2.X
 	v.Y -= v2.Y
@@ -175,6 +194,13 @@ func (v Vector3[T]) DistanceTo(to Vector3[T]) T {
 	c := float64(v.Z - to.Z)
 
 	return T(math.Sqrt(a*a + b*b + c*c))
+}
+
+func (v Vector3[T]) Reflect(normal Vector3[T]) Vector3[T] {
+	dotProduct := 2.0 * v.Dot(normal)
+	n := normal.MulScalar(dotProduct)
+	reflected := v.Sub(n)
+	return reflected
 }
 
 func (v Vector3[T]) DirectionXZToAngle() T {

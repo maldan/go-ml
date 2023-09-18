@@ -43,17 +43,17 @@ func (t Triangle3D[T]) GetOrientation(view mmath_la.Vector3[T]) int {
 	return 0
 }
 
-func (t Triangle2D[T]) OnEachPixel(fn func(v mmath_la.Vector2[T], a T, b T, g T)) {
+func (t Triangle2D[T]) OnEachPixel(fn func(v mmath_la.Vector2[T], a T, b T, g T), fId int) {
 	w := int(math.Round(float64(t.Width() + 2)))
 	h := int(math.Round(float64(t.Height() + 2)))
 	minX := T(math.Round(float64(t.MinX() - 1)))
 	minY := T(math.Round(float64(t.MinY() - 1)))
 
-	if w > 320 {
-		w = 320
+	if w > 320*2 {
+		w = 320 * 2
 	}
-	if h > 240 {
-		h = 240
+	if h > 240*2 {
+		h = 240 * 2
 	}
 
 	square := t.Square()
@@ -68,6 +68,10 @@ func (t Triangle2D[T]) OnEachPixel(fn func(v mmath_la.Vector2[T], a T, b T, g T)
 			if p.X < 0 || p.Y < 0 || p.X > 320*2 || p.Y > 240*2 {
 				continue
 			}
+
+			/*if int(p.X)%4 == fId || int(p.Y)%4 == fId {
+				continue
+			}*/
 
 			a := t.A
 			b := t.B

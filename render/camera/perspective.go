@@ -17,8 +17,8 @@ type PerspectiveCamera struct {
 }
 
 func (p *PerspectiveCamera) ApplyMatrix() {
-	proj := mmath_la.Matrix4x4[float32]{}
-	proj.Perspective((p.Fov*3.141592653589793)/180, p.AspectRatio, p.Near, p.Far)
+	proj := mmath_la.Matrix4x4[float32]{}.
+		Perspective((p.Fov*3.141592653589793)/180, p.AspectRatio, p.Near, p.Far)
 
 	position := p.Position
 	position.X *= -1
@@ -26,13 +26,11 @@ func (p *PerspectiveCamera) ApplyMatrix() {
 	position.Z *= -1
 
 	// Position
-	p.Matrix.Identity()
-
-	p.Matrix.RotateX(p.Rotation.X)
-	p.Matrix.Translate(position)
-	//p.Matrix.RotateY(p.Rotation.Y)
-	//p.Matrix.RotateZ(p.Rotation.Z)
-	p.Matrix.Scale(p.Scale)
+	p.Matrix = p.Matrix.
+		Identity().
+		RotateX(p.Rotation.X).
+		Translate(position).
+		Scale(p.Scale)
 
 	//targetMx := mmath_la.Matrix4x4[float32]{}
 	//targetMx.Identity()
@@ -40,6 +38,5 @@ func (p *PerspectiveCamera) ApplyMatrix() {
 
 	//p.Matrix.Multiply(targetMx)
 
-	proj.Multiply(p.Matrix)
-	p.Matrix = proj
+	p.Matrix = proj.Multiply(p.Matrix)
 }

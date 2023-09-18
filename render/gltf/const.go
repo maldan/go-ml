@@ -74,6 +74,8 @@ func componentTypes(n int) string {
 		return "short"
 	case 5123:
 		return "unsigned_short"
+	case 5125:
+		return "unsigned_int"
 	case 5126:
 		return "float"
 	}
@@ -90,6 +92,8 @@ func byteLength(n int) int {
 		return 2
 	case 5123:
 		return 2
+	case 5125: // unsigned int
+		return 4
 	case 5126:
 		return 4
 	}

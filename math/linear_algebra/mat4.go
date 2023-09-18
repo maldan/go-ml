@@ -9,7 +9,7 @@ type Matrix4x4[T constraints.Float] struct {
 	Raw [16]T
 }
 
-func (m *Matrix4x4[T]) Identity() {
+func (m Matrix4x4[T]) Identity() Matrix4x4[T] {
 	m.Raw[0] = 1
 	m.Raw[1] = 0
 	m.Raw[2] = 0
@@ -26,13 +26,29 @@ func (m *Matrix4x4[T]) Identity() {
 	m.Raw[13] = 0
 	m.Raw[14] = 0
 	m.Raw[15] = 1
+
+	return m
+}
+
+func (m Matrix4x4[T]) Transpose() Matrix4x4[T] {
+	result := [16]T{}
+
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			result[i*4+j] = m.Raw[j*4+i]
+		}
+	}
+
+	m.Raw = result
+
+	return m
 }
 
 func (m *Matrix4x4[T]) Clone() Matrix4x4[T] {
 	return Matrix4x4[T]{Raw: m.Raw}
 }
 
-func (m *Matrix4x4[T]) Invert() *Matrix4x4[T] {
+func (m Matrix4x4[T]) Invert() Matrix4x4[T] {
 	a00 := m.Raw[0]
 	a01 := m.Raw[1]
 	a02 := m.Raw[2]
@@ -92,7 +108,7 @@ func (m *Matrix4x4[T]) Invert() *Matrix4x4[T] {
 	return m
 }
 
-func (m *Matrix4x4[T]) Translate(v Vector3[T]) {
+func (m Matrix4x4[T]) Translate(v Vector3[T]) Matrix4x4[T] {
 	a00 := m.Raw[0]
 	a01 := m.Raw[1]
 	a02 := m.Raw[2]
@@ -123,9 +139,11 @@ func (m *Matrix4x4[T]) Translate(v Vector3[T]) {
 	m.Raw[13] = a01*v.X + a11*v.Y + a21*v.Z + m.Raw[13]
 	m.Raw[14] = a02*v.X + a12*v.Y + a22*v.Z + m.Raw[14]
 	m.Raw[15] = a03*v.X + a13*v.Y + a23*v.Z + m.Raw[15]
+
+	return m
 }
 
-func (m *Matrix4x4[T]) Scale(v Vector3[T]) {
+func (m Matrix4x4[T]) Scale(v Vector3[T]) Matrix4x4[T] {
 	m.Raw[0] *= v.X
 	m.Raw[1] *= v.X
 	m.Raw[2] *= v.X
@@ -140,9 +158,11 @@ func (m *Matrix4x4[T]) Scale(v Vector3[T]) {
 	m.Raw[9] *= v.Z
 	m.Raw[10] *= v.Z
 	m.Raw[11] *= v.Z
+
+	return m
 }
 
-func (m *Matrix4x4[T]) RotateX(rad T) {
+func (m Matrix4x4[T]) RotateX(rad T) Matrix4x4[T] {
 	s := T(math.Sin(float64(rad)))
 	c := T(math.Cos(float64(rad)))
 
@@ -164,9 +184,11 @@ func (m *Matrix4x4[T]) RotateX(rad T) {
 	m.Raw[9] = a21*c - a11*s
 	m.Raw[10] = a22*c - a12*s
 	m.Raw[11] = a23*c - a13*s
+
+	return m
 }
 
-func (m *Matrix4x4[T]) RotateY(rad T) {
+func (m Matrix4x4[T]) RotateY(rad T) Matrix4x4[T] {
 	s := T(math.Sin(float64(rad)))
 	c := T(math.Cos(float64(rad)))
 
@@ -188,9 +210,11 @@ func (m *Matrix4x4[T]) RotateY(rad T) {
 	m.Raw[9] = a01*s + a21*c
 	m.Raw[10] = a02*s + a22*c
 	m.Raw[11] = a03*s + a23*c
+
+	return m
 }
 
-func (m *Matrix4x4[T]) RotateZ(rad T) {
+func (m Matrix4x4[T]) RotateZ(rad T) Matrix4x4[T] {
 	s := T(math.Sin(float64(rad)))
 	c := T(math.Cos(float64(rad)))
 
@@ -212,9 +236,11 @@ func (m *Matrix4x4[T]) RotateZ(rad T) {
 	m.Raw[5] = a11*c - a01*s
 	m.Raw[6] = a12*c - a02*s
 	m.Raw[7] = a13*c - a03*s
+
+	return m
 }
 
-func (m *Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) {
+func (m Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) Matrix4x4[T] {
 	f := 1.0 / T(math.Tan(float64(fov)/2.0))
 	m.Raw[0] = f / aspect
 	m.Raw[1] = 0
@@ -234,9 +260,11 @@ func (m *Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) {
 	nf := 1 / (near - far)
 	m.Raw[10] = (far + near) * nf
 	m.Raw[14] = 2 * far * near * nf
+
+	return m
 }
 
-func (m *Matrix4x4[T]) Orthographic(left T, right T, bottom T, top T, near T, far T) {
+func (m Matrix4x4[T]) Orthographic(left T, right T, bottom T, top T, near T, far T) Matrix4x4[T] {
 	m.Raw[0] = 2 / (right - left)
 	m.Raw[1] = 0
 	m.Raw[2] = 0
@@ -277,9 +305,11 @@ func (m *Matrix4x4[T]) Orthographic(left T, right T, bottom T, top T, near T, fa
 	m.Raw[13] = (top + bottom) * bt
 	m.Raw[14] = (far + near) * nf
 	m.Raw[15] = 1*/
+
+	return m
 }
 
-func (m *Matrix4x4[T]) Multiply(b Matrix4x4[T]) {
+func (m Matrix4x4[T]) Multiply(b Matrix4x4[T]) Matrix4x4[T] {
 	a00 := m.Raw[0]
 	a01 := m.Raw[1]
 	a02 := m.Raw[2]
@@ -333,12 +363,14 @@ func (m *Matrix4x4[T]) Multiply(b Matrix4x4[T]) {
 	m.Raw[13] = b0*a01 + b1*a11 + b2*a21 + b3*a31
 	m.Raw[14] = b0*a02 + b1*a12 + b2*a22 + b3*a32
 	m.Raw[15] = b0*a03 + b1*a13 + b2*a23 + b3*a33
+
+	return m
 }
 
-func (m *Matrix4x4[T]) Rotate(rad T, axis Vector3[T]) {
+func (m Matrix4x4[T]) Rotate(rad T, axis Vector3[T]) Matrix4x4[T] {
 	ln := T(math.Sqrt(float64(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)))
 	if ln < 0.000001 {
-		return
+		return Matrix4x4[T]{}
 	}
 
 	ln = 1 / ln
@@ -387,6 +419,8 @@ func (m *Matrix4x4[T]) Rotate(rad T, axis Vector3[T]) {
 	m.Raw[9] = a01*b20 + a11*b21 + a21*b22
 	m.Raw[10] = a02*b20 + a12*b21 + a22*b22
 	m.Raw[11] = a03*b20 + a13*b21 + a23*b22
+
+	return m
 }
 
 func (m *Matrix4x4[T]) TargetTo(from Vector3[T], to Vector3[T], up Vector3[T]) {
