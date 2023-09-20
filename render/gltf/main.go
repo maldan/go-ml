@@ -19,9 +19,15 @@ func FromFile(path string) (GLTF, error) {
 	for i := 0; i < len(gltf.Buffers); i++ {
 		gltf.Buffers[i].Parse()
 	}
-
 	for i := 0; i < len(gltf.Meshes); i++ {
 		gltf.Meshes[i].gltf = &gltf
+	}
+	for i := 0; i < len(gltf.Images); i++ {
+		gltf.Images[i].gltf = &gltf
+		gltf.Images[i].Load()
+	}
+	for i := 0; i < len(gltf.Materials); i++ {
+		gltf.Materials[i].gltf = &gltf
 	}
 
 	return gltf, nil

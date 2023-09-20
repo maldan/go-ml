@@ -31,7 +31,20 @@ func (c ColorRGBA[T]) AddRGB(r T, g T, b T) ColorRGBA[T] {
 	return c
 }
 
+func (c ColorRGBA[T]) Avg(c2 ColorRGBA[T]) ColorRGBA[T] {
+	c.R = T((ml_number.Clamp((float32(c.R)+float32(c2.R))/2.0, 0, 255)))
+	c.G = T((ml_number.Clamp((float32(c.G)+float32(c2.G))/2.0, 0, 255)))
+	c.B = T((ml_number.Clamp((float32(c.B)+float32(c2.B))/2.0, 0, 255)))
+	return c
+}
+
 func (c ColorRGBA[T]) Mix(c2 ColorRGBA[T], t float32) ColorRGBA[T] {
+	if t > 1 {
+		t = 1
+	}
+	if t < 0 {
+		t = 0
+	}
 	c.R = T(ml_number.Clamp(float32(c.R)*(1.0-t)+float32(c2.R)*t, 0, 255))
 	c.G = T(ml_number.Clamp(float32(c.G)*(1.0-t)+float32(c2.G)*t, 0, 255))
 	c.B = T(ml_number.Clamp(float32(c.B)*(1.0-t)+float32(c2.B)*t, 0, 255))

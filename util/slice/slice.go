@@ -264,3 +264,11 @@ func PullFirst[T any](slice *[]T, n int) []T {
 	*slice = (*slice)[n:]
 	return result
 }
+
+func Average[T constraints.Float | constraints.Integer](slice []T) T {
+	a := T(0)
+	for i := 0; i < len(slice); i++ {
+		a += slice[i]
+	}
+	return a / T(len(slice))
+}

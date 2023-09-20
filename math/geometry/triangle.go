@@ -26,6 +26,13 @@ func (t Triangle3D[T]) TransformMatrix4x4(mx mmath_la.Matrix4x4[T]) Triangle3D[T
 	return t
 }
 
+func (t Triangle3D[T]) InterpolateABG(alpha T, beta T, gamma T) mmath_la.Vector3[T] {
+	uva := t.A.MulScalar(alpha)
+	uvb := t.B.MulScalar(beta)
+	uvc := t.C.MulScalar(gamma)
+	return (uva.Add(uvb)).Add(uvc)
+}
+
 func (t Triangle3D[T]) GetOrientation(view mmath_la.Vector3[T]) int {
 	v1 := t.B.Sub(t.A)
 	v2 := t.C.Sub(t.A)
@@ -43,7 +50,7 @@ func (t Triangle3D[T]) GetOrientation(view mmath_la.Vector3[T]) int {
 	return 0
 }
 
-func (t Triangle2D[T]) OnEachPixel(fn func(v mmath_la.Vector2[T], a T, b T, g T), fId int) {
+func (t Triangle2D[T]) OnEachPixel(fn func(v mmath_la.Vector2[T], a T, b T, g T)) int {
 	w := int(math.Round(float64(t.Width() + 2)))
 	h := int(math.Round(float64(t.Height() + 2)))
 	minX := T(math.Round(float64(t.MinX() - 1)))
@@ -92,6 +99,8 @@ func (t Triangle2D[T]) OnEachPixel(fn func(v mmath_la.Vector2[T], a T, b T, g T)
 			}
 		}
 	}
+
+	return w * h
 }
 
 func (t Triangle2D[T]) MinX() T {

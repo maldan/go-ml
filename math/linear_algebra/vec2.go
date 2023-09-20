@@ -47,8 +47,16 @@ func (v Vector2[T]) Normalize() Vector2[T] {
 }
 
 func (v Vector2[T]) Floor() Vector2[T] {
-	v.X = T(math.Floor(float64(v.X)))
-	v.Y = T(math.Floor(float64(v.Y)))
+	v.X = T(int(v.X))
+	v.Y = T(int(v.Y))
+	//v.X = T(math.Floor(float64(v.X)))
+	//v.Y = T(math.Floor(float64(v.Y)))
+	return v
+}
+
+func (v Vector2[T]) Round() Vector2[T] {
+	v.X = T(math.Round(float64(v.X)))
+	v.Y = T(math.Round(float64(v.Y)))
 	return v
 }
 

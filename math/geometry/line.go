@@ -34,3 +34,8 @@ func (l Line2D[T]) Intersect(l2 Line2D[T]) bool {
 
 	return false
 }
+
+type Line3D[T constraints.Float] struct {
+	From mmath_la.Vector3[T]
+	To   mmath_la.Vector3[T]
+}

@@ -128,13 +128,13 @@ func (v Vector3[T]) Sin(v2 T) Vector3[T] {
 
 func (v Vector3[T]) Abs() Vector3[T] {
 	if v.X < 0 {
-		v.X *= -1
+		v.X *= T(-1)
 	}
 	if v.Y < 0 {
-		v.Y *= -1
+		v.Y *= T(-1)
 	}
 	if v.Z < 0 {
-		v.Z *= -1
+		v.Z *= T(-1)
 	}
 	return v
 }

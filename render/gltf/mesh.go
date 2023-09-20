@@ -117,3 +117,7 @@ func (m Mesh) GetIndices() []uint32 {
 
 	return out
 }
+
+func (m Mesh) GetMaterial() Material {
+	return m.gltf.Materials[m.Primitives[0].Material]
+}

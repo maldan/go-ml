@@ -369,7 +369,7 @@ func (m Matrix4x4[T]) Multiply(b Matrix4x4[T]) Matrix4x4[T] {
 
 func (m Matrix4x4[T]) Rotate(rad T, axis Vector3[T]) Matrix4x4[T] {
 	ln := T(math.Sqrt(float64(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)))
-	if ln < 0.000001 {
+	if ln < T(0.000001) {
 		return Matrix4x4[T]{}
 	}
 

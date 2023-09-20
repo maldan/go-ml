@@ -34,6 +34,7 @@ type Accessor struct {
 type Primitive struct {
 	Attributes Attribute `json:"attributes"`
 	Indices    int       `json:"indices"`
+	Material   int       `json:"material"`
 }
 
 type Attribute struct {
@@ -45,6 +46,43 @@ type Attribute struct {
 type Node struct {
 	Mesh int    `json:"mesh"`
 	Name string `json:"name"`
+}
+
+type Texture struct {
+	Sampler int `json:"sampler"`
+	Source  int `json:"source"`
+}
+
+type GLTF struct {
+	Asset       any          `json:"asset"`
+	Scene       int          `json:"scene"`
+	Scenes      any          `json:"scenes"`
+	Nodes       []Node       `json:"nodes"`
+	Materials   []Material   `json:"materials"`
+	Meshes      []Mesh       `json:"meshes"`
+	Images      []Image      `json:"images"`
+	Textures    []Texture    `json:"textures"`
+	Accessors   []Accessor   `json:"accessors"`
+	BufferViews []BufferView `json:"bufferViews"`
+	Buffers     []Buffer     `json:"buffers"`
+}
+
+func (g GLTF) ParseAccessor(accessor Accessor) {
+	finalView := g.BufferViews[accessor.BufferView]
+
+	componentAmount := numberOfComponents(accessor.Type)
+	byteSize := byteLength(accessor.ComponentType)
+	offset := finalView.ByteOffset
+	buf := g.Buffers[finalView.Buffer].content
+
+	if accessor.Type == "VEC3" {
+		bb := make([]mmath_la.Vector3[float32], 0)
+		for i := 0; i < accessor.Count; i++ {
+			v := mmath_la.Vector3[float32]{}.FromBytes(buf[offset:])
+			bb = append(bb, v)
+			offset += byteSize * componentAmount
+		}
+	}
 }
 
 func numberOfComponents(t string) int {
@@ -98,33 +136,4 @@ func byteLength(n int) int {
 		return 4
 	}
 	return 0
-}
-
-type GLTF struct {
-	Asset       any          `json:"asset"`
-	Scene       int          `json:"scene"`
-	Scenes      any          `json:"scenes"`
-	Nodes       []Node       `json:"nodes"`
-	Meshes      []Mesh       `json:"meshes"`
-	Accessors   []Accessor   `json:"accessors"`
-	BufferViews []BufferView `json:"bufferViews"`
-	Buffers     []Buffer     `json:"buffers"`
-}
-
-func (g GLTF) ParseAccessor(accessor Accessor) {
-	finalView := g.BufferViews[accessor.BufferView]
-
-	componentAmount := numberOfComponents(accessor.Type)
-	byteSize := byteLength(accessor.ComponentType)
-	offset := finalView.ByteOffset
-	buf := g.Buffers[finalView.Buffer].content
-
-	if accessor.Type == "VEC3" {
-		bb := make([]mmath_la.Vector3[float32], 0)
-		for i := 0; i < accessor.Count; i++ {
-			v := mmath_la.Vector3[float32]{}.FromBytes(buf[offset:])
-			bb = append(bb, v)
-			offset += byteSize * componentAmount
-		}
-	}
 }

@@ -35,10 +35,23 @@ func FloorInt[T constraints.Float](a T) int {
 	return int(math.Floor(float64(a)))
 }
 
-func Ceil[T constraints.Float](a T) T {
+func Ceil[T constraints.Integer | constraints.Float](a T) T {
 	return T(math.Ceil(float64(a)))
 }
 
 func Floor[T constraints.Float](a T) T {
-	return T(math.Floor(float64(a)))
+	return T(int(a))
+	// return T(math.Floor(float64(a)))
+}
+
+func Round[T constraints.Float](a T) T {
+	return T(math.Round(float64(a)))
+}
+
+func Mod[T constraints.Float](x, y T) T {
+	result := x - y*T(int(x/y))
+	if result < 0 {
+		result += y
+	}
+	return result
 }
