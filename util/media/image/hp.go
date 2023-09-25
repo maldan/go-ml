@@ -1,11 +1,6 @@
 package ml_image
 
-import (
-	ml_color "github.com/maldan/go-ml/util/media/color"
-	"math"
-)
-
-type ImageHighPrecision struct {
+/*type ImageHighPrecision struct {
 	Width  int
 	Height int
 	Pixels [][]ml_color.ColorRGBA[float32]
@@ -69,3 +64,4 @@ func NewHighPrecision(width int, height int) ImageHighPrecision {
 
 	return img
 }
+*/

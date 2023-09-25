@@ -1,34 +1,10 @@
 package ml_image
 
-import (
-	"bytes"
-	"errors"
-	"fmt"
-	ml_fs "github.com/maldan/go-ml/util/io/fs"
-	ml_file "github.com/maldan/go-ml/util/io/fs/file"
-	ml_color "github.com/maldan/go-ml/util/media/color"
-	ml_process "github.com/maldan/go-ml/util/process"
-	"golang.org/x/image/webp"
-	"image"
-	"image/jpeg"
-	"image/png"
-	"io"
-	"net/http"
-	"os"
-	"path"
-	"time"
-)
-
-type Image struct {
-	Width  int
-	Height int
-	Pixels [][]ml_color.ColorRGBA[uint8]
-}
-
-type ImageOptions struct {
-	Format  string
-	Quality int
-	Mode    string
+/*type Image struct {
+	Width   int
+	Height  int
+	Pixels  [][]ml_color.ColorRGBA[uint8]
+	Pixels2 []ml_color.ColorRGBA[uint8]
 }
 
 func (i *Image) ResizeWidth(width int) Image {
@@ -53,8 +29,8 @@ func (i *Image) ResizeWidth(width int) Image {
 	}
 
 	return outImage
-}
-
+}*/
+/*
 func (i *Image) Resize(width int, height int) Image {
 	aspectX := float64(width) / float64(i.Width)
 	aspectY := float64(height) / float64(i.Height)
@@ -109,7 +85,8 @@ func (i *Image) SetPixel(x int, y int, color ml_color.ColorRGBA[uint8]) {
 	}
 	i.Pixels[x][y] = color
 }
-
+*/
+/*
 func (i *Image) ForEach(fn func(x int, y int, color ml_color.ColorRGBA[uint8])) {
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
@@ -132,9 +109,9 @@ func (i *Image) Clear() {
 			i.Pixels[x][y] = ml_color.ColorRGBA[uint8]{0, 0, 0, 255}
 		}
 	}
-}
+}*/
 
-func (i *Image) Save(filePath string, options ImageOptions) error {
+/*func (i *Image) Save(filePath string, options ImageOptions) error {
 	err := os.MkdirAll(path.Dir(filePath), 0777)
 	if err != nil {
 		return err
@@ -172,9 +149,9 @@ func (i *Image) Save(filePath string, options ImageOptions) error {
 	default:
 		return errors.New("unsupported format")
 	}
-}
+}*/
 
-func New(width int, height int) Image {
+/*func New(width int, height int) Image {
 	img := Image{}
 	img.Width = width
 	img.Height = height
@@ -191,134 +168,28 @@ func New(width int, height int) Image {
 	return img
 }
 
-func FromFile(path string) (Image, error) {
-	// Open
-	imageFile, err := os.Open(path)
-	defer imageFile.Close()
-	if err != nil {
-		return Image{}, err
-	}
-	buf := bytes.NewBuffer(nil)
-	io.Copy(buf, imageFile)
-
-	return FromBytes(buf.Bytes())
-}
-
-func FromBytes(data []byte) (Image, error) {
-	imageFile := bytes.NewReader(data)
-
-	// Read header
-	header := make([]byte, 512)
-	imageFile.Read(header)
-	imageFile.Seek(0, 0)
-	mimeType := http.DetectContentType(header)
-
-	// Image
-	var img image.Image
-
-	// Mime
-	switch mimeType {
-	case "image/png":
-		img2, err := png.Decode(imageFile)
-		if err != nil {
-			return Image{}, err
-		}
-		img = img2
-		break
-	case "image/jpeg":
-		img2, err := jpeg.Decode(imageFile)
-		if err != nil {
-			return Image{}, err
-		}
-		img = img2
-		break
-	case "image/webp":
-		img2, err := webp.Decode(imageFile)
-		if err != nil {
-			return Image{}, err
-		}
-		img = img2
-		break
-	default:
-		return Image{}, errors.New(fmt.Sprintf("unsupported '%v' file format", mimeType))
+func New2(width int, height int) Image {
+	img := Image{}
+	img.Width = width
+	img.Height = height
+	img.Pixels = make([][]ml_color.ColorRGBA[uint8], height)
+	for i := 0; i < height; i++ {
+		img.Pixels[i] = make([]ml_color.ColorRGBA[uint8], width)
 	}
 
-	// Read image
-	imageOut := Image{}
-	imageOut.Width = img.Bounds().Size().X
-	imageOut.Height = img.Bounds().Size().Y
-	imageOut.Pixels = make([][]ml_color.ColorRGBA[uint8], imageOut.Width)
-
-	/*for y := 0; y < imageOut.Height; y++ {
-		imageOut.Pixels[y] = make([]ml_color.ColorRGBA[uint8], imageOut.Width)
-
-		for x := 0; x < imageOut.Height; x++ {
-			r, g, b, a := img.At(x, y).RGBA()
-			if r > 255 {
-				r = r >> 8
-			}
-			if g > 255 {
-				g = g >> 8
-			}
-			if b > 255 {
-				b = b >> 8
-			}
-			if a > 255 {
-				a = a >> 8
-			}
-
-			imageOut.Pixels[y][x] = ml_color.ColorRGBA[uint8]{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
-		}
-	}*/
-	for i := 0; i < imageOut.Width; i++ {
-		imageOut.Pixels[i] = make([]ml_color.ColorRGBA[uint8], imageOut.Height)
-		for j := 0; j < imageOut.Height; j++ {
-			r, g, b, a := img.At(i, j).RGBA()
-			if r > 255 {
-				r = r >> 8
-			}
-			if g > 255 {
-				g = g >> 8
-			}
-			if b > 255 {
-				b = b >> 8
-			}
-			if a > 255 {
-				a = a >> 8
-			}
-
-			imageOut.Pixels[i][j] = ml_color.ColorRGBA[uint8]{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			img.Pixels[y][x].A = 255
 		}
 	}
-
-	return imageOut, nil
+	return img
 }
 
-type ImageMagickArgs struct {
-	FromData []byte
-	ToExt    string
-	Quality  int
+func New3(width int, height int) Image {
+	img := Image{}
+	img.Width = width
+	img.Height = height
+	img.Pixels2 = make([]ml_color.ColorRGBA[uint8], width*height)
+	return img
 }
-
-func ImageMagickConvertFromBytesTo(args ImageMagickArgs) ([]byte, error) {
-	// Create temp file
-	tempFile := ml_fs.GetTempFilePath()
-	f1 := ml_file.New(tempFile)
-	err := f1.Write(args.FromData)
-	if err != nil {
-		return nil, err
-	}
-	defer f1.Delete()
-
-	outFilePath := ml_fs.GetTempFilePath() + "." + args.ToExt
-
-	// Store photo
-	ml_process.Exec("magick", tempFile, "-quality", fmt.Sprintf("%v", args.Quality), outFilePath)
-	time.Sleep(time.Millisecond * 500)
-
-	// Read
-	f2 := ml_file.New(outFilePath)
-	defer f2.Delete()
-	dataOut, err := f2.ReadAll()
-	return dataOut, err
-}
+*/

@@ -1,11 +1,6 @@
 package ml_color
 
-import (
-	mmath "github.com/maldan/go-ml/math"
-	"golang.org/x/exp/constraints"
-)
-
-type ColorRGB[T constraints.Integer | constraints.Float] struct {
+/*type ColorRGB[T constraints.Integer | constraints.Float] struct {
 	R T
 	G T
 	B T
@@ -36,9 +31,9 @@ func (c ColorRGBA[T]) Avg(c2 ColorRGBA[T]) ColorRGBA[T] {
 	c.G = T((mmath.Clamp((float32(c.G)+float32(c2.G))/2.0, 0, 255)))
 	c.B = T((mmath.Clamp((float32(c.B)+float32(c2.B))/2.0, 0, 255)))
 	return c
-}
+}*/
 
-func (c ColorRGBA[T]) Mix(c2 ColorRGBA[T], t float32) ColorRGBA[T] {
+/*func (c ColorRGBA[T]) Mix(c2 ColorRGBA[T], t float32) ColorRGBA[T] {
 	if t > 1 {
 		t = 1
 	}
@@ -49,9 +44,9 @@ func (c ColorRGBA[T]) Mix(c2 ColorRGBA[T], t float32) ColorRGBA[T] {
 	c.G = T(mmath.Clamp(float32(c.G)*(1.0-t)+float32(c2.G)*t, 0, 255))
 	c.B = T(mmath.Clamp(float32(c.B)*(1.0-t)+float32(c2.B)*t, 0, 255))
 	return c
-}
+}*/
 
-func (c ColorRGBA[T]) MulF32(v float32) ColorRGBA[T] {
+/*func (c ColorRGBA[T]) MulF32(v float32) ColorRGBA[T] {
 	c.R = T(mmath.Clamp(float32(c.R)*v, 0, 255))
 	c.G = T(mmath.Clamp(float32(c.G)*v, 0, 255))
 	c.B = T(mmath.Clamp(float32(c.B)*v, 0, 255))
@@ -87,7 +82,7 @@ func (c ColorRGBA[T]) Lerp(to ColorRGBA[T], t float32) ColorRGBA[T] {
 		G: T(mmath.Lerp(float32(c.G), float32(to.G), t)),
 		B: T(mmath.Lerp(float32(c.B), float32(to.B), t)),
 	}
-}
+}*/
 
 /*func Lerp[T constraints.Integer | constraints.Float](from ColorRGBA[T], to ColorRGBA[T], t float32) ColorRGBA[T] {
 	return ColorRGBA[T]{

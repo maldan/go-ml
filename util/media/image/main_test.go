@@ -1,12 +1,6 @@
 package ml_image_test
 
-import (
-	"fmt"
-	ml_image "github.com/maldan/go-ml/util/media/image"
-	"testing"
-)
-
-func TestX(t *testing.T) {
+/*func TestX(t *testing.T) {
 	img, err := ml_image.FromFile("C:/Users/black/Desktop/CtOjmNXnY0y9AJNIHksu4xjg.webp")
 	if err != nil {
 		panic(err)
@@ -27,3 +21,4 @@ func TestX(t *testing.T) {
 	})
 	fmt.Printf("%v\n", err)
 }
+*/

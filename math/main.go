@@ -99,6 +99,10 @@ func Clamp[T constraints.Integer | constraints.Float](v T, min T, max T) T {
 	return v
 }
 
+func Clamp01[T constraints.Integer | constraints.Float](v T) T {
+	return Clamp(v, 0, 1)
+}
+
 func Lerp[T constraints.Integer | constraints.Float](start T, end T, t T) T {
 	return (1-t)*start + t*end
 }
