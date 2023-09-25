@@ -3,6 +3,7 @@ package mmath_la
 import (
 	"encoding/binary"
 	mmath "github.com/maldan/go-ml/math"
+	ml_random "github.com/maldan/go-ml/util/random"
 	"golang.org/x/exp/constraints"
 	"math"
 )
@@ -10,6 +11,13 @@ import (
 type Vector2[T constraints.Float] struct {
 	X T `json:"x"`
 	Y T `json:"y"`
+}
+
+func (v Vector2[T]) Random(l T, h T) Vector2[T] {
+	return Vector2[T]{
+		X: ml_random.Range[T](l, h),
+		Y: ml_random.Range[T](l, h),
+	}
 }
 
 func (v Vector2[T]) Add(v2 Vector2[T]) Vector2[T] {
@@ -81,6 +89,12 @@ func (v Vector2[T]) AddXY(x T, y T) Vector2[T] {
 func (v Vector2[T]) MulXY(x T, y T) Vector2[T] {
 	v.X *= x
 	v.Y *= y
+	return v
+}
+
+func (v Vector2[T]) MulScalar(s T) Vector2[T] {
+	v.X *= s
+	v.Y *= s
 	return v
 }
 

@@ -69,7 +69,7 @@ func getValueFieldNames[T any](v T, useQuotes bool) []string {
 	return out
 }
 
-func getValues[T any](v T) []any {
+func GetValues[T any](v T) []any {
 	typeOf := reflect.TypeOf(v)
 	valueOf := reflect.ValueOf(v)
 	out := make([]any, 0)
@@ -161,7 +161,7 @@ func InsertMany[T any](db *sql.DB, table string, value []T) error {
 	allValues := make([]any, 0)
 
 	for j := 0; j < len(value); j++ {
-		values := getValues(value[j])
+		values := GetValues(value[j])
 		valuesQ := make([]string, len(values))
 		for i := 0; i < len(fields); i++ {
 			if fields[i] == "`id`" && reflect.ValueOf(values[i]).IsZero() {
@@ -200,7 +200,7 @@ func InsertMany[T any](db *sql.DB, table string, value []T) error {
 
 func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	fields := getValueFieldNames(value, true)
-	values := getValues(value)
+	values := GetValues(value)
 	valuesQ := make([]string, len(values))
 
 	query := fmt.Sprintf("INSERT INTO '%v'(\n", table)
@@ -239,189 +239,6 @@ func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 
 	return lastId, nil
 }
-
-/*func SelectOne[T any](db *sql.DB, from string, where string, values ...any) (*T, error) {
-	out := *new(T)
-	outType := reflect.TypeOf(&out).Elem()
-
-	fields := getValueFieldNames(out, false)
-	query := fmt.Sprintf("SELECT %v FROM %v WHERE %v LIMIT 1", strings.Join(fields, ","), from, where)
-
-	destForScan := make([]any, len(fields))
-	rawResult := make([]sql.RawBytes, len(fields))
-	for i, _ := range destForScan {
-		destForScan[i] = &rawResult[i]
-	}
-
-	// Prepare
-	statement, err := db.Prepare(query)
-	defer statement.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	// Execute statement
-	rows, err := statement.Query(values...)
-	defer rows.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	// Scan rows
-	found := false
-	for rows.Next() {
-		err2 := rows.Scan(destForScan...)
-		if err2 != nil {
-			return nil, err2
-		}
-		found = true
-	}
-
-	if !found {
-		return nil, nil
-	}
-
-	// Copy result
-	for i := 0; i < len(fields); i++ {
-		if outType.Field(i).Type.Kind() == reflect.Int8 ||
-			outType.Field(i).Type.Kind() == reflect.Int16 ||
-			outType.Field(i).Type.Kind() == reflect.Int32 ||
-			outType.Field(i).Type.Kind() == reflect.Int ||
-			outType.Field(i).Type.Kind() == reflect.Int64 {
-			str := string(rawResult[i])
-			n, _ := strconv.Atoi(str)
-			reflect.ValueOf(&out).Elem().Field(i).SetInt(int64(n))
-		}
-
-		if outType.Field(i).Type.Kind() == reflect.Uint8 ||
-			outType.Field(i).Type.Kind() == reflect.Uint16 ||
-			outType.Field(i).Type.Kind() == reflect.Uint32 ||
-			outType.Field(i).Type.Kind() == reflect.Uint ||
-			outType.Field(i).Type.Kind() == reflect.Uint64 {
-			str := string(rawResult[i])
-			n, _ := strconv.Atoi(str)
-			reflect.ValueOf(&out).Elem().Field(i).SetUint(uint64(n))
-		}
-
-		if outType.Field(i).Type.Kind() == reflect.Bool {
-			if len(rawResult[i]) > 0 {
-				reflect.ValueOf(&out).Elem().Field(i).SetBool(rawResult[i][0] == 49)
-			}
-		}
-		if outType.Field(i).Type.Kind() == reflect.String {
-			if len(rawResult[i]) > 0 {
-				reflect.ValueOf(&out).Elem().Field(i).SetString(string(rawResult[i]))
-			}
-		}
-		if outType.Field(i).Type.Name() == "Time" {
-			t, err2 := time.Parse("2006-01-02T15:04:05.999999-07:00", string(rawResult[i]))
-			if err2 != nil {
-				fmt.Printf("%v\n", err2)
-				t2, err3 := time.Parse("2006-01-02T15:04:05Z", string(rawResult[i]))
-				if err3 != nil {
-					fmt.Printf("%v\n", err3)
-				} else {
-					t = t2
-				}
-			}
-
-			ptr := unsafe.Add(unsafe.Pointer(&out), outType.Field(i).Offset)
-			*(*time.Time)(ptr) = t
-		}
-	}
-
-	return &out, err
-}*/
-
-/*func SelectMany[T any](db *sql.DB, from string, where string, values ...any) ([]T, error) {
-	fields := getValueFieldNames(*new(T), false)
-	query := fmt.Sprintf("SELECT %v FROM %v WHERE %v", strings.Join(fields, ","), from, where)
-
-	destForScan := make([]any, len(fields))
-	rawResult := make([]sql.RawBytes, len(fields))
-	for i, _ := range destForScan {
-		destForScan[i] = &rawResult[i]
-	}
-
-	// Prepare
-	statement, err := db.Prepare(query)
-	defer statement.Close()
-	if err != nil {
-		return make([]T, 0), err
-	}
-
-	// Execute statement
-	rows, err := statement.Query(values...)
-	defer rows.Close()
-	if err != nil {
-		return make([]T, 0), err
-	}
-
-	// Scan rows
-	outList := make([]T, 0)
-	for rows.Next() {
-		err2 := rows.Scan(destForScan...)
-		if err2 != nil {
-			fmt.Printf("%v\n", err2)
-		}
-
-		out := *new(T)
-		outType := reflect.TypeOf(&out).Elem()
-
-		// Copy result
-		for i := 0; i < len(fields); i++ {
-			if outType.Field(i).Type.Kind() == reflect.Int8 ||
-				outType.Field(i).Type.Kind() == reflect.Int16 ||
-				outType.Field(i).Type.Kind() == reflect.Int32 ||
-				outType.Field(i).Type.Kind() == reflect.Int ||
-				outType.Field(i).Type.Kind() == reflect.Int64 {
-				str := string(rawResult[i])
-				n, _ := strconv.Atoi(str)
-				reflect.ValueOf(&out).Elem().Field(i).SetInt(int64(n))
-			}
-
-			if outType.Field(i).Type.Kind() == reflect.Uint8 ||
-				outType.Field(i).Type.Kind() == reflect.Uint16 ||
-				outType.Field(i).Type.Kind() == reflect.Uint32 ||
-				outType.Field(i).Type.Kind() == reflect.Uint ||
-				outType.Field(i).Type.Kind() == reflect.Uint64 {
-				str := string(rawResult[i])
-				n, _ := strconv.Atoi(str)
-				reflect.ValueOf(&out).Elem().Field(i).SetUint(uint64(n))
-			}
-
-			if outType.Field(i).Type.Kind() == reflect.Bool {
-				if len(rawResult[i]) > 0 {
-					reflect.ValueOf(&out).Elem().Field(i).SetBool(rawResult[i][0] == 49)
-				}
-			}
-			if outType.Field(i).Type.Kind() == reflect.String {
-				if len(rawResult[i]) > 0 {
-					reflect.ValueOf(&out).Elem().Field(i).SetString(string(rawResult[i]))
-				}
-			}
-			if outType.Field(i).Type.Name() == "Time" {
-				t, err2 := time.Parse("2006-01-02T15:04:05.999999-07:00", string(rawResult[i]))
-				if err2 != nil {
-					fmt.Printf("%v\n", err2)
-					t2, err3 := time.Parse("2006-01-02T15:04:05Z", string(rawResult[i]))
-					if err3 != nil {
-						fmt.Printf("%v\n", err3)
-					} else {
-						t = t2
-					}
-				}
-
-				ptr := unsafe.Add(unsafe.Pointer(&out), outType.Field(i).Offset)
-				*(*time.Time)(ptr) = t
-			}
-		}
-
-		outList = append(outList, out)
-	}
-
-	return outList, err
-}*/
 
 func Count(db *sql.DB, from string, where string, values ...any) (int, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %v WHERE %v LIMIT 1", from, where)
@@ -520,6 +337,8 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 	if args.Offset > 0 {
 		query += fmt.Sprintf(" OFFSET %v", args.Offset)
 	}
+
+	// fmt.Printf("SELECT: %v\n", query)
 
 	response := SelectResponse[T]{}
 

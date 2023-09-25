@@ -2,6 +2,7 @@ package mmath_la
 
 import (
 	"encoding/binary"
+	mmath "github.com/maldan/go-ml/math"
 	ml_random "github.com/maldan/go-ml/util/random"
 	"golang.org/x/exp/constraints"
 	"math"
@@ -17,6 +18,7 @@ func (v Vector3[T]) TransformMatrix4x4(mx Matrix4x4[T]) Vector3[T] {
 	x := v.X
 	y := v.Y
 	z := v.Z
+	//w := T(1.0)
 	w := mx.Raw[3]*x + mx.Raw[7]*y + mx.Raw[11]*z + mx.Raw[15]
 	if w == 0 {
 		w = 1
@@ -52,6 +54,13 @@ func (v Vector3[T]) Invert() Vector3[T] {
 	}
 }
 
+func (v Vector3[T]) Magnitude() T {
+	ax := v.X
+	ay := v.Y
+	az := v.Z
+	return T(math.Sqrt(float64(ax*ax + ay*ay + az*az)))
+}
+
 func (v Vector3[T]) Length() T {
 	ax := float64(v.X)
 	ay := float64(v.Y)
@@ -82,11 +91,32 @@ func (v Vector3[T]) Cross(v2 Vector3[T]) Vector3[T] {
 	return out
 }
 
+func (v Vector3[T]) Floor() Vector3[T] {
+	v.X = T(int(v.X))
+	v.Y = T(int(v.Y))
+	v.Z = T(int(v.Z))
+	return v
+}
+
+func (v Vector3[T]) Round() Vector3[T] {
+	v.X = T(math.Round(float64(v.X)))
+	v.Y = T(math.Round(float64(v.Y)))
+	v.Z = T(math.Round(float64(v.Z)))
+	return v
+}
+
 /*
 func (v Vector3[T]) Cross(v2 Vector3[T]) T {
 	return v.X*v2.X + v.Y*v2.Y + v.Z*v2.Z
 }
 */
+
+func (v Vector3[T]) RandomScalar(s T) Vector3[T] {
+	v.X = ml_random.Range[T](-s, s)
+	v.Y = ml_random.Range[T](-s, s)
+	v.Z = ml_random.Range[T](-s, s)
+	return v
+}
 
 func (v Vector3[T]) Random(v2 Vector3[T]) Vector3[T] {
 	v.X = ml_random.Range[T](-v2.X, v2.X)
@@ -102,13 +132,30 @@ func (v Vector3[T]) RandomXYZ(rx T, ry T, rz T) Vector3[T] {
 	return v
 }
 
-func (v Vector3[T]) Divide(v2 T) Vector3[T] {
+func (v Vector3[T]) Div(v2 T) Vector3[T] {
 	if v2 == 0 {
 		return Vector3[T]{}
 	}
 	v.X /= v2
 	v.Y /= v2
 	v.Z /= v2
+	return v
+}
+
+func (v Vector3[T]) DivXYZ(x T, y T, z T) Vector3[T] {
+	if x == 0 {
+		x = 0.00000001
+	}
+	if y == 0 {
+		y = 0.00000001
+	}
+	if z == 0 {
+		z = 0.00000001
+	}
+
+	v.X /= x
+	v.Y /= y
+	v.Z /= z
 	return v
 }
 
@@ -160,6 +207,10 @@ func (v Vector3[T]) Mul(v2 Vector3[T]) Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) IsZero() bool {
+	return v.X == 0 && v.Y == 0 && v.Z == 0
+}
+
 func (v Vector3[T]) MulXYZ(x T, y T, z T) Vector3[T] {
 	v.X *= x
 	v.Y *= y
@@ -207,6 +258,14 @@ func (v Vector3[T]) DirectionXZToAngle() T {
 	return T(math.Atan2(float64(v.X), float64(-v.Z)))
 }
 
+func (v Vector3[T]) Lerp(to Vector3[T], weight T) Vector3[T] {
+	return Vector3[T]{
+		X: mmath.Lerp(v.X, to.X, weight),
+		Y: mmath.Lerp(v.Y, to.Y, weight),
+		Z: mmath.Lerp(v.Z, to.Z, weight),
+	}
+}
+
 /*func AngleBetweenPoints[T constraints.Float](p1 Vector2[T], p2 T) T {
 	rad := math.Atan2(p2.Y-p1.Y, p2.X-p1.X)
 	return T(rad)
@@ -218,6 +277,10 @@ func (v Vector3[T]) ToVector2XY() Vector2[T] {
 
 func (v Vector3[T]) ToVector2XZ() Vector2[T] {
 	return Vector2[T]{v.X, v.Z}
+}
+
+func (v Vector3[T]) ToVector4(w T) Vector4[T] {
+	return Vector4[T]{v.X, v.Y, v.Z, w}
 }
 
 func (v Vector3[T]) FromBytes(data []byte) Vector3[T] {

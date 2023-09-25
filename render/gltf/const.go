@@ -31,18 +31,6 @@ type Accessor struct {
 	Type          string `json:"type"`
 }
 
-type Primitive struct {
-	Attributes Attribute `json:"attributes"`
-	Indices    int       `json:"indices"`
-	Material   int       `json:"material"`
-}
-
-type Attribute struct {
-	POSITION   *int `json:"POSITION"`
-	NORMAL     *int `json:"NORMAL"`
-	TEXCOORD_0 *int `json:"TEXCOORD_0"`
-}
-
 type Node struct {
 	Mesh int    `json:"mesh"`
 	Name string `json:"name"`

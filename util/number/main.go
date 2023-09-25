@@ -22,11 +22,7 @@ func CheckBitMask[T constraints.Integer](v T, mask T) bool {
 	return v&mask == mask
 }
 
-func Lerp[T constraints.Integer | constraints.Float](start T, end T, t T) T {
-	return (1-t)*start + t*end
-}
-
-func Clamp[T constraints.Integer | constraints.Float](v T, min T, max T) T {
+/*func Clamp[T constraints.Integer | constraints.Float](v T, min T, max T) T {
 	if v <= min {
 		return min
 	}
@@ -34,7 +30,7 @@ func Clamp[T constraints.Integer | constraints.Float](v T, min T, max T) T {
 		return max
 	}
 	return v
-}
+}*/
 
 func TowardsSmooth[T constraints.Float](from *T, to T, step T, delta T) {
 	step = 1 / step

@@ -1,6 +1,7 @@
 package mmath_la
 
 import (
+	"fmt"
 	"golang.org/x/exp/constraints"
 	"math"
 )
@@ -257,9 +258,9 @@ func (m Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) Matrix4x4[T] {
 	m.Raw[13] = 0
 	m.Raw[15] = 0
 
-	nf := 1 / (near - far)
-	m.Raw[10] = (far + near) * nf
-	m.Raw[14] = 2 * far * near * nf
+	// nf := 1 / (near - far)
+	m.Raw[10] = (far + near) / (near - far)
+	m.Raw[14] = (2 * far * near) / (near - far)
 
 	return m
 }
@@ -367,6 +368,17 @@ func (m Matrix4x4[T]) Multiply(b Matrix4x4[T]) Matrix4x4[T] {
 	return m
 }
 
+func (m Matrix4x4[T]) MultiplyVector4(v Vector4[T]) Vector4[T] {
+	result := Vector4[T]{}
+
+	result.X = v.X*m.Raw[0] + v.Y*m.Raw[1] + v.Z*m.Raw[2] + v.W*m.Raw[3]
+	result.Y = v.X*m.Raw[4] + v.Y*m.Raw[5] + v.Z*m.Raw[6] + v.W*m.Raw[7]
+	result.Z = v.X*m.Raw[8] + v.Y*m.Raw[9] + v.Z*m.Raw[10] + v.W*m.Raw[11]
+	result.W = v.X*m.Raw[12] + v.Y*m.Raw[13] + v.Z*m.Raw[14] + v.W*m.Raw[15]
+
+	return result
+}
+
 func (m Matrix4x4[T]) Rotate(rad T, axis Vector3[T]) Matrix4x4[T] {
 	ln := T(math.Sqrt(float64(axis.X*axis.X + axis.Y*axis.Y + axis.Z*axis.Z)))
 	if ln < T(0.000001) {
@@ -464,4 +476,14 @@ func (m *Matrix4x4[T]) TargetTo(from Vector3[T], to Vector3[T], up Vector3[T]) {
 	m.Raw[13] = from.Y
 	m.Raw[14] = from.Z
 	m.Raw[15] = 1
+}
+
+func (m Matrix4x4[T]) ToString() string {
+	return fmt.Sprintf(
+		"Matrix4x4 \n(%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f)",
+		m.Raw[0], m.Raw[1], m.Raw[2], m.Raw[3],
+		m.Raw[4], m.Raw[5], m.Raw[6], m.Raw[7],
+		m.Raw[8], m.Raw[9], m.Raw[10], m.Raw[11],
+		m.Raw[12], m.Raw[13], m.Raw[14], m.Raw[15],
+	)
 }

@@ -5,6 +5,10 @@ import (
 	"math/rand"
 )
 
+func init() {
+
+}
+
 func SetSeed(seed int64) {
 	rand.Seed(seed)
 }
@@ -15,6 +19,10 @@ func RangeInt(min int, max int) int {
 
 func Range[T constraints.Float](min T, max T) T {
 	return min + T(rand.Float64())*(max-min)
+}
+
+func RangeF(min float32, max float32) float32 {
+	return min + float32(rand.Float64())*(max-min)
 }
 
 /*func RandFloat32(min float32, max float32) float32 {

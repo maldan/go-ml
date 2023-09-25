@@ -11,7 +11,77 @@ type Mesh struct {
 	gltf       *GLTF
 }
 
-func (m Mesh) GetNormal() []mmath_la.Vector3[float32] {
+type Attribute struct {
+	POSITION   *int `json:"POSITION"`
+	NORMAL     *int `json:"NORMAL"`
+	TEXCOORD_0 *int `json:"TEXCOORD_0"`
+}
+
+type Target struct {
+	POSITION *int `json:"POSITION"`
+	NORMAL   *int `json:"NORMAL"`
+}
+
+type Primitive struct {
+	Attributes Attribute `json:"attributes"`
+	Targets    []Target  `json:"targets"`
+	Indices    int       `json:"indices"`
+	Material   *int      `json:"material"`
+}
+
+func (m Mesh) GetTargetVertices(id int) []mmath_la.Vector3[float32] {
+	p := m.Primitives[0].Targets[id].POSITION
+	if p == nil {
+		return nil
+	}
+
+	accessor := m.gltf.Accessors[*p]
+	finalView := m.gltf.BufferViews[accessor.BufferView]
+
+	componentAmount := numberOfComponents(accessor.Type)
+	byteSize := byteLength(accessor.ComponentType)
+	offset := finalView.ByteOffset
+	buf := m.gltf.Buffers[finalView.Buffer].content
+
+	out := make([]mmath_la.Vector3[float32], 0)
+	if accessor.Type == "VEC3" {
+		for i := 0; i < accessor.Count; i++ {
+			v := mmath_la.Vector3[float32]{}.FromBytes(buf[offset:])
+			out = append(out, v)
+			offset += byteSize * componentAmount
+		}
+	}
+
+	return out
+}
+
+func (m Mesh) GetTargetNormals(id int) []mmath_la.Vector3[float32] {
+	p := m.Primitives[0].Targets[id].NORMAL
+	if p == nil {
+		return nil
+	}
+
+	accessor := m.gltf.Accessors[*p]
+	finalView := m.gltf.BufferViews[accessor.BufferView]
+
+	componentAmount := numberOfComponents(accessor.Type)
+	byteSize := byteLength(accessor.ComponentType)
+	offset := finalView.ByteOffset
+	buf := m.gltf.Buffers[finalView.Buffer].content
+
+	out := make([]mmath_la.Vector3[float32], 0)
+	if accessor.Type == "VEC3" {
+		for i := 0; i < accessor.Count; i++ {
+			v := mmath_la.Vector3[float32]{}.FromBytes(buf[offset:])
+			out = append(out, v)
+			offset += byteSize * componentAmount
+		}
+	}
+
+	return out
+}
+
+func (m Mesh) GetNormals() []mmath_la.Vector3[float32] {
 	p := m.Primitives[0].Attributes.NORMAL
 	if p == nil {
 		return nil
@@ -118,6 +188,10 @@ func (m Mesh) GetIndices() []uint32 {
 	return out
 }
 
+func (m Mesh) HasMaterial() bool {
+	return m.Primitives[0].Material != nil
+}
+
 func (m Mesh) GetMaterial() Material {
-	return m.gltf.Materials[m.Primitives[0].Material]
+	return m.gltf.Materials[*m.Primitives[0].Material]
 }
