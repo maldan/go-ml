@@ -1,5 +1,12 @@
 package ml_image_test
 
+import (
+	"fmt"
+	ml_color "github.com/maldan/go-ml/util/media/color"
+	ml_image "github.com/maldan/go-ml/util/media/image"
+	"testing"
+)
+
 /*func TestX(t *testing.T) {
 	img, err := ml_image.FromFile("C:/Users/black/Desktop/CtOjmNXnY0y9AJNIHksu4xjg.webp")
 	if err != nil {
@@ -22,3 +29,9 @@ package ml_image_test
 	fmt.Printf("%v\n", err)
 }
 */
+
+func TestA(t *testing.T) {
+	i := ml_image.ImageRGBA8{}.New(2, 2)
+	i.SetPixel(1, 1, ml_color.RGBA8{}.White())
+	fmt.Printf("%v\n", i.Data)
+}

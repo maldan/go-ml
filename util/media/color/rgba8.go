@@ -9,6 +9,10 @@ type RGBA8 struct {
 	A uint8
 }
 
+func (c RGBA8) White() RGBA8 {
+	return RGBA8{R: 255, G: 255, B: 255, A: 255}
+}
+
 func (c RGBA8) ToRGB32F() RGB32F {
 	return RGB32F{
 		R: mmath.Clamp01(float32(c.R) / 255.0),

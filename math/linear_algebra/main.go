@@ -2,8 +2,8 @@ package mmath_la
 
 import "golang.org/x/exp/constraints"
 
-func Vec2f(x float32, y float32) Vector2[float32] {
-	return Vector2[float32]{X: x, Y: y}
+func Vec2f[T constraints.Integer | constraints.Float](x T, y T) Vector2[float32] {
+	return Vector2[float32]{X: float32(x), Y: float32(y)}
 }
 
 func Vec2fZero() Vector2[float32] {

@@ -48,6 +48,7 @@ func (i ImageRGBA8) FromBytes(data []byte) (ImageRGBA8, error) {
 
 	i.Width = image.Bounds().Size().X
 	i.Height = image.Bounds().Size().Y
+	i.Data = make([]ml_color.RGBA8, i.Width*i.Height)
 
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
@@ -71,7 +72,7 @@ func (i ImageRGBA8) FromBytes(data []byte) (ImageRGBA8, error) {
 			b = mmath.Clamp(b, 0, 255)
 			a = mmath.Clamp(a, 0, 255)
 
-			i.SetPixel(x, y, ml_color.RGBA8{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)})
+			(&i).SetPixel(x, y, ml_color.RGBA8{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)})
 		}
 	}
 
@@ -86,6 +87,7 @@ func (i ImageRGBA8) FromFile(filePath string) (ImageRGBA8, error) {
 
 	i.Width = image.Bounds().Size().X
 	i.Height = image.Bounds().Size().Y
+	i.Data = make([]ml_color.RGBA8, i.Width*i.Height)
 
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {

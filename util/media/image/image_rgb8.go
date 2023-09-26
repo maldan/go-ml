@@ -48,6 +48,7 @@ func (i ImageRGB8) FromBytes(data []byte) (ImageRGB8, error) {
 
 	i.Width = image.Bounds().Size().X
 	i.Height = image.Bounds().Size().Y
+	i.Data = make([]ml_color.RGB8, i.Width*i.Height)
 
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
@@ -82,6 +83,7 @@ func (i ImageRGB8) FromFile(filePath string) (ImageRGB8, error) {
 
 	i.Width = image.Bounds().Size().X
 	i.Height = image.Bounds().Size().Y
+	i.Data = make([]ml_color.RGB8, i.Width*i.Height)
 
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {

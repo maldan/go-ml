@@ -204,6 +204,29 @@ func (t Triangle3D[T]) Center() mmath_la.Vector3[T] {
 	return center
 }
 
+func (t Triangle3D[T]) GetNormal() mmath_la.Vector3[T] {
+	// Вычисляем векторы AB и AC.
+	AB := mmath_la.Vector3[T]{
+		X: t.B.X - t.A.X,
+		Y: t.B.Y - t.A.Y,
+		Z: t.B.Z - t.A.Z,
+	}
+	AC := mmath_la.Vector3[T]{
+		X: t.C.X - t.A.X,
+		Y: t.C.Y - t.A.Y,
+		Z: t.C.Z - t.A.Z,
+	}
+
+	// Вычисляем нормаль как векторное произведение AB и AC.
+	normal := mmath_la.Vector3[T]{
+		X: AB.Y*AC.Z - AB.Z*AC.Y,
+		Y: AB.Z*AC.X - AB.X*AC.Z,
+		Z: AB.X*AC.Y - AB.Y*AC.X,
+	}.Normalize()
+
+	return normal
+}
+
 /*func (t Triangle3D[T]) MulScalar(f T) Triangle3D[T] {
 	return Triangle3D[T]{
 		A: t.A.MulScalar(f),
