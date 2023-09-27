@@ -283,6 +283,22 @@ func (v Vector3[T]) ToVector4(w T) Vector4[T] {
 	return Vector4[T]{v.X, v.Y, v.Z, w}
 }
 
+func (v Vector3[T]) ToDeg() Vector3[T] {
+	return Vector3[T]{
+		X: mmath.RadToDeg(v.X),
+		Y: mmath.RadToDeg(v.Y),
+		Z: mmath.RadToDeg(v.Z),
+	}
+}
+
+func (v Vector3[T]) ToRad() Vector3[T] {
+	return Vector3[T]{
+		X: mmath.DegToRad(v.X),
+		Y: mmath.DegToRad(v.Y),
+		Z: mmath.DegToRad(v.Z),
+	}
+}
+
 func (v Vector3[T]) FromBytes(data []byte) Vector3[T] {
 	v.X = T(math.Float32frombits(binary.LittleEndian.Uint32(data[0:4])))
 	v.Y = T(math.Float32frombits(binary.LittleEndian.Uint32(data[0+4 : 4+4])))

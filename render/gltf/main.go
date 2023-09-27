@@ -29,6 +29,9 @@ func FromFile(path string) (GLTF, error) {
 	for i := 0; i < len(gltf.Materials); i++ {
 		gltf.Materials[i].gltf = &gltf
 	}
+	for i := 0; i < len(gltf.Skins); i++ {
+		gltf.Skins[i].gltf = &gltf
+	}
 
 	return gltf, nil
 }

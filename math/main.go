@@ -111,6 +111,10 @@ func Remap[T constraints.Float | constraints.Integer](value T, low1 T, high1 T, 
 	return low2 + (high2-low2)*(value-low1)/(high1-low1)
 }
 
-func DegToRad[T constraints.Float](v T) T {
-	return v * (T(Pi) / 180.0)
+func DegToRad[T constraints.Float](d T) T {
+	return d * (T(Pi) / 180.0)
+}
+
+func RadToDeg[T constraints.Float](r T) T {
+	return r * (180.0 / T(Pi))
 }

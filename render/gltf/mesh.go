@@ -15,6 +15,8 @@ type Attribute struct {
 	POSITION   *int `json:"POSITION"`
 	NORMAL     *int `json:"NORMAL"`
 	TEXCOORD_0 *int `json:"TEXCOORD_0"`
+	JOINTS_0   *int `json:"JOINTS_0"`
+	WEIGHTS_0  *int `json:"WEIGHTS_0"`
 }
 
 type Target struct {
@@ -73,6 +75,62 @@ func (m Mesh) GetTargetNormals(id int) []mmath_la.Vector3[float32] {
 	if accessor.Type == "VEC3" {
 		for i := 0; i < accessor.Count; i++ {
 			v := mmath_la.Vector3[float32]{}.FromBytes(buf[offset:])
+			out = append(out, v)
+			offset += byteSize * componentAmount
+		}
+	}
+
+	return out
+}
+
+func (m Mesh) GetJoints() []mmath_la.Vector4[float32] {
+	p := m.Primitives[0].Attributes.JOINTS_0
+	if p == nil {
+		return nil
+	}
+
+	accessor := m.gltf.Accessors[*p]
+	finalView := m.gltf.BufferViews[accessor.BufferView]
+
+	componentAmount := numberOfComponents(accessor.Type)
+	byteSize := byteLength(accessor.ComponentType)
+	offset := finalView.ByteOffset
+	buf := m.gltf.Buffers[finalView.Buffer].content
+
+	out := make([]mmath_la.Vector4[float32], 0)
+	if accessor.Type == "VEC4" {
+		for i := 0; i < accessor.Count; i++ {
+			out = append(out, mmath_la.Vector4[float32]{
+				X: float32(buf[offset : offset+4][0]),
+				Y: float32(buf[offset : offset+4][1]),
+				Z: float32(buf[offset : offset+4][2]),
+				W: float32(buf[offset : offset+4][3]),
+			})
+			offset += byteSize * componentAmount
+		}
+	}
+
+	return out
+}
+
+func (m Mesh) GetWeight() []mmath_la.Vector4[float32] {
+	p := m.Primitives[0].Attributes.WEIGHTS_0
+	if p == nil {
+		return nil
+	}
+
+	accessor := m.gltf.Accessors[*p]
+	finalView := m.gltf.BufferViews[accessor.BufferView]
+
+	componentAmount := numberOfComponents(accessor.Type)
+	byteSize := byteLength(accessor.ComponentType)
+	offset := finalView.ByteOffset
+	buf := m.gltf.Buffers[finalView.Buffer].content
+
+	out := make([]mmath_la.Vector4[float32], 0)
+	if accessor.Type == "VEC4" {
+		for i := 0; i < accessor.Count; i++ {
+			v := mmath_la.Vector4[float32]{}.FromBytes(buf[offset:])
 			out = append(out, v)
 			offset += byteSize * componentAmount
 		}

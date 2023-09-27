@@ -32,8 +32,11 @@ type Accessor struct {
 }
 
 type Node struct {
-	Mesh int    `json:"mesh"`
-	Name string `json:"name"`
+	Mesh        int        `json:"mesh"`
+	Name        string     `json:"name"`
+	Rotation    *[]float32 `json:"rotation"`
+	Scale       *[]float32 `json:"scale"`
+	Translation *[]float32 `json:"translation"`
 }
 
 type Texture struct {
@@ -53,6 +56,8 @@ type GLTF struct {
 	Accessors   []Accessor   `json:"accessors"`
 	BufferViews []BufferView `json:"bufferViews"`
 	Buffers     []Buffer     `json:"buffers"`
+	Animations  []Animation  `json:"animations"`
+	Skins       []Skin       `json:"skins"`
 }
 
 func (g GLTF) ParseAccessor(accessor Accessor) {

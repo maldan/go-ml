@@ -488,3 +488,15 @@ func (m Matrix4x4[T]) ToString() string {
 		m.Raw[12], m.Raw[13], m.Raw[14], m.Raw[15],
 	)
 }
+
+func (m Matrix4x4[T]) FromBytes(data []byte) Matrix4x4[T] {
+	for i := 0; i < 16; i += 4 {
+		v1 := Vector4[T]{}.FromBytes(data[i*4:])
+		m.Raw[i] = v1.X
+		m.Raw[i+1] = v1.Y
+		m.Raw[i+2] = v1.Z
+		m.Raw[i+3] = v1.W
+	}
+
+	return m
+}
