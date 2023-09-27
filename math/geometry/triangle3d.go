@@ -186,6 +186,14 @@ func (t Triangle3D[T]) ToTriangle4D(w T) Triangle4D[T] {
 	}
 }
 
+func (t Triangle3D[T]) ToTriangle2D() Triangle2D[T] {
+	return Triangle2D[T]{
+		A: t.A.ToVector2XY(),
+		B: t.B.ToVector2XY(),
+		C: t.C.ToVector2XY(),
+	}
+}
+
 func (t Triangle3D[T]) Center() mmath_la.Vector3[T] {
 	center := mmath_la.Vector3[T]{}
 

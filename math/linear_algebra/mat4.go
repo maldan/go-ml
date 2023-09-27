@@ -242,7 +242,8 @@ func (m Matrix4x4[T]) RotateZ(rad T) Matrix4x4[T] {
 }
 
 func (m Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) Matrix4x4[T] {
-	f := 1.0 / T(math.Tan(float64(fov)/2.0))
+	f := T(1.0 / (math.Tan(float64(fov) / 2.0)))
+
 	m.Raw[0] = f / aspect
 	m.Raw[1] = 0
 	m.Raw[2] = 0
@@ -253,14 +254,14 @@ func (m Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) Matrix4x4[T] {
 	m.Raw[7] = 0
 	m.Raw[8] = 0
 	m.Raw[9] = 0
-	m.Raw[11] = -1
+	m.Raw[11] = -1.0
 	m.Raw[12] = 0
 	m.Raw[13] = 0
 	m.Raw[15] = 0
 
 	// nf := 1 / (near - far)
 	m.Raw[10] = (far + near) / (near - far)
-	m.Raw[14] = (2 * far * near) / (near - far)
+	m.Raw[14] = (2.0 * far * near) / (near - far)
 
 	return m
 }

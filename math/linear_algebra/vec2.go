@@ -38,6 +38,10 @@ func (v Vector2[T]) SubXY(x T, y T) Vector2[T] {
 	return v
 }
 
+func (v Vector2[T]) Cross(v2 Vector2[T]) T {
+	return v.X*v2.Y - v.Y*v2.X
+}
+
 func (v *Vector2[T]) Length() T {
 	ax := float64(v.X)
 	ay := float64(v.Y)

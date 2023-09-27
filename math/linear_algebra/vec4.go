@@ -58,3 +58,7 @@ func (v Vector4[T]) MultiplyMatrix4x4(m Matrix4x4[T]) Vector4[T] {
 func (v Vector4[T]) ToVector3XYZ() Vector3[T] {
 	return Vector3[T]{v.X, v.Y, v.Z}
 }
+
+func (v Vector4[T]) ToVector2XY() Vector2[T] {
+	return Vector2[T]{v.X, v.Y}
+}

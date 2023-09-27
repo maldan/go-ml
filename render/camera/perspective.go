@@ -19,7 +19,7 @@ type PerspectiveCamera struct {
 
 func (p *PerspectiveCamera) MoveToWhereLooking() {
 	proj := mmath_la.Matrix4x4[float32]{}.
-		Perspective((p.Fov*mmath.Pi)/180.0, p.AspectRatio, p.Near, p.Far)
+		Perspective(mmath.DegToRad(p.Fov), p.AspectRatio, p.Near, p.Far)
 
 	position := p.Position
 	position.X *= -1
@@ -32,6 +32,7 @@ func (p *PerspectiveCamera) MoveToWhereLooking() {
 		Translate(position).
 		RotateX(p.Rotation.X).
 		RotateY(p.Rotation.Y).
+		RotateZ(p.Rotation.Z).
 		Scale(p.Scale)
 
 	// fmt.Printf("MATRIX: %v\n", proj.Raw)
@@ -41,7 +42,7 @@ func (p *PerspectiveCamera) MoveToWhereLooking() {
 
 func (p *PerspectiveCamera) ApplyMatrix() {
 	proj := mmath_la.Matrix4x4[float32]{}.
-		Perspective((p.Fov*mmath.Pi)/180.0, p.AspectRatio, p.Near, p.Far)
+		Perspective(mmath.DegToRad(p.Fov), p.AspectRatio, p.Near, p.Far)
 
 	position := p.Position
 	position.X *= -1
