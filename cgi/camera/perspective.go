@@ -49,7 +49,7 @@ func (p *PerspectiveCamera) MoveToWhereLooking() {
 	// p.Matrix = proj.Multiply(p.Matrix)
 }
 
-func (p *PerspectiveCamera) ApplyMatrix() {
+func (p *PerspectiveCamera) Calculate() {
 	p.ProjectionMatrix = mmath_la.Matrix4x4[float32]{}.
 		Perspective(mmath.DegToRad(p.Fov), p.AspectRatio, p.Near, p.Far)
 
