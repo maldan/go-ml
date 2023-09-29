@@ -4,7 +4,6 @@ import (
 	mmath "github.com/maldan/go-ml/math"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
-	ml_image "github.com/maldan/go-ml/util/media/image"
 )
 
 type MeshTarget struct {

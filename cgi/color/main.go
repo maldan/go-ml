@@ -1,4 +1,4 @@
-package ml_color
+package mcgi_color
 
 /*type ColorRGB[T constraints.Integer | constraints.Float] struct {
 	R T

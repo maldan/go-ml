@@ -2,8 +2,6 @@ package mcgi_gltf
 
 import (
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
-	ml_convert "github.com/maldan/go-ml/util/convert"
-	"strings"
 )
 
 type BufferView struct {
@@ -20,8 +18,12 @@ type Buffer struct {
 }
 
 func (b *Buffer) Parse() {
-	t := strings.Split(b.Uri, ",")[1]
-	b.content, _ = ml_convert.FromBase64(t)
+	for i := 0; i < 64; i++ {
+		if b.Uri[i] == ',' {
+			b.content, _ = fromBase64(b.Uri[i+1:])
+			break
+		}
+	}
 }
 
 type Accessor struct {

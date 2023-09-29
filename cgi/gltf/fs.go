@@ -1,8 +1,17 @@
+//go:build !wasm
+
 package mcgi_gltf
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"os"
+)
 
-func FromJSON(data []byte) (GLTF, error) {
+func FromFile(path string) (GLTF, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return GLTF{}, err
+	}
 	gltf := GLTF{}
 	err2 := json.Unmarshal(data, &gltf)
 	if err2 != nil {

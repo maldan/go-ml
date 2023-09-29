@@ -1,8 +1,8 @@
 package mcgi_rasterizer
 
 import (
+	"github.com/maldan/go-ml/cgi/color"
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
-	ml_color "github.com/maldan/go-ml/util/media/color"
 )
 
 type screen struct {

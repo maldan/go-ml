@@ -1,9 +1,9 @@
-package ml_image_test
+package mcgi_image_test
 
 import (
 	"fmt"
-	ml_color "github.com/maldan/go-ml/util/media/color"
-	ml_image "github.com/maldan/go-ml/util/media/image"
+	mcgi_color "github.com/maldan/go-ml/cgi/color"
+	"github.com/maldan/go-ml/cgi/image"
 	"testing"
 )
 
@@ -31,7 +31,7 @@ import (
 */
 
 func TestA(t *testing.T) {
-	i := ml_image.ImageRGBA8{}.New(2, 2)
-	i.SetPixel(1, 1, ml_color.RGBA8{}.White())
+	i := mcgi_image.ImageRGBA8{}.New(2, 2)
+	i.SetPixel(1, 1, mcgi_color.RGBA8{}.White())
 	fmt.Printf("%v\n", i.Data)
 }

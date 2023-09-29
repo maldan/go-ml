@@ -1,4 +1,4 @@
-package ml_color
+package mcgi_color
 
 import mmath "github.com/maldan/go-ml/math"
 
