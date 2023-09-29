@@ -1,4 +1,4 @@
-package mrender_gltf
+package mcgi_gltf
 
 import mmath_la "github.com/maldan/go-ml/math/linear_algebra"
 

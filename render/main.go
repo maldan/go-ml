@@ -3,7 +3,6 @@ package mrender
 import (
 	mmath_geom "github.com/maldan/go-ml/math/geometry"
 	mmath_la "github.com/maldan/go-ml/math/linear_algebra"
-	mr_camera "github.com/maldan/go-ml/render/camera"
 	mr_layer "github.com/maldan/go-ml/render/layer"
 	mrender_mesh "github.com/maldan/go-ml/render/mesh"
 	ml_mouse "github.com/maldan/go-ml/util/io/mouse"
@@ -31,8 +30,8 @@ type RenderEngine struct {
 
 	ScreenSize mmath_la.Vector2[float32]
 
-	Camera      mr_camera.PerspectiveCamera
-	UICamera    mr_camera.OrthographicCamera
+	Camera      mrender_camera.PerspectiveCamera
+	UICamera    mrender_camera.OrthographicCamera
 	Light       RenderLight
 	Scissors    mmath_geom.Rectangle[float32]
 	UseScissors bool
@@ -145,7 +144,7 @@ func Init() {
 	State.UI.Init()
 
 	// Init global camera
-	State.Camera = mr_camera.PerspectiveCamera{Fov: 45, AspectRatio: 1}
+	State.Camera = mrender_camera.PerspectiveCamera{Fov: 45, AspectRatio: 1}
 	State.Camera.Scale = mmath_la.Vector3[float32]{1, 1, 1}
 	State.Camera.Position.Z = 15.5
 	State.Camera.Near = 0.01

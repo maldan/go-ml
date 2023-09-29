@@ -1,4 +1,4 @@
-package mrender_camera
+package mcgi_camera
 
 import (
 	mmath_geom "github.com/maldan/go-ml/math/geometry"

@@ -1,4 +1,4 @@
-package mrender_gltf
+package mcgi_gltf
 
 type Animation struct {
 	Channels []AnimationKey `json:"channels"`

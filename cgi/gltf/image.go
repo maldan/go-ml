@@ -1,4 +1,4 @@
-package mrender_gltf
+package mcgi_gltf
 
 type Image struct {
 	BufferView int    `json:"bufferView"`

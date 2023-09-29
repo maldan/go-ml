@@ -1,4 +1,4 @@
-package mrender_gltf
+package mcgi_gltf
 
 import (
 	"encoding/binary"
