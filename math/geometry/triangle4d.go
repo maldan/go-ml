@@ -13,9 +13,9 @@ type Triangle4D[T constraints.Float] struct {
 }
 
 func (t Triangle4D[T]) MultiplyMatrix4x4(mx mmath_la.Matrix4x4[T]) Triangle4D[T] {
-	t.A = t.A.MultiplyMatrix4x4(mx)
-	t.B = t.B.MultiplyMatrix4x4(mx)
-	t.C = t.C.MultiplyMatrix4x4(mx)
+	t.A = t.A.MulMatrix(mx)
+	t.B = t.B.MulMatrix(mx)
+	t.C = t.C.MulMatrix(mx)
 	return t
 }
 

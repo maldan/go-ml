@@ -225,6 +225,18 @@ func (v Vector3[T]) MulScalar(s T) Vector3[T] {
 	return v
 }
 
+func (v Vector3[T]) MulMatrix(mx Matrix3x3[T]) Vector3[T] {
+	x := v.X
+	y := v.Y
+	z := v.Z
+
+	v.X = mx.Raw[0]*x + mx.Raw[1]*y + mx.Raw[2]*z
+	v.Y = mx.Raw[3]*x + mx.Raw[4]*y + mx.Raw[5]*z
+	v.Z = mx.Raw[6]*x + mx.Raw[7]*y + mx.Raw[8]*z
+
+	return v
+}
+
 func (v Vector3[T]) Sub(v2 Vector3[T]) Vector3[T] {
 	v.X -= v2.X
 	v.Y -= v2.Y

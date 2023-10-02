@@ -1,6 +1,25 @@
 package mfmt
 
-import "reflect"
+import (
+	mmath "github.com/maldan/go-ml/math"
+	"reflect"
+)
+
+func sprintNil() string {
+	if UseColor {
+		return FgGray + "nil" + Reset
+	} else {
+		return "nil"
+	}
+}
+
+func sprintString(s string) string {
+	if UseColor {
+		return FgGreen + s + Reset
+	} else {
+		return s
+	}
+}
 
 func sprintBool(b bool) string {
 	if UseColor {
@@ -31,10 +50,15 @@ func sprintFloatFraction(f float64) string {
 
 func sprintFloat(f float64) string {
 	integerPart := int64(f)
-	fractionalPart := f - float64(integerPart)
+	fractionalPart := mmath.Abs(f) - mmath.Abs(float64(integerPart))
 
 	intStr := sprintInt(integerPart)
 	fracStr := sprintFloatFraction(fractionalPart)
+
+	// If -0.0...
+	if f < 0 && integerPart == 0 {
+		intStr = "-" + intStr
+	}
 
 	if fractionalPart == 0 {
 		if UseColor {
@@ -91,6 +115,11 @@ func sprintStruct(ss any) string {
 	v := reflect.ValueOf(ss)
 	for i := 0; i < t.NumField(); i++ {
 		el := v.Field(i)
+		/*if el.IsNil() {
+			out += sprintNil()
+			continue
+		}*/
+
 		elType := t.Field(i).Type.Kind()
 
 		// out += " "
@@ -100,7 +129,7 @@ func sprintStruct(ss any) string {
 		case reflect.Struct:
 			out += sprintStruct(el.Interface())
 			break
-		case reflect.Slice:
+		case reflect.Slice, reflect.Array:
 			out += sprintSlice(el.Interface())
 			break
 		case reflect.Float32, reflect.Float64:
@@ -115,15 +144,21 @@ func sprintStruct(ss any) string {
 		case reflect.Bool:
 			out += sprintBool(el.Bool())
 			break
+		case reflect.String:
+			out += sprintString(el.String())
+			break
 		default:
 			out += v.Field(i).String()
 			break
 		}
 
-		out += ", "
+		if i < t.NumField()-1 {
+			out += ", "
+		}
+
 		// out += "\n"
 	}
-	return out + "}"
+	return out + " }"
 }
 
 func sprintSlice(ss any) string {
@@ -132,6 +167,11 @@ func sprintSlice(ss any) string {
 
 	for i := 0; i < v.Len(); i++ {
 		el := v.Index(i)
+		/*if el.IsNil() {
+			out += sprintNil()
+			continue
+		}
+		*/
 		elType := el.Kind()
 
 		switch elType {
@@ -147,18 +187,23 @@ func sprintSlice(ss any) string {
 		case reflect.Struct:
 			out += sprintStruct(el.Interface())
 			break
-		case reflect.Slice:
+		case reflect.Slice, reflect.Array:
 			out += sprintSlice(el.Interface())
 			break
 		case reflect.Bool:
 			out += sprintBool(el.Bool())
+			break
+		case reflect.String:
+			out += sprintString(el.String())
 			break
 		default:
 			out += el.String()
 			break
 		}
 
-		out += ", "
+		if i < v.Len()-1 {
+			out += ", "
+		}
 	}
 	return out + "]"
 }

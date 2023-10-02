@@ -44,7 +44,7 @@ func (v Vector4[T]) TransformMatrix4x4(m Matrix4x4[T]) Vector4[T] {
 	return result
 }
 
-func (v Vector4[T]) MultiplyMatrix4x4(m Matrix4x4[T]) Vector4[T] {
+func (v Vector4[T]) MulMatrix(m Matrix4x4[T]) Vector4[T] {
 	result := Vector4[T]{}
 
 	result.X = v.X*m.Raw[0] + v.Y*m.Raw[4] + v.Z*m.Raw[8] + v.W*m.Raw[12]

@@ -96,6 +96,15 @@ func (q Quaternion[T]) Inverse() Quaternion[T] {
 	}
 }
 
+func (q Quaternion[T]) Invert() Quaternion[T] {
+	return Quaternion[T]{
+		X: -q.X,
+		Y: -q.Y,
+		Z: -q.Z,
+		W: q.W,
+	}
+}
+
 func (q Quaternion[T]) ToMatrix4x4() Matrix4x4[T] {
 	w := q.W
 	x := q.X
@@ -115,7 +124,7 @@ func (q Quaternion[T]) ToMatrix4x4() Matrix4x4[T] {
 	wy := w * y2
 	wz := w * z2
 
-	mx := Matrix4x4[T]{}
+	mx := Matrix4x4[T]{}.Identity()
 
 	mx.Raw[0] = 1.0 - (yy + zz)
 	mx.Raw[4] = xy - wz

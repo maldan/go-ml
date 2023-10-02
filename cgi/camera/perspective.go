@@ -19,6 +19,10 @@ type PerspectiveCamera struct {
 
 	Near float32
 	Far  float32
+
+	IsInversePositionX bool
+	IsInversePositionY bool
+	IsInversePositionZ bool
 }
 
 /*func (p *PerspectiveCamera) GetCombinedMatrix() mmath_la.Matrix4x4[float32] {
@@ -54,9 +58,15 @@ func (p *PerspectiveCamera) Calculate() {
 		Perspective(mmath.DegToRad(p.Fov), p.AspectRatio, p.Near, p.Far)
 
 	position := p.Position
-	position.X *= -1
-	position.Y *= -1
-	position.Z *= -1
+	if p.IsInversePositionX {
+		position.X *= -1
+	}
+	if p.IsInversePositionY {
+		position.Y *= -1
+	}
+	if p.IsInversePositionZ {
+		position.Z *= -1
+	}
 
 	// Position
 	p.ViewMatrix = p.ViewMatrix.
@@ -70,4 +80,25 @@ func (p *PerspectiveCamera) Calculate() {
 
 	// p.Matrix = proj.Multiply(p.Matrix)
 	p.CombinedMatrix = p.ProjectionMatrix.Multiply(p.ViewMatrix)
+}
+
+func (p *PerspectiveCamera) CalculateView() {
+	position := p.Position
+	if p.IsInversePositionX {
+		position.X *= -1
+	}
+	if p.IsInversePositionY {
+		position.Y *= -1
+	}
+	if p.IsInversePositionZ {
+		position.Z *= -1
+	}
+
+	// Position
+	p.ViewMatrix = p.ViewMatrix.
+		Identity().
+		RotateX(p.Rotation.X).
+		RotateY(p.Rotation.Y).
+		Translate(position).
+		Scale(p.Scale)
 }

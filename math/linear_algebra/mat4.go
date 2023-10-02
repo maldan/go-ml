@@ -241,6 +241,11 @@ func (m Matrix4x4[T]) RotateZ(rad T) Matrix4x4[T] {
 	return m
 }
 
+func (m Matrix4x4[T]) RotateQuaternion(q Quaternion[T]) Matrix4x4[T] {
+	mm := q.ToMatrix4x4()
+	return m.Multiply(mm)
+}
+
 func (m Matrix4x4[T]) Perspective(fov T, aspect T, near T, far T) Matrix4x4[T] {
 	f := T(1.0 / (math.Tan(float64(fov) / 2.0)))
 
@@ -499,4 +504,76 @@ func (m Matrix4x4[T]) FromBytes(data []byte) Matrix4x4[T] {
 	}
 
 	return m
+}
+
+func (m Matrix4x4[T]) GetPosition() Vector3[T] {
+	return Vector3[T]{X: m.Raw[12], Y: m.Raw[13], Z: m.Raw[14]}
+}
+
+func (m Matrix4x4[T]) GetScale() Vector3[T] {
+	m11 := m.Raw[0]
+	m12 := m.Raw[1]
+	m13 := m.Raw[2]
+	m21 := m.Raw[4]
+	m22 := m.Raw[5]
+	m23 := m.Raw[6]
+	m31 := m.Raw[8]
+	m32 := m.Raw[9]
+	m33 := m.Raw[10]
+
+	return Vector3[T]{
+		X: T(math.Sqrt(float64(m11*m11 + m12*m12 + m13*m13))),
+		Y: T(math.Sqrt(float64(m21*m21 + m22*m22 + m23*m23))),
+		Z: T(math.Sqrt(float64(m31*m31 + m32*m32 + m33*m33))),
+	}
+}
+
+func (m Matrix4x4[T]) GetRotation() Quaternion[T] {
+	scaling := m.GetScale()
+
+	is1 := 1.0 / scaling.X
+	is2 := 1.0 / scaling.Y
+	is3 := 1.0 / scaling.Z
+
+	sm11 := m.Raw[0] * is1
+	sm12 := m.Raw[1] * is2
+	sm13 := m.Raw[2] * is3
+	sm21 := m.Raw[4] * is1
+	sm22 := m.Raw[5] * is2
+	sm23 := m.Raw[6] * is3
+	sm31 := m.Raw[8] * is1
+	sm32 := m.Raw[9] * is2
+	sm33 := m.Raw[10] * is3
+
+	trace := sm11 + sm22 + sm33
+	s := T(0.0)
+	out := Quaternion[T]{}.Identity()
+
+	if trace > 0.0 {
+		s = T(math.Sqrt(float64(trace+1.0)) * 2.0)
+		out.X = (sm23 - sm32) / s
+		out.Y = (sm31 - sm13) / s
+		out.Z = (sm12 - sm21) / s
+		out.W = 0.25 * s
+	} else if sm11 > sm22 && sm11 > sm33 {
+		s = T(math.Sqrt(float64(1.0+sm11-sm22-sm33))) * 2.0
+		out.X = 0.25 * s
+		out.Y = (sm12 + sm21) / s
+		out.Z = (sm31 + sm13) / s
+		out.W = (sm23 - sm32) / s
+	} else if sm22 > sm33 {
+		s = T(math.Sqrt(float64(1.0+sm22-sm11-sm33))) * 2.0
+		out.X = (sm12 + sm21) / s
+		out.Y = 0.25 * s
+		out.Z = (sm23 + sm32) / s
+		out.W = (sm31 - sm13) / s
+	} else {
+		s = T(math.Sqrt(float64(1.0+sm33-sm11-sm22))) * 2.0
+		out.X = (sm31 + sm13) / s
+		out.Y = (sm23 + sm32) / s
+		out.Z = 0.25 * s
+		out.W = (sm12 - sm21) / s
+	}
+
+	return out
 }
