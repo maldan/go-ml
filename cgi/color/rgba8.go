@@ -9,6 +9,10 @@ type RGBA8 struct {
 	A uint8
 }
 
+func (c RGBA8) Black() RGBA8 {
+	return RGBA8{R: 0, G: 0, B: 0, A: 0}
+}
+
 func (c RGBA8) White() RGBA8 {
 	return RGBA8{R: 255, G: 255, B: 255, A: 255}
 }

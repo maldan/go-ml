@@ -38,3 +38,21 @@ func (i *ImageRGBA8) Clear() {
 		i.Data[x] = mcgi_color.RGBA8{}
 	}
 }
+
+func (i ImageRGBA8) GetResolution() (int, int) {
+	return i.Width, i.Height
+}
+
+func (i ImageRGBA8) Clone() ImageRGBA8 {
+	d := make([]mcgi_color.RGBA8, 0)
+
+	for x := 0; x < len(i.Data); x++ {
+		d = append(d, i.Data[x])
+	}
+
+	return ImageRGBA8{
+		Width:  i.Width,
+		Height: i.Height,
+		Data:   d,
+	}
+}

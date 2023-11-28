@@ -228,6 +228,13 @@ func Reverse[T any](slice []T) []T {
 	return out
 }
 
+func LimitMaxSize[T any](slice []T, size int) []T {
+	if len(slice) <= size {
+		return slice
+	}
+	return slice[:size]
+}
+
 // Permute the values at index i to len(a)-1.
 func perm[T any](slice []T, f func([]T), i int) {
 	if i > len(slice) {

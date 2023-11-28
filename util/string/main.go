@@ -40,9 +40,9 @@ func OnlyDigit(str string) string {
 	return Only(str, "0123456789")
 }
 
-func Only(str string, allowList string) string {
+func Only(str string, charset string) string {
 	return strings.Map(func(r rune) rune {
-		if strings.ContainsRune(allowList, r) {
+		if strings.ContainsRune(charset, r) {
 			return r
 		}
 		return -1

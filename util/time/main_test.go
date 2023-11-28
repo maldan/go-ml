@@ -13,6 +13,12 @@ var locationList = []string{
 	"Canada/Mountain", "Pacific/Marquesas",
 }
 
+func TestX(t *testing.T) {
+	pp, _ := time.Parse("2006-01-02", "2023-10-11")
+	x := time.Since(pp).Hours()
+	fmt.Printf("%v\n", x)
+}
+
 func TestDateTime(t *testing.T) {
 	// Local check
 	tm := time.Now()

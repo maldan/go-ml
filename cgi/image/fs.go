@@ -73,7 +73,7 @@ func (i ImageRGB8) FromFile(filePath string) (ImageRGB8, error) {
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
 			r, g, b, _ := image.At(x, y).RGBA()
-
+			/*fmt.Printf("%v\n", r)
 			if r > 255 {
 				r = r >> 8
 			}
@@ -86,7 +86,10 @@ func (i ImageRGB8) FromFile(filePath string) (ImageRGB8, error) {
 
 			r = mmath.Clamp(r, 0, 255)
 			g = mmath.Clamp(g, 0, 255)
-			b = mmath.Clamp(b, 0, 255)
+			b = mmath.Clamp(b, 0, 255)*/
+			r = mmath.Remap(r, 0, 0xFFFF, 0, 0xFF)
+			g = mmath.Remap(g, 0, 0xFFFF, 0, 0xFF)
+			b = mmath.Remap(b, 0, 0xFFFF, 0, 0xFF)
 
 			i.SetPixel(x, y, mcgi_color.RGB8{R: uint8(r), G: uint8(g), B: uint8(b)})
 		}
@@ -97,14 +100,13 @@ func (i ImageRGB8) FromFile(filePath string) (ImageRGB8, error) {
 
 func (i *ImageRGB8) ToFile(filePath string, options ImageOptions) error {
 	// Prepare pixels
-	pixels := make([]byte, i.Width*i.Height*4)
+	pixels := make([]byte, 0, i.Width*i.Height*4)
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
 			p := i.GetPixel(x, y)
 			pixels = append(pixels, p.R, p.G, p.B, 255)
 		}
 	}
-
 	return writeImageToFile(filePath, i.Width, i.Height, pixels, options)
 }
 
@@ -190,7 +192,7 @@ func (i ImageRGBA8) FromFile(filePath string) (ImageRGBA8, error) {
 
 func (i *ImageRGBA8) ToFile(filePath string, options ImageOptions) error {
 	// Prepare pixels
-	pixels := make([]byte, i.Width*i.Height*4)
+	pixels := make([]byte, 0, i.Width*i.Height*4)
 	for y := 0; y < i.Height; y++ {
 		for x := 0; x < i.Width; x++ {
 			p := i.GetPixel(x, y)
@@ -314,7 +316,7 @@ func readImageFromBytes(data []byte) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		img = img2
+		return img2, nil
 		break
 	case "image/webp":
 		img2, err := webp.Decode(imageFile)

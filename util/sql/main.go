@@ -96,6 +96,21 @@ func GetValues[T any](v T) []any {
 	return out
 }
 
+func DropTable(db *sql.DB, table string) error {
+	query := fmt.Sprintf("DROP TABLE IF EXISTS %v", table)
+
+	// Prepare
+	statement, err := db.Prepare(query)
+	defer statement.Close()
+	if err != nil {
+		return err
+	}
+
+	// Execute statement
+	_, err = statement.Exec()
+	return err
+}
+
 func CreateTable[T any](db *sql.DB, name string) error {
 	out := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %v (\n", name)
 
@@ -168,7 +183,6 @@ func InsertMany[T any](db *sql.DB, table string, value []T) error {
 				values[i] = nil
 			}
 
-			// fields[i] = "\t" + fields[i]
 			valuesQ[i] = "?"
 		}
 		query += "(" + strings.Join(valuesQ, ",") + ")"
@@ -179,9 +193,6 @@ func InsertMany[T any](db *sql.DB, table string, value []T) error {
 		}
 		allValues = append(allValues, values...)
 	}
-
-	// query += "VALUES(\n" + strings.Join(valuesQ, ",\n") + "\n)"
-	// fmt.Printf("%v\n", query)
 
 	// Prepare
 	statement, err := db.Prepare(query)
@@ -240,19 +251,26 @@ func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	return lastId, nil
 }
 
-func Count(db *sql.DB, from string, where string, values ...any) (int, error) {
-	query := fmt.Sprintf("SELECT COUNT(*) FROM %v WHERE %v LIMIT 1", from, where)
+// func Count(db *sql.DB, from string, where string, values ...any) (int, error) {
+func Count(args CountQuery) (int, error) {
+	query := fmt.Sprintf("SELECT COUNT(*) FROM %v", args.Table)
+	// Where
+	if args.Where != "" {
+		query += fmt.Sprintf(" WHERE %v", args.Where)
+	}
+	query += " LIMIT 1"
+
 	count := 0
 
 	// Prepare
-	statement, err := db.Prepare(query)
+	statement, err := args.DB.Prepare(query)
 	defer statement.Close()
 	if err != nil {
 		return 0, err
 	}
 
 	// Execute statement
-	rows, err := statement.Query(values...)
+	rows, err := statement.Query(args.WhereArgs...)
 	defer rows.Close()
 	if err != nil {
 		return 0, err
@@ -298,6 +316,18 @@ func Update(args UpdateQuery) error {
 	defer statement.Close()
 	if err != nil {
 		return err
+	}
+
+	// Change time
+	for i := 0; i < len(args.SetArgs); i++ {
+		switch args.SetArgs[i].(type) {
+		case time.Time:
+			fieldValue := args.SetArgs[i].(time.Time).UTC()
+			args.SetArgs[i] = fieldValue.Format("2006-01-02 15:04:05.000-07:00")
+			break
+		default:
+			break
+		}
 	}
 
 	// Execute statement
@@ -443,11 +473,151 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 	return response
 }
 
+func Raw[T any](args RawQuery) SelectResponse[T] {
+	fields := getValueFieldNames(*new(T), false)
+
+	response := SelectResponse[T]{}
+
+	destForScan := make([]any, len(fields))
+	rawResult := make([]sql.RawBytes, len(fields))
+	for i, _ := range destForScan {
+		destForScan[i] = &rawResult[i]
+	}
+
+	// Prepare
+	statement, err := args.DB.Prepare(args.Query)
+	defer statement.Close()
+	if err != nil {
+		response.Error = err
+		return response
+	}
+
+	// Execute statement
+	if args.Args == nil {
+		args.Args = make([]any, 0)
+	}
+
+	rows, err := statement.Query(args.Args...)
+	defer rows.Close()
+	if err != nil {
+		response.Error = err
+		return response
+	}
+
+	// Scan rows
+	for rows.Next() {
+		err2 := rows.Scan(destForScan...)
+		if err2 != nil {
+			fmt.Printf("%v\n", err2)
+		}
+
+		out := *new(T)
+		outType := reflect.TypeOf(&out).Elem()
+
+		// Copy result
+		for i := 0; i < len(fields); i++ {
+			if outType.Field(i).Type.Kind() == reflect.Int8 ||
+				outType.Field(i).Type.Kind() == reflect.Int16 ||
+				outType.Field(i).Type.Kind() == reflect.Int32 ||
+				outType.Field(i).Type.Kind() == reflect.Int ||
+				outType.Field(i).Type.Kind() == reflect.Int64 {
+				str := string(rawResult[i])
+				n, _ := strconv.Atoi(str)
+				reflect.ValueOf(&out).Elem().Field(i).SetInt(int64(n))
+			}
+
+			if outType.Field(i).Type.Kind() == reflect.Uint8 ||
+				outType.Field(i).Type.Kind() == reflect.Uint16 ||
+				outType.Field(i).Type.Kind() == reflect.Uint32 ||
+				outType.Field(i).Type.Kind() == reflect.Uint ||
+				outType.Field(i).Type.Kind() == reflect.Uint64 {
+				str := string(rawResult[i])
+				n, _ := strconv.Atoi(str)
+				reflect.ValueOf(&out).Elem().Field(i).SetUint(uint64(n))
+			}
+
+			if outType.Field(i).Type.Kind() == reflect.Float32 ||
+				outType.Field(i).Type.Kind() == reflect.Float64 {
+				str := string(rawResult[i])
+				n, _ := strconv.ParseFloat(str, 64)
+				reflect.ValueOf(&out).Elem().Field(i).SetFloat(n)
+			}
+
+			if outType.Field(i).Type.Kind() == reflect.Bool {
+				if len(rawResult[i]) > 0 {
+					reflect.ValueOf(&out).Elem().Field(i).SetBool(rawResult[i][0] == 49)
+				}
+			}
+			if outType.Field(i).Type.Kind() == reflect.String {
+				if len(rawResult[i]) > 0 {
+					reflect.ValueOf(&out).Elem().Field(i).SetString(string(rawResult[i]))
+				}
+			}
+			if outType.Field(i).Type.Name() == "Time" {
+				t, err2 := time.Parse("2006-01-02T15:04:05.999999-07:00", string(rawResult[i]))
+				if err2 != nil {
+					// fmt.Printf("%v - %v\n", err2, string(rawResult[i]))
+					t2, err3 := time.Parse("2006-01-02T15:04:05Z", string(rawResult[i]))
+					if err3 != nil {
+						// fmt.Printf("%v - %v\n", err3, string(rawResult[i]))
+					} else {
+						t = t2
+					}
+				}
+
+				ptr := unsafe.Add(unsafe.Pointer(&out), outType.Field(i).Offset)
+				*(*time.Time)(ptr) = t
+			}
+		}
+
+		response.IsFound = true
+		response.Result = append(response.Result, out)
+		// outList = append(outList, out)
+	}
+	response.Count = len(response.Result)
+
+	return response
+}
+
+func RawCount(args RawQuery) (int, error) {
+	count := 0
+
+	// Prepare
+	statement, err := args.DB.Prepare(args.Query)
+	defer statement.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	// Execute statement
+	rows, err := statement.Query(args.Args...)
+	defer rows.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	// Scan rows
+	found := false
+	for rows.Next() {
+		err2 := rows.Scan(&count)
+		if err2 != nil {
+			return 0, err2
+		}
+		found = true
+	}
+
+	if !found {
+		return 0, nil
+	}
+
+	return count, err
+}
+
 func AlterTableAddColumn(db *sql.DB, table string, name string, kind string, defaultValue string) error {
 	if defaultValue == "" {
 		defaultValue = "\"\""
 	}
-	query := fmt.Sprintf("ALTER TABLE %v ADD COLUMN %v %v DEFAULT %v NOT NULL", table, name, kind, defaultValue)
+	query := fmt.Sprintf("ALTER TABLE %v ADD COLUMN '%v' %v DEFAULT %v NOT NULL", table, name, kind, defaultValue)
 
 	// Prepare
 	statement, err := db.Prepare(query)

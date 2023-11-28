@@ -11,6 +11,10 @@ type RGB8 struct {
 	B uint8
 }
 
+func (c RGB8) Black() RGB8 {
+	return RGB8{}
+}
+
 func (c RGB8) White() RGB8 {
 	return RGB8{R: 255, G: 255, B: 255}
 }
@@ -61,6 +65,13 @@ func (c RGB8) MulScalar(s float32) RGB8 {
 	c.R = uint8(mmath.Clamp(float32(c.R)*s, 0, 255))
 	c.G = uint8(mmath.Clamp(float32(c.G)*s, 0, 255))
 	c.B = uint8(mmath.Clamp(float32(c.B)*s, 0, 255))
+	return c
+}
+
+func (c RGB8) Mul(color RGB8) RGB8 {
+	c.R = uint8(mmath.Clamp(float32(c.R)*(float32(color.R)/255.0), 0, 255))
+	c.G = uint8(mmath.Clamp(float32(c.G)*(float32(color.G)/255.0), 0, 255))
+	c.B = uint8(mmath.Clamp(float32(c.B)*(float32(color.B)/255.0), 0, 255))
 	return c
 }
 

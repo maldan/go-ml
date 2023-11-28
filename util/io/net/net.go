@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	net_url "net/url"
 	p_url "net/url"
@@ -13,6 +14,7 @@ import (
 )
 
 type RequestOptions struct {
+	Query   map[string]any
 	Data    any
 	Headers map[string]string
 	Proxy   string
@@ -93,20 +95,24 @@ func Request(url string, method string, options *RequestOptions) Response {
 
 	// Build query
 	if method == "GET" || method == "DELETE" {
-		mappa := map[string]any{}
-		marshal, err := json.Marshal(opts.Data)
-		if err != nil {
-			response.Error = err
-			return response
-		}
+		if len(opts.Query) > 0 {
+			response.Url += buildQuery(opts.Query)
+		} else {
+			mappa := map[string]any{}
+			marshal, err := json.Marshal(opts.Data)
+			if err != nil {
+				response.Error = err
+				return response
+			}
 
-		err = json.Unmarshal(marshal, &mappa)
-		if err != nil {
-			response.Error = err
-			return response
-		}
+			err = json.Unmarshal(marshal, &mappa)
+			if err != nil {
+				response.Error = err
+				return response
+			}
 
-		response.Url += buildQuery(mappa)
+			response.Url += buildQuery(mappa)
+		}
 	}
 
 	// Prepare data
@@ -129,6 +135,24 @@ func Request(url string, method string, options *RequestOptions) Response {
 			}
 		}
 
+		if opts.Headers["Content-Type"] == "multipart/form-data" {
+			var body bytes.Buffer
+			writer := multipart.NewWriter(&body)
+			for k, v := range opts.Data.(map[string]any) {
+				switch v.(type) {
+				case []byte:
+					fileWriter, _ := writer.CreateFormFile(k, k)
+					fileWriter.Write(v.([]byte))
+					break
+				default:
+					writer.WriteField(k, fmt.Sprintf("%v", v))
+				}
+
+			}
+			writer.Close()
+			inputData = body.Bytes()
+		}
+
 		// Url Encoded
 		if opts.Headers["Content-Type"] == "application/x-www-form-urlencoded" {
 			values := p_url.Values{}
@@ -136,6 +160,10 @@ func Request(url string, method string, options *RequestOptions) Response {
 				values[k] = []string{fmt.Sprintf("%v", v)}
 			}
 			inputData = []byte(values.Encode())
+		}
+
+		if len(opts.Query) > 0 {
+			response.Url += buildQuery(opts.Query)
 		}
 	}
 

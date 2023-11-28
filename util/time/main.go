@@ -1,9 +1,33 @@
 package ml_time
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 func SetTime(t time.Time, hour int, minute int, second int) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), hour, minute, second, t.Nanosecond(), t.Location())
+}
+
+var JSON_LAYOUT = []string{
+	"2006-01-02T15:04:05Z",     // Формат 0001-01-01T00:00:00Z
+	"2006-01-02T15:04:05.000Z", // Формат 2023-10-21T12:50:48.118Z
+}
+
+func Parse(layouts []string, dateString string) (time.Time, error) {
+	/*layouts := []string{
+		"2006-01-02T15:04:05Z",          // Формат 0001-01-01T00:00:00Z
+		"2006-01-02T15:04:05.000Z",     // Формат 2023-10-21T12:50:48.118Z
+	}*/
+
+	for _, layout := range layouts {
+		parsedTime, err := time.Parse(layout, dateString)
+		if err == nil {
+			return parsedTime, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("can't parse: %s", dateString)
 }
 
 /*type Time time.Time

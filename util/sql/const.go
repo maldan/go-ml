@@ -10,14 +10,20 @@ type DeleteQuery struct {
 }
 
 type SelectQuery struct {
-	DB             *sql.DB
-	Table          string
-	Where          string
-	WhereArgs      []any
-	OrderBy        string
-	OrderDirection bool
-	Offset         int
-	Limit          int
+	DB        *sql.DB
+	Table     string
+	Where     string
+	WhereArgs []any
+	OrderBy   string
+	// OrderDirection bool
+	Offset int
+	Limit  int
+}
+
+type RawQuery struct {
+	DB    *sql.DB
+	Query string
+	Args  []any
 }
 
 type SelectResponse[T any] struct {
@@ -34,4 +40,11 @@ type UpdateQuery struct {
 	WhereArgs []any
 	Set       string
 	SetArgs   []any
+}
+
+type CountQuery struct {
+	DB        *sql.DB
+	Table     string
+	Where     string
+	WhereArgs []any
 }
