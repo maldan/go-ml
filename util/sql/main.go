@@ -59,6 +59,38 @@ func getValueFieldNames[T any](v T, useQuotes bool) []string {
 				continue
 			}
 		}
+
+		/*if typeOf.Field(i).Tag.Get("encryption") == "custom" {
+			fieldName = "decrypt(fieldName) as fieldName"
+		}*/
+
+		if useQuotes {
+			out = append(out, "`"+fieldName+"`")
+		} else {
+			out = append(out, fieldName)
+		}
+	}
+
+	return out
+}
+
+func getValueFieldNamesForSelect[T any](v T, useQuotes bool) []string {
+	typeOf := reflect.TypeOf(v)
+	out := make([]string, 0)
+
+	for i := 0; i < typeOf.NumField(); i++ {
+		fieldName := typeOf.Field(i).Name
+		if typeOf.Field(i).Tag.Get("json") != "" {
+			fieldName = typeOf.Field(i).Tag.Get("json")
+			if fieldName == "-" {
+				continue
+			}
+		}
+
+		if typeOf.Field(i).Tag.Get("encryption") == "custom" {
+			fieldName = "decrypt(fieldName) as fieldName"
+		}
+
 		if useQuotes {
 			out = append(out, "`"+fieldName+"`")
 		} else {
@@ -308,6 +340,10 @@ func Delete(args DeleteQuery) error {
 	return err
 }
 
+func UpdateSimple(args UpdateSimpleQuery) error {
+	return nil
+}
+
 func Update(args UpdateQuery) error {
 	query := fmt.Sprintf("UPDATE %v SET %v WHERE %v", args.Table, args.Set, args.Where)
 	fmt.Printf("%v\n", query)
@@ -341,7 +377,16 @@ func Update(args UpdateQuery) error {
 }
 
 func Select[T any](args SelectQuery) SelectResponse[T] {
-	fields := getValueFieldNames(*new(T), false)
+	fields := getValueFieldNamesForSelect(*new(T), false)
+
+	// For example 'SELECT a, b' can change on 'SELECT something(a), b'
+	for i := 0; i < len(fields); i++ {
+		f, ok := args.FieldAs[fields[i]]
+		if ok {
+			fields[i] = f
+		}
+	}
+
 	query := fmt.Sprintf(
 		"SELECT %v FROM %v",
 		strings.Join(fields, ","),

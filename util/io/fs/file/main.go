@@ -131,6 +131,29 @@ func (f *File) ReadAll() ([]byte, error) {
 	return content, err
 }
 
+func (f *File) Read(offset int, length int) ([]byte, error) {
+	file, err := os.Open(f.Path)
+	defer file.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	// Устанавливаем смещение в файле
+	_, err = file.Seek(int64(offset), io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+
+	// Читаем определенное количество байт
+	buffer := make([]byte, length)
+	_, err = file.Read(buffer)
+	if err != nil {
+		return nil, err
+	}
+
+	return buffer, nil
+}
+
 func (f *File) ImageDimension() (int, int, error) {
 	reader, err := os.Open(f.Path)
 	defer reader.Close()

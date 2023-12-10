@@ -16,8 +16,10 @@ type SelectQuery struct {
 	WhereArgs []any
 	OrderBy   string
 	// OrderDirection bool
-	Offset int
-	Limit  int
+	Offset  int
+	Limit   int
+	FieldAs map[string]string
+	// EncryptedFields []string
 }
 
 type RawQuery struct {
@@ -34,6 +36,15 @@ type SelectResponse[T any] struct {
 }
 
 type UpdateQuery struct {
+	DB        *sql.DB
+	Table     string
+	Where     string
+	WhereArgs []any
+	Set       string
+	SetArgs   []any
+}
+
+type UpdateSimpleQuery struct {
 	DB        *sql.DB
 	Table     string
 	Where     string

@@ -63,14 +63,14 @@ func (f FileInfo) ReadAll() ([]byte, error) {
 	err = os.WriteFile(path, content, 0777)
 	return err
 }*/
-/*
+
 func Exists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true
 	}
 	return false
-}*/
+}
 
 func Copy(from string, to string) error {
 	source, err := os.Open(from)
