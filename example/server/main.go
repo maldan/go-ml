@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/maldan/go-ml/db/mdb"
 	ms "github.com/maldan/go-ml/server"
 	"github.com/maldan/go-ml/server/core/handler"
@@ -32,19 +33,27 @@ func main() {
 					ContentPath: "db",
 				},
 			},
+			{
+				Path: "/ws",
+				Handler: ms_handler.WebSocket{
+					OnConnect: func(client *ms_handler.WebSocketClient) {
+						fmt.Printf("%v\n", "GAS")
+					},
+				},
+			},
 			/*{
 				Path:    "/",
 				Handler: ms_handler.EmbedFS{},
 			},*/
 		},
 		Panel: ms.PanelConfig{},
-		DataBase: ms.DataBaseConfig{
+		/*DataBase: ms.DataBaseConfig{
 			Path:     "./db",
 			DataBase: &DataBase,
 			TableList: []ms.TableConfig{
 				{Name: "x", Type: Gasofeal{}},
 				{Name: "tags", Type: ImageDescription{}},
 			},
-		},
+		},*/
 	})
 }

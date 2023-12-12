@@ -7,6 +7,7 @@ import (
 	ml_crypto "github.com/maldan/go-ml/util/crypto"
 	ml_console "github.com/maldan/go-ml/util/io/console"
 	ml_time "github.com/maldan/go-ml/util/time"
+	"time"
 )
 
 type User struct{}
@@ -25,12 +26,12 @@ type Args2 struct {
 }
 
 type Gasofeal struct {
-	Name    string           `json:"name"`
-	Lox     string           `json:"lox"`
-	Gas     string           `json:"gas"`
-	A       string           `json:"a"`
-	B       int              `json:"b"`
-	Created ml_time.DateTime `json:"created"`
+	Name    string    `json:"name"`
+	Lox     string    `json:"lox"`
+	Gas     string    `json:"gas"`
+	A       string    `json:"a"`
+	B       int       `json:"b"`
+	Created time.Time `json:"created"`
 }
 
 func (g Gasofeal) ToResponse() map[string]any {
@@ -66,7 +67,7 @@ func (u User) PostIndex3() {
 	DataBase["x"].Insert(Gasofeal{
 		Name:    ml_crypto.UID(12),
 		Gas:     ml_crypto.UID(12),
-		Created: ml_time.Now(),
+		Created: time.Now(),
 	})
 }
 

@@ -50,7 +50,7 @@ type Config struct {
 	Debug  DebugConfig
 	Panel  PanelConfig
 	// LogFile  string
-	Log      LogConfig
-	DataBase DataBaseConfig
+	Log LogConfig
+	// DataBase DataBaseConfig
 	// TableList []TableConfig
 }

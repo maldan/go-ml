@@ -2,29 +2,27 @@ package ms
 
 import (
 	"bytes"
-	"embed"
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	gosn_driver "github.com/maldan/go-ml/db/driver/gosn"
-	"github.com/maldan/go-ml/db/mdb"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_error "github.com/maldan/go-ml/server/error"
-	ms_log "github.com/maldan/go-ml/server/log"
-	ms_panel "github.com/maldan/go-ml/server/panel"
+
 	ml_slice "github.com/maldan/go-ml/util/slice"
 	"net/http"
 	"runtime"
 	"strings"
 )
 
+/*
 //go:embed panel_frontend/dist/*
 var panelFs embed.FS
+*/
 
 func endOfRequest(args *ms_handler.Args) {
 	err := recover()
 	if err == nil {
-		ms_log.LogRequest(args)
+		// ms_log.LogRequest(args)
 		return
 	}
 
@@ -37,8 +35,8 @@ func endOfRequest(args *ms_handler.Args) {
 		e.EndPoint = args.Path
 		message, _ := json.Marshal(e)
 		args.Response.Write(message)
-		ms_log.Log("request error", e)
-		ms_log.LogRequest(args)
+		// ms_log.Log("request error", e)
+		// ms_log.LogRequest(args)
 	default:
 		stackInfo := make([]string, 0, 10)
 		for i := 0; i < 10; i++ {
@@ -62,8 +60,8 @@ func endOfRequest(args *ms_handler.Args) {
 		}
 		message, _ := json.Marshal(ee)
 		args.Response.Write(message)
-		ms_log.Log("request error", ee)
-		ms_log.LogRequest(args)
+		//ms_log.Log("request error", ee)
+		// ms_log.LogRequest(args)
 	}
 }
 
@@ -77,7 +75,7 @@ func getHandler(url string, routers []ms_handler.RouteHandler) (string, ms_handl
 	return "", ms_handler.Undefined{}
 }
 
-func initDb(config *Config) {
+/*func initDb(config *Config) {
 	if config.DataBase.DataBase == nil {
 		return
 	}
@@ -96,36 +94,36 @@ func initDb(config *Config) {
 			&gosn_driver.Container{},
 		)
 	}
-}
+}*/
 
 func injectDebug(config *Config) {
 	// Add debug controller
 	config.Router = ml_slice.Prepend(config.Router, []ms_handler.RouteHandler{
-		{
+		/*{
 			Path: "/debug/panel",
 			Handler: ms_handler.EmbedFS{
 				Root: "panel_frontend/dist",
 				Fs:   panelFs,
 			},
-		},
+		},*/
 		{
 			Path: "/debug/api",
 			Handler: ms_handler.API{
 				ControllerList: []any{
-					ms_panel.Panel{
+					/*ms_panel.Panel{
 						HasLogTab:      config.Debug.UseLogs,
 						HasRequestLogs: config.Debug.UseRequestLogs,
-					},
+					},*/
 					/*ms_panel.Log{
 						Path: config.LogFile,
 					},*/
-					ms_panel.Request{},
+					/*ms_panel.Request{},
 					ms_panel.Router{
 						List: config.Router,
-					},
-					ms_panel.DB{
-						DataBase: config.DataBase.DataBase,
-					},
+					},*/
+					//ms_panel.DB{
+					// DataBase: config.DataBase.DataBase,
+					//},
 				},
 			},
 		},
@@ -142,7 +140,7 @@ func injectDebug(config *Config) {
 
 func Start(config Config) {
 	// defer globalPanicHandler()
-	initDb(&config)
+	// initDb(&config)
 	injectDebug(&config)
 
 	/*	for i := 0; i < len(config.Router); i++ {
@@ -154,7 +152,11 @@ func Start(config Config) {
 		// Prepare args
 		virtualBuffer := bytes.NewBuffer([]byte{})
 		virtualStatus := 200
-		virtualResponse := ms_handler.VirtualResponseWriter{Response: response, Buffer: virtualBuffer, StatusCode: &virtualStatus}
+		virtualResponse := ms_handler.VirtualResponseWriter{
+			Response:   response,
+			Buffer:     virtualBuffer,
+			StatusCode: &virtualStatus,
+		}
 		args := ms_handler.Args{Response: virtualResponse, Request: request}
 		defer endOfRequest(&args)
 
@@ -187,7 +189,8 @@ func Start(config Config) {
 		ms_log.InitRequestLogs(config.LogFile)
 	}*/
 
-	ms_log.Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
+	fmt.Printf("Mega Server Starts at host %v\n", config.Host)
+	// ms_log.Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
 
 	if config.TLS.Enabled {
 		err := http.ListenAndServeTLS(config.Host, config.TLS.CertFile, config.TLS.KeyFile, nil)

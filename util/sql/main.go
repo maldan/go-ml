@@ -241,6 +241,54 @@ func InsertMany[T any](db *sql.DB, table string, value []T) error {
 	return nil
 }
 
+func InsertAs[T any](db *sql.DB, table string, value T, fieldAs map[string]string) (int64, error) {
+	fields := getValueFieldNames(value, true)
+	values := GetValues(value)
+	valuesQ := make([]string, len(values))
+
+	query := fmt.Sprintf("INSERT INTO '%v'(\n", table)
+
+	for i := 0; i < len(fields); i++ {
+		if fields[i] == "`id`" && reflect.ValueOf(values[i]).IsZero() {
+			values[i] = nil
+		}
+
+		fwq := fields[i][1 : len(fields[i])-1]
+		fas, ok := fieldAs[fwq]
+		if ok {
+			fields[i] = "\t" + fields[i]
+			valuesQ[i] = "\t" + fas
+		} else {
+			fields[i] = "\t" + fields[i]
+			valuesQ[i] = "\t?"
+		}
+	}
+
+	query += "" + strings.Join(fields, ",\n ") + "\n) \n"
+	query += "VALUES(\n" + strings.Join(valuesQ, ",\n") + "\n)"
+
+	fmt.Printf("Query: %+v\n", query)
+
+	// Prepare
+	statement, err := db.Prepare(query)
+	if err != nil {
+		return 0, err
+	}
+
+	// Execute statement
+	r, err := statement.Exec(values...)
+	if err != nil {
+		return 0, err
+	}
+
+	lastId, err := r.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return lastId, nil
+}
+
 func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	fields := getValueFieldNames(value, true)
 	values := GetValues(value)

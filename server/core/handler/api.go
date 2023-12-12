@@ -37,7 +37,12 @@ func virtualCall(fn reflect.Method, args ...any) reflect.Value {
 	return reflect.ValueOf("")
 }
 
-func callMethod(method reflect.Method, context *Context, controller any, params map[string]any) reflect.Value {
+func callMethod(
+	method reflect.Method,
+	context *Context,
+	controller any,
+	params map[string]any,
+) reflect.Value {
 	functionType := reflect.TypeOf(method.Func.Interface())
 
 	// Has 0 arg
@@ -57,8 +62,14 @@ func callMethod(method reflect.Method, context *Context, controller any, params 
 		argValue := reflect.New(argType)
 
 		// Copy json to that value
-		b, _ := json.Marshal(params)
-		json.Unmarshal(b, argValue.Elem().Addr().Interface())
+		b, err := json.Marshal(params)
+		if err != nil {
+			panic(err)
+		}
+		err = json.Unmarshal(b, argValue.Elem().Addr().Interface())
+		if err != nil {
+			panic(err)
+		}
 
 		// Is struct
 		if argType.Kind() == reflect.Struct {
@@ -226,8 +237,8 @@ func (a API) Handle(args *Args) {
 		v := value.(ms_response.File)
 
 		// Copy headers
-		for k, v := range v.Headers {
-			args.Response.AddHeader(k, v)
+		for k, v2 := range v.Headers {
+			args.Response.AddHeader(k, v2)
 		}
 
 		http.ServeFile(args.Response, args.Request, v.Path)
@@ -236,12 +247,12 @@ func (a API) Handle(args *Args) {
 		v := value.(ms_response.Custom)
 
 		// Copy headers
-		for k, v := range v.Headers {
-			args.Response.AddHeader(k, v)
+		for k, v2 := range v.Headers {
+			args.Response.AddHeader(k, v2)
 		}
 
-		_, err := args.Response.Write(v.Body)
-		ms_error.FatalIfError(err)
+		_, err2 := args.Response.Write(v.Body)
+		ms_error.FatalIfError(err2)
 		break
 	default:
 		// Check to response method
@@ -255,13 +266,13 @@ func (a API) Handle(args *Args) {
 		}
 
 		// Convert to json
-		data, err := json.Marshal(&value)
-		ms_error.FatalIfError(err)
+		data, err2 := json.Marshal(&value)
+		ms_error.FatalIfError(err2)
 
 		// Write response
 		args.Response.AddHeader("Content-Type", "application/json")
-		_, err = args.Response.Write(data)
-		ms_error.FatalIfError(err)
+		_, err2 = args.Response.Write(data)
+		ms_error.FatalIfError(err2)
 		break
 	}
 }
