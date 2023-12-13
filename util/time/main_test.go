@@ -128,7 +128,11 @@ func TestDateTimeParseJson(t *testing.T) {
 	testStruct := tmp{}
 	js1 := "{\"D2\":\"2006-01-02 15:04:05.123 +04:12\"}"
 	json.Unmarshal([]byte(js1), &testStruct)
+	fmt.Printf("%v\n", testStruct.D2)
 
+	testStruct = tmp{}
+	js1 = "{\"D2\":\"2006-01-02 15:04:05 +05:12\"}"
+	json.Unmarshal([]byte(js1), &testStruct)
 	fmt.Printf("%v\n", testStruct.D2)
 }
 
@@ -148,8 +152,48 @@ func TestDateTimeFromString(t *testing.T) {
 
 	d1 = ml_time.FromString("2023-03-05 17:21:10")
 	if d1.Second() != 10 {
-		t.Fatalf("Fuck second %v", d1.Day())
+		t.Fatalf("Fuck second %v", d1.Second())
 	}
+
+	d1 = ml_time.FromString("2023-03-05 17:21:10.123")
+	if d1.Nanosecond() != 123 {
+		t.Fatalf("Fuck nano second %v", d1.String())
+	}
+
+	d1 = ml_time.FromString("2023-03-05 17:21:10.123 +01:00")
+	if d1.TimezoneOffset() != -60 {
+		t.Fatalf("Fuck tz %v", d1.TimezoneOffset())
+	}
+
+	d1 = ml_time.FromString("2023-03-05 17:21:10 +01:00")
+	if d1.TimezoneOffset() != -60 {
+		t.Fatalf("Fuck tz %v", d1.TimezoneOffset())
+	}
+
+	// Hz
+	d1 = ml_time.FromString("2023-12-12T23:42:00Z")
+	if d1.Year() != 2023 {
+		t.Fatalf("Fuck %v", d1.String())
+	}
+	if d1.Month() != 12 {
+		t.Fatalf("Fuck %v", d1.String())
+	}
+	if d1.Day() != 12 {
+		t.Fatalf("Fuck %v", d1.String())
+	}
+	if d1.Hour() != 23 {
+		t.Fatalf("Fuck %v", d1.String())
+	}
+	if d1.Minute() != 42 {
+		t.Fatalf("Fuck %v", d1.String())
+	}
+	if d1.Second() != 0 {
+		t.Fatalf("Fuck %v", d1.String())
+	}
+	if d1.TimezoneOffset() != 0 {
+		t.Fatalf("Fuck %v", d1.String())
+	}
+	fmt.Printf("%v\n", d1.String())
 }
 
 func TestDateTimeAdd(t *testing.T) {
@@ -214,4 +258,14 @@ func TestDateTimeEqual(t *testing.T) {
 
 	fmt.Printf("%v\n", t2.UTC().EqualDate(t2))
 	fmt.Printf("%v\n", t2.UTC().EqualTime(t2))
+}
+
+func TestDateTimeToTime(t *testing.T) {
+	t1 := time.Now()
+	t2 := ml_time.FromTime(t1)
+	t3 := t2.ToTime()
+
+	fmt.Printf("%v\n", t1)
+	fmt.Printf("%v\n", t2)
+	fmt.Printf("%v\n", t3)
 }

@@ -1,7 +1,6 @@
 package ms
 
 import (
-	"bytes"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -143,18 +142,18 @@ func Start(config Config) {
 	// initDb(&config)
 	injectDebug(&config)
 
-	/*	for i := 0; i < len(config.Router); i++ {
+	/* for i := 0; i < len(config.Router); i++ {
 		fmt.Printf("%v\n", config.Router[i].Path)
-	}*/
+	} */
 
 	// Entry point
 	http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
 		// Prepare args
-		virtualBuffer := bytes.NewBuffer([]byte{})
+		// virtualBuffer := bytes.NewBuffer([]byte{})
 		virtualStatus := 200
 		virtualResponse := ms_handler.VirtualResponseWriter{
-			Response:   response,
-			Buffer:     virtualBuffer,
+			Response: response,
+			// Buffer:     virtualBuffer,
 			StatusCode: &virtualStatus,
 		}
 		args := ms_handler.Args{Response: virtualResponse, Request: request}
@@ -192,11 +191,11 @@ func Start(config Config) {
 	fmt.Printf("Mega Server Starts at host %v\n", config.Host)
 	// ms_log.Log("info", fmt.Sprintf("Mega Server Starts at host %v", config.Host))
 
-	if config.TLS.Enabled {
+	/*if config.TLS.Enabled {
 		err := http.ListenAndServeTLS(config.Host, config.TLS.CertFile, config.TLS.KeyFile, nil)
 		ms_error.FatalIfError(err)
-	} else {
-		err := http.ListenAndServe(config.Host, nil)
-		ms_error.FatalIfError(err)
-	}
+	} else {*/
+	err := http.ListenAndServe(config.Host, nil)
+	ms_error.FatalIfError(err)
+	//}
 }

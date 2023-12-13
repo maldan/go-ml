@@ -74,6 +74,22 @@ func FromTime(t time.Time) DateTime {
 	}
 }
 
+func (d DateTime) ToTime() time.Time {
+	offsetHour := int(d.tzHour)
+	offsetMinute := int(d.tzMinute)
+	offsetSeconds := offsetHour*60*60 + offsetMinute*60
+	zone := time.FixedZone(fmt.Sprintf("UTC%+03d:%02d", offsetHour, offsetMinute), offsetSeconds)
+
+	t := time.Date(
+		int(d.year), time.Month(d.month), int(d.day),
+		int(d.hour), int(d.minute), int(d.second),
+		int(d.nanoSecond),
+		zone,
+	)
+
+	return t
+}
+
 func (d *DateTime) FromString(b string) {
 	state := "year"
 	dotPos := 0
@@ -141,18 +157,28 @@ func (d *DateTime) FromString(b string) {
 			state = "second"
 			continue
 		}
-		if state == "second" && (b[i] == '.' || isEnd) {
+		if state == "second" && (b[i] == '.' || b[i] == ' ' || isEnd) {
 			from, to := i-2, i
 			if isEnd {
 				from, to = i-1, i+1
 			}
 			d.second = uint8(atoiR(from, to))
-			state = "nanosecond"
+			if b[i] == ' ' {
+				state = "timezone"
+			} else {
+				state = "nanosecond"
+			}
+
 			dotPos = i
 			continue
 		}
 		if state == "nanosecond" && (b[i] == 'Z' || b[i] == ' ' || isEnd) {
-			nsec, _ := strconv.Atoi(b[dotPos+1 : i])
+			from, to := dotPos+1, i
+			if isEnd {
+				from, to = dotPos+1, i+1
+			}
+			// fmt.Printf("%v\n", b[from:to])
+			nsec, _ := strconv.Atoi(b[from:to])
 			d.nanoSecond = uint32(nsec)
 			state = "timezone"
 			continue
@@ -174,8 +200,9 @@ func (d *DateTime) FromString(b string) {
 			continue
 		}
 		if state == "tzMinute" && isEnd {
-			tzMinute, _ := strconv.Atoi(b[i-2 : i])
-			d.tzMinute = uint8(tzMinute)
+			// _, err := strconv.Atoi(b[i-1 : i+1])
+			// fmt.Printf("%v\n", err)
+			d.tzMinute = uint8(atoiR(i-1, i+1))
 			state = "end"
 			continue
 		}

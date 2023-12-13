@@ -20,12 +20,20 @@ type Page struct {
 
 const offsetToPageContent = 1 + 4 + 2
 
-func (p *Page) GetOffset() uint64 {
+const FLAG_USED = 1
+const FLAG_COMPRESION = 2
+const FLAG_ENCRYPTION = 4
+
+func (p *Page) GetMemoryOffset() uint64 {
 	return uint64(p.Index) * uint64(p.vfs.pageSize)
 }
 
+func (p *Page) GetMemoryOffsetToContent() uint64 {
+	return (uint64(p.Index) * uint64(p.vfs.pageSize)) + offsetToPageContent
+}
+
 func (p *Page) GetHeader() PageHeader {
-	offset := p.GetOffset()
+	offset := p.GetMemoryOffset()
 
 	return PageHeader{
 		Flags:         p.vfs.mmap[offset],
@@ -35,7 +43,7 @@ func (p *Page) GetHeader() PageHeader {
 }
 
 func (p *Page) SetHeader(header PageHeader) {
-	offset := p.GetOffset()
+	offset := p.GetMemoryOffset()
 
 	p.vfs.mmap[offset] = header.Flags
 	binary.LittleEndian.PutUint32(p.vfs.mmap[offset+1:offset+1+4], header.NextPageIndex)
@@ -52,7 +60,7 @@ func (p *Page) GetNextPage() *Page {
 
 func (p *Page) GetContent() []byte {
 	h := p.GetHeader()
-	offset := p.GetOffset()
+	offset := p.GetMemoryOffset()
 
 	if h.ContentLength == 0 {
 		return nil
@@ -63,7 +71,7 @@ func (p *Page) GetContent() []byte {
 
 func (p *Page) WriteContent(data []byte) ([]byte, int) {
 	// Copy content to page
-	offset := p.GetOffset()
+	offset := p.GetMemoryOffset()
 	pp := 0
 	for i := offsetToPageContent; i < int(p.vfs.pageSize); i++ {
 		p.vfs.mmap[int(offset)+i] = data[pp]

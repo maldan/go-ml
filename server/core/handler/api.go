@@ -251,8 +251,14 @@ func (a API) Handle(args *Args) {
 			args.Response.AddHeader(k, v2)
 		}
 
-		_, err2 := args.Response.Write(v.Body)
-		ms_error.FatalIfError(err2)
+		if v.Reader != nil {
+			_, err2 := io.Copy(args.Response, v.Reader)
+			ms_error.FatalIfError(err2)
+		} else {
+			_, err2 := args.Response.Write(v.Body)
+			ms_error.FatalIfError(err2)
+		}
+
 		break
 	default:
 		// Check to response method

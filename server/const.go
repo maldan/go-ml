@@ -46,11 +46,11 @@ type DataBaseConfig struct {
 type Config struct {
 	Host   string
 	Router []ms_handler.RouteHandler
-	TLS    SecureConfig
-	Debug  DebugConfig
-	Panel  PanelConfig
+	// TLS    SecureConfig
+	// Debug DebugConfig
+	// Panel  PanelConfig
 	// LogFile  string
-	Log LogConfig
+	// Log LogConfig
 	// DataBase DataBaseConfig
 	// TableList []TableConfig
 }

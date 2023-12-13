@@ -1,14 +1,13 @@
 package ms_handler
 
 import (
-	"bytes"
 	"net/http"
 )
 
 type VirtualResponseWriter struct {
 	StatusCode *int
-	Buffer     *bytes.Buffer
-	Response   http.ResponseWriter
+	// Buffer     *bytes.Buffer
+	Response http.ResponseWriter
 }
 
 func (v VirtualResponseWriter) Header() http.Header {
@@ -16,7 +15,7 @@ func (v VirtualResponseWriter) Header() http.Header {
 }
 
 func (v VirtualResponseWriter) Write(b []byte) (int, error) {
-	v.Buffer.Write(b)
+	// v.Buffer.Write(b)
 	return v.Response.Write(b)
 }
 
