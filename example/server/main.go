@@ -46,7 +46,7 @@ func main() {
 				Handler: ms_handler.EmbedFS{},
 			},*/
 		},
-		Panel: ms.PanelConfig{},
+		// Panel: ms.PanelConfig{},
 		/*DataBase: ms.DataBaseConfig{
 			Path:     "./db",
 			DataBase: &DataBase,

@@ -6,10 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	ml_convert "github.com/maldan/go-ml/util/convert"
-	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
 	"io"
 	"net/http"
 	"os"
@@ -18,18 +14,31 @@ import (
 )
 
 type File struct {
-	Path      string `json:"path"`
-	isVirtual bool
-	mime      string
-	content   []byte
+	Path       string `json:"path"`
+	isVirtual  bool
+	mime       string
+	content    []byte
+	attributes map[string]any
 }
 
 func New(path string) *File {
-	return &File{Path: path, mime: "application/octet-stream"}
+	return &File{Path: path, mime: "application/octet-stream", attributes: map[string]any{}}
 }
 
 func NewWithMime(path string, mime string) *File {
-	return &File{Path: path, mime: mime}
+	return &File{Path: path, mime: mime, attributes: map[string]any{}}
+}
+
+func (f *File) SetAttribute(name string, v any) {
+	f.attributes[name] = v
+}
+
+func (f *File) GetAttribute(name string) any {
+	return f.attributes[name]
+}
+
+func (f *File) GetAttributes() map[string]any {
+	return f.attributes
 }
 
 func (f *File) UnmarshalJSON(b []byte) error {
@@ -154,7 +163,7 @@ func (f *File) Read(offset int, length int) ([]byte, error) {
 	return buffer, nil
 }
 
-func (f *File) ImageDimension() (int, int, error) {
+/*func (f *File) ImageDimension() (int, int, error) {
 	reader, err := os.Open(f.Path)
 	defer reader.Close()
 	if err != nil {
@@ -162,7 +171,7 @@ func (f *File) ImageDimension() (int, int, error) {
 	}
 	im, _, err := image.DecodeConfig(reader)
 	return im.Width, im.Height, err
-}
+}*/
 
 func (f *File) Save() error {
 	return f.Write(f.content)

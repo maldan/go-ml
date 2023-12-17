@@ -196,6 +196,9 @@ func Start(config Config) {
 		ms_error.FatalIfError(err)
 	} else {*/
 	err := http.ListenAndServe(config.Host, nil)
-	ms_error.FatalIfError(err)
+	if err != nil {
+		panic(err)
+	}
+	// ms_error.FatalIfError(err)
 	//}
 }

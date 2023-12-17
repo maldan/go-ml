@@ -36,9 +36,12 @@ func (e EmbedFS) Handle(args *Args) {
 	// Read file
 	data, err := e.Fs.ReadFile(e.Root + pathInsideVfs)
 	ms_error.FatalIfError(err)
+	//file, err := e.Fs.Open(e.Root + pathInsideVfs)
+	//defer file.Close()
+	//ms_error.FatalIfError(err)
 
 	// Write to temp dir
-	p2 := os.TempDir() + "/rapi_vfs/" + fmt.Sprintf("%v", os.Getpid()) + "/" + pathInsideVfs
+	p2 := os.TempDir() + "/ms_vfs/" + fmt.Sprintf("%v", os.Getpid()) + "/" + pathInsideVfs
 	err = os.MkdirAll(filepath.Dir(p2), 0777)
 	ms_error.FatalIfError(err)
 	err = ml_file.New(p2).Write(data)
@@ -46,4 +49,5 @@ func (e EmbedFS) Handle(args *Args) {
 
 	// Serve file
 	http.ServeFile(args.Response, args.Request, p2)
+	//http.ServeContent(args.Response, args.Request, filepath.Base(pathInsideVfs), time.Now(), file)
 }

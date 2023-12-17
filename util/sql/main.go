@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	ml_slice "github.com/maldan/go-ml/util/slice"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -527,6 +528,9 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 				outType.Field(i).Type.Kind() == reflect.Float64 {
 				str := string(rawResult[i])
 				n, _ := strconv.ParseFloat(str, 64)
+				if math.IsNaN(n) || math.IsInf(n, 1) || math.IsInf(n, -1) {
+					n = 0
+				}
 				reflect.ValueOf(&out).Elem().Field(i).SetFloat(n)
 			}
 

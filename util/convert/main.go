@@ -68,6 +68,16 @@ func FromBase64(v string) ([]byte, error) {
 	return uDec, err
 }
 
+func FromBase64URL(v string) ([]byte, error) {
+	uDec, err := base64.URLEncoding.DecodeString(v)
+	return uDec, err
+}
+
+func FromBase64RawURL(v string) ([]byte, error) {
+	uDec, err := base64.RawURLEncoding.DecodeString(v)
+	return uDec, err
+}
+
 func StructToMap(v any) map[string]any {
 	vv := map[string]any{}
 	bytes, _ := json.Marshal(v)

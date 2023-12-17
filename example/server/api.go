@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/maldan/go-ml/db/mdb"
 	ms_handler "github.com/maldan/go-ml/server/core/handler"
 	ms_response "github.com/maldan/go-ml/server/response"
 	ml_crypto "github.com/maldan/go-ml/util/crypto"
-	ml_console "github.com/maldan/go-ml/util/io/console"
+	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	ml_time "github.com/maldan/go-ml/util/time"
 	"time"
 )
@@ -20,9 +21,12 @@ type ArgsX struct {
 }
 
 type Args2 struct {
-	A       string           `json:"a"`
-	B       int              `json:"b"`
-	Created ml_time.DateTime `json:"created"`
+	Authorization string           `json:"authorization"`
+	A             string           `json:"a"`
+	B             int              `json:"b"`
+	File          ml_file.File     `json:"file"`
+	XFile         ml_file.File     `json:"xfile"`
+	Created       ml_time.DateTime `json:"created"`
 }
 
 type Gasofeal struct {
@@ -71,8 +75,9 @@ func (u User) PostIndex3() {
 	})
 }
 
-func (u User) PostIndex(x Args2) any {
-	ml_console.PrettyPrint(x)
-	return x
+func (u User) PostIndex(x Args2) {
+	fmt.Printf("%v\n", x.File.Size())
+	fmt.Printf("%v\n", x.XFile.Size())
+	// ml_console.PrettyPrint(x)
 	// fmt.Printf("%+v\n", x.Created)
 }
