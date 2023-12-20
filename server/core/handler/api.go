@@ -442,6 +442,8 @@ func (a API) Handle(args *Args) {
 		}
 
 		break
+	case nil:
+		break
 	default:
 		// Check to response method
 		tr, ok := reflect.TypeOf(value).MethodByName("ToResponse")
