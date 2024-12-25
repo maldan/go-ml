@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
+	ml_crypto "github.com/maldan/go-ml/util/crypto"
 	"log"
 	"net/http"
 )
@@ -16,24 +17,29 @@ type WebSocket struct {
 
 type WebSocketClient struct {
 	conn *websocket.Conn
+	id   string
 }
 
-func (c *WebSocketClient) Send(message any) error {
+func (w *WebSocketClient) Id() string {
+	return w.id
+}
+
+func (w *WebSocketClient) Send(message any) error {
 	var err error
 
 	switch message.(type) {
 	case []byte:
-		err = c.conn.WriteMessage(websocket.BinaryMessage, (message).([]byte))
+		err = w.conn.WriteMessage(websocket.BinaryMessage, (message).([]byte))
 		break
 	case string:
-		err = c.conn.WriteMessage(websocket.TextMessage, []byte((message).(string)))
+		err = w.conn.WriteMessage(websocket.TextMessage, []byte((message).(string)))
 		break
 	default:
 		x, err2 := json.Marshal(message)
 		if err2 != nil {
 			return err2
 		}
-		err = c.conn.WriteMessage(websocket.TextMessage, x)
+		err = w.conn.WriteMessage(websocket.TextMessage, x)
 		break
 	}
 
@@ -58,6 +64,7 @@ func (w WebSocket) Handle(args *Args) {
 
 	client := &WebSocketClient{conn: conn}
 	if w.OnConnect != nil {
+		client.id = ml_crypto.UID(8)
 		w.OnConnect(client)
 	}
 

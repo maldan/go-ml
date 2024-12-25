@@ -1,6 +1,7 @@
 package ml_slice
 
 import (
+	"encoding/json"
 	"golang.org/x/exp/constraints"
 	"math/rand"
 	"sort"
@@ -108,10 +109,18 @@ func Find[T any](slice []T, filter func(*T) bool) (T, bool) {
 	return *new(T), false
 }
 
-func GetKeys[K comparable, V comparable](mp map[K]V) []K {
+func GetKeys[K comparable, V any](mp map[K]V) []K {
 	l := make([]K, 0)
 	for k, _ := range mp {
 		l = append(l, k)
+	}
+	return l
+}
+
+func GetValues[K comparable, V any](mp map[K]V) []V {
+	l := make([]V, 0)
+	for _, v := range mp {
+		l = append(l, v)
 	}
 	return l
 }
@@ -278,4 +287,10 @@ func Average[T constraints.Float | constraints.Integer](slice []T) T {
 		a += slice[i]
 	}
 	return a / T(len(slice))
+}
+
+func JsonStringToList[T any](string2 string) ([]T, error) {
+	tagsList := make([]T, 0)
+	err := json.Unmarshal([]byte(string2), &tagsList)
+	return tagsList, err
 }

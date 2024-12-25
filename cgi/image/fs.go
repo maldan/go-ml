@@ -207,6 +207,7 @@ type ImageMagickArgs struct {
 	FromData []byte
 	ToExt    string
 	Quality  int
+	MaxWidth int
 }
 
 type ImageOptions struct {
@@ -228,7 +229,15 @@ func ImageMagickConvertFromBytesTo(args ImageMagickArgs) ([]byte, error) {
 	outFilePath := ml_fs.GetTempFilePath() + "." + args.ToExt
 
 	// Store photo
-	ml_process.Exec("magick", tempFile, "-quality", fmt.Sprintf("%v", args.Quality), outFilePath)
+	argsList := make([]string, 0)
+	argsList = append(argsList, "magick", tempFile)
+	if args.MaxWidth > 0 {
+		argsList = append(argsList, "-resize", fmt.Sprintf("%vx>", args.MaxWidth))
+	}
+	argsList = append(argsList, "-quality", fmt.Sprintf("%v", args.Quality))
+	argsList = append(argsList, outFilePath)
+
+	ml_process.Exec(argsList...)
 	time.Sleep(time.Millisecond * 500)
 
 	// Read

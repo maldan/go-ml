@@ -17,7 +17,7 @@ type BackupConfig struct {
 	TaskList    []Task `json:"taskList"`
 }
 
-func (b *BackupConfig) Run() {
+func (b *BackupConfig) Run(scheduleDelay time.Duration) {
 	if runtime.GOOS == "windows" {
 		fmt.Printf("[BACKUP SCHEDULE] FAILS. CURRENTLY ONLY LINUX OS SUPPORTED\n")
 		return
@@ -30,6 +30,7 @@ func (b *BackupConfig) Run() {
 
 	// Infinity loop
 	for {
+		// Do task logic
 		for i := 0; i < len(b.TaskList); i++ {
 			task := &(b.TaskList[i])
 
@@ -69,6 +70,16 @@ func (b *BackupConfig) Run() {
 				}
 				fmt.Printf("[BACKUP TASK AFTER DONE] Id: %v | Time: %v\n", task.Id, time.Since(t))
 			}
+		}
+
+		// Do clean and calculate next
+		for i := 0; i < len(b.TaskList); i++ {
+			task := &(b.TaskList[i])
+
+			// Check if ready
+			if !task.IsReady() {
+				continue
+			}
 
 			// Clean resource after work
 			task.Clean()
@@ -97,10 +108,17 @@ func (b *BackupConfig) Run() {
 			task.LastRun = time.Now()
 
 			b.WriteHistory()
+
+			// If task status error
+			if task.Status == "error" {
+				if task.OnError != nil {
+					task.OnError(task)
+				}
+			}
 		}
 
 		// Each minute check task
-		time.Sleep(time.Minute)
+		time.Sleep(scheduleDelay)
 	}
 }
 

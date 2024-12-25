@@ -7,9 +7,27 @@ import (
 	"text/template"
 )
 
-func Execute(input string, output string, data any) error {
+func ExecuteFromString(inputData string, data any) (string, error) {
 	// Prepare
-	tmpl, err := template.New(path.Base(input)).ParseFiles(input)
+	tmpl, err := template.New("template").Parse(inputData)
+	if err != nil {
+		return "", err
+	}
+
+	// Execute
+	buf := new(bytes.Buffer)
+	err2 := tmpl.Execute(buf, data)
+	if err2 != nil {
+		return "", err2
+	}
+
+	// Output
+	return string(buf.Bytes()), nil
+}
+
+func Execute(inputPath string, output string, data any) error {
+	// Prepare
+	tmpl, err := template.New(path.Base(inputPath)).ParseFiles(inputPath)
 	if err != nil {
 		return err
 	}

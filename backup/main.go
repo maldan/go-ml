@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -25,6 +27,7 @@ type Task struct {
 	LastRun   time.Time              `json:"lastRun"`
 	BeforeRun func(task *Task) error `json:"-"`
 	AfterRun  func(task *Task) error `json:"-"`
+	OnError   func(task *Task)       `json:"-"`
 }
 
 func (t *Task) Exec(args ...string) error {
@@ -145,7 +148,22 @@ func (t *Task) Clean() {
 	t.SrcVirtual = []string{}
 }
 
+func (t *Task) CreateTempDir() (string, error) {
+	// Create temp dir
+	tmpDir := fmt.Sprintf("%v/tmp_dir_%v/", os.TempDir(), time.Now().UnixNano())
+	err2 := os.MkdirAll(tmpDir, 0777)
+	if err2 != nil {
+		return "", err2
+	}
+	return tmpDir, nil
+}
+
 func (t *Task) CopyFilesToTmp(from string, ignore []string) (string, error) {
+	absFrom, err := filepath.Abs(from)
+	if err != nil {
+		return "", err
+	}
+
 	// Get recursively all files
 	list, err := FSListAll(from)
 	if err != nil {
@@ -169,7 +187,52 @@ func (t *Task) CopyFilesToTmp(from string, ignore []string) (string, error) {
 
 	// Copy files from list to temp dir
 	for _, file := range list {
-		err3 := t.Exec("cp", file.FullPath, tmpDir)
+		// dir
+		rel := path.Dir(strings.Replace(file.FullPath, absFrom, "", 1))
+
+		// create relative
+		os.MkdirAll(tmpDir+"/"+rel, 0777)
+
+		err3 := t.Exec("cp", file.FullPath, tmpDir+"/"+rel)
+		if err3 != nil {
+			return "", err3
+		}
+	}
+
+	return tmpDir, nil
+}
+
+func (t *Task) CopyFilesToTmpFn(from string, filter func(t *FileInfo) bool) (string, error) {
+	absFrom, err := filepath.Abs(from)
+	if err != nil {
+		return "", err
+	}
+
+	// Get recursively all files
+	list, err := FSListAll(from)
+	if err != nil {
+		return "", err
+	}
+
+	// Filter all files
+	list = FilterBy(list, filter)
+
+	// Create temp dir
+	tmpDir := fmt.Sprintf("%v/tmp_dir_%v/", os.TempDir(), time.Now().UnixNano())
+	err2 := os.MkdirAll(tmpDir, 0777)
+	if err2 != nil {
+		return "", err2
+	}
+
+	// Copy files from list to temp dir
+	for _, file := range list {
+		// dir
+		rel := path.Dir(strings.Replace(file.FullPath, absFrom, "", 1))
+
+		// create relative
+		os.MkdirAll(tmpDir+"/"+rel, 0777)
+
+		err3 := t.Exec("cp", file.FullPath, tmpDir+"/"+rel)
 		if err3 != nil {
 			return "", err3
 		}

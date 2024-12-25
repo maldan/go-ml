@@ -129,6 +129,21 @@ func GetValues[T any](v T) []any {
 	return out
 }
 
+func Backup(db *sql.DB, destination string) error {
+	query := fmt.Sprintf("VACUUM INTO '%v'", destination)
+
+	// Prepare
+	statement, err := db.Prepare(query)
+	defer statement.Close()
+	if err != nil {
+		return err
+	}
+
+	// Execute statement
+	_, err = statement.Exec()
+	return err
+}
+
 func DropTable(db *sql.DB, table string) error {
 	query := fmt.Sprintf("DROP TABLE IF EXISTS %v", table)
 
@@ -145,7 +160,7 @@ func DropTable(db *sql.DB, table string) error {
 }
 
 func CreateTable[T any](db *sql.DB, name string) error {
-	out := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %v (\n", name)
+	out := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%v` (\n", name)
 
 	typeOf := reflect.TypeOf(*new(T))
 
@@ -187,7 +202,7 @@ func CreateTable[T any](db *sql.DB, name string) error {
 	}
 
 	out += ");\n"
-	fmt.Printf("%v", out)
+	// fmt.Printf("%v", out)
 	// Prepare
 	statement, err := db.Prepare(out)
 	if err != nil {
@@ -295,7 +310,7 @@ func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 	values := GetValues(value)
 	valuesQ := make([]string, len(values))
 
-	query := fmt.Sprintf("INSERT INTO '%v'(\n", table)
+	query := fmt.Sprintf("INSERT INTO `%v`(\n", table)
 
 	for i := 0; i < len(fields); i++ {
 		if fields[i] == "`id`" && reflect.ValueOf(values[i]).IsZero() {
@@ -334,7 +349,7 @@ func Insert[T any](db *sql.DB, table string, value T) (int64, error) {
 
 // func Count(db *sql.DB, from string, where string, values ...any) (int, error) {
 func Count(args CountQuery) (int, error) {
-	query := fmt.Sprintf("SELECT COUNT(*) FROM %v", args.Table)
+	query := fmt.Sprintf("SELECT COUNT(*) FROM `%v`", args.Table)
 	// Where
 	if args.Where != "" {
 		query += fmt.Sprintf(" WHERE %v", args.Where)
@@ -354,6 +369,7 @@ func Count(args CountQuery) (int, error) {
 	rows, err := statement.Query(args.WhereArgs...)
 	defer rows.Close()
 	if err != nil {
+		fmt.Printf("%v\n", err)
 		return 0, err
 	}
 
@@ -394,7 +410,7 @@ func UpdateSimple(args UpdateSimpleQuery) error {
 }
 
 func Update(args UpdateQuery) error {
-	query := fmt.Sprintf("UPDATE %v SET %v WHERE %v", args.Table, args.Set, args.Where)
+	query := fmt.Sprintf("UPDATE `%v` SET %v WHERE %v", args.Table, args.Set, args.Where)
 	fmt.Printf("%v\n", query)
 	// Prepare
 	statement, err := args.DB.Prepare(query)
@@ -437,7 +453,7 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 	}
 
 	query := fmt.Sprintf(
-		"SELECT %v FROM %v",
+		"SELECT %v FROM `%v`",
 		strings.Join(fields, ","),
 		args.Table,
 	)
@@ -489,6 +505,7 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 	defer rows.Close()
 	if err != nil {
 		response.Error = err
+		fmt.Printf("SQL Select Error: %v\n", err)
 		return response
 	}
 
@@ -536,7 +553,13 @@ func Select[T any](args SelectQuery) SelectResponse[T] {
 
 			if outType.Field(i).Type.Kind() == reflect.Bool {
 				if len(rawResult[i]) > 0 {
-					reflect.ValueOf(&out).Elem().Field(i).SetBool(rawResult[i][0] == 49)
+					if string(rawResult[i]) == "false" {
+						reflect.ValueOf(&out).Elem().Field(i).SetBool(false)
+					} else if string(rawResult[i]) == "true" {
+						reflect.ValueOf(&out).Elem().Field(i).SetBool(false)
+					} else {
+						reflect.ValueOf(&out).Elem().Field(i).SetBool(rawResult[i][0] == 49)
+					}
 				}
 			}
 			if outType.Field(i).Type.Kind() == reflect.String {
@@ -714,12 +737,13 @@ func AlterTableAddColumn(db *sql.DB, table string, name string, kind string, def
 	if defaultValue == "" {
 		defaultValue = "\"\""
 	}
-	query := fmt.Sprintf("ALTER TABLE %v ADD COLUMN '%v' %v DEFAULT %v NOT NULL", table, name, kind, defaultValue)
+	query := fmt.Sprintf("ALTER TABLE `%v` ADD COLUMN `%v` %v DEFAULT %v NOT NULL", table, name, kind, defaultValue)
 
 	// Prepare
 	statement, err := db.Prepare(query)
 	defer statement.Close()
 	if err != nil {
+		fmt.Printf("%v\n", err)
 		return err
 	}
 

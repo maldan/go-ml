@@ -1,6 +1,7 @@
 package ml_fs
 
 import (
+	"fmt"
 	ml_crypto "github.com/maldan/go-ml/util/crypto"
 	ml_file "github.com/maldan/go-ml/util/io/fs/file"
 	"io"
@@ -156,6 +157,7 @@ func ListAll(path string) ([]FileInfo, error) {
 				Ext:          ext[len(ext)-1],
 				Dir:          strings.ReplaceAll(filepath.Dir(absPath), "\\", "/"),
 				IsDir:        info.IsDir(),
+				Size:         info.Size(),
 			})
 
 			return nil
@@ -171,6 +173,32 @@ func DeleteFile(path string) error {
 	return ml_file.New(path).Delete()
 }
 
+func DeleteAll(path string) error {
+	err := os.RemoveAll(path)
+	return err
+}
+
 func GetTempFilePath() string {
 	return os.TempDir() + "/" + ml_crypto.UID(16)
+}
+
+func SafeJoinPath(baseDir, relativePath string) (string, error) {
+	// Получаем абсолютный путь до базовой директории
+	baseDirAbs, err := filepath.Abs(baseDir)
+	if err != nil {
+		return "", fmt.Errorf("can't get absolute path %v", err)
+	}
+
+	// Преобразуем переданный относительный путь в абсолютный
+	relativePathClean := filepath.Clean(relativePath)
+	fullPath := filepath.Join(baseDirAbs, relativePathClean)
+
+	// Проверяем, что полученный полный путь находится внутри базовой директории
+	if !filepath.HasPrefix(fullPath, baseDirAbs) {
+		return "", fmt.Errorf("access denied")
+	}
+
+	fullPath = strings.ReplaceAll(fullPath, "\\", "/")
+
+	return fullPath, nil
 }

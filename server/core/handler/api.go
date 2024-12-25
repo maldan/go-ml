@@ -17,6 +17,7 @@ import (
 
 type API struct {
 	ControllerList []any
+	Middleware     func(args *Args)
 }
 
 func virtualCall(fn reflect.Method, args ...any) reflect.Value {
@@ -104,7 +105,8 @@ func mapGet(context *Context, argValue reflect.Value) {
 			if field.Kind() == reflect.Int {
 				i, err := strconv.ParseInt(v[0], 10, 64)
 				if err != nil {
-					panic(err)
+					fmt.Printf("MS GET Parser [Warning]: %v\n", err)
+					// panic(err)
 				}
 				field.SetInt(i)
 			}
@@ -226,6 +228,11 @@ func callMethod(
 		// Create new value
 		argValue := reflect.New(argType)
 
+		// Args is context
+		if argType.Kind() == reflect.Pointer {
+			return virtualCall(method, controller, context)
+		}
+
 		// If received data as json
 		types := []string{"application/json", "text/plain"}
 		if ml_slice.Includes(types, context.Request.Header.Get("Content-Type")) {
@@ -312,6 +319,11 @@ func (a API) Handle(args *Args) {
 	err := args.Request.Body.Close()
 	ms_error.FatalIfError(err)
 	args.Body = bodyBytes*/
+
+	// Call middleware
+	if a.Middleware != nil {
+		a.Middleware(args)
+	}
 
 	// Parse multipart body
 	if strings.Contains(args.Request.Header.Get("Content-Type"), "multipart/form-data") {

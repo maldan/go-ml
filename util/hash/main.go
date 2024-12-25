@@ -1,6 +1,7 @@
 package ml_hash
 
 import (
+	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
@@ -22,6 +23,10 @@ func _hasher[T hashable](h hash.Hash, data T) string {
 	default:
 		panic("unsupported type")
 	}
+}
+
+func Md5[T hashable](data T) string {
+	return _hasher(md5.New(), data)
 }
 
 func Sha1[T hashable](data T) string {

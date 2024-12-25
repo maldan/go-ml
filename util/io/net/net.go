@@ -28,6 +28,11 @@ type Response struct {
 	Url        string
 }
 
+type FileField struct {
+	Name string
+	Data []byte
+}
+
 func (r *Response) JSON(v any) error {
 	// Read
 	body, err := io.ReadAll(r.Body)
@@ -119,7 +124,8 @@ func Request(url string, method string, options *RequestOptions) Response {
 	inputData := make([]byte, 0)
 	if method == "POST" || method == "PATCH" || method == "PUT" {
 		// JSON by default
-		if options.Headers["Content-Type"] == "" || options.Headers["Content-Type"] == "application/json" {
+		if options.Headers["Content-Type"] == "" {
+			fmt.Printf("WARNING: ml_net.Request has empty content type\n")
 			switch opts.Data.(type) {
 			case []byte:
 				inputData = opts.Data.([]byte)
@@ -133,33 +139,53 @@ func Request(url string, method string, options *RequestOptions) Response {
 				inputData = out
 				break
 			}
-		}
+		} else
 
-		if opts.Headers["Content-Type"] == "multipart/form-data" {
+		// JSON
+		if options.Headers["Content-Type"] == "application/json" {
+			out, err := json.Marshal(opts.Data)
+			if err != nil {
+				response.Error = err
+				return response
+			}
+			opts.Headers["Content-Type"] = "application/json"
+			inputData = out
+		} else if opts.Headers["Content-Type"] == "multipart/form-data" {
 			var body bytes.Buffer
 			writer := multipart.NewWriter(&body)
+			boundaryId := "super_secret_boundary_228"
+			writer.SetBoundary(boundaryId)
+			opts.Headers["Content-Type"] += "; boundary=" + boundaryId
+
 			for k, v := range opts.Data.(map[string]any) {
 				switch v.(type) {
+				case FileField:
+					fileWriter, _ := writer.CreateFormFile(k, v.(FileField).Name)
+					fileWriter.Write(v.(FileField).Data)
+					break
 				case []byte:
 					fileWriter, _ := writer.CreateFormFile(k, k)
 					fileWriter.Write(v.([]byte))
 					break
 				default:
 					writer.WriteField(k, fmt.Sprintf("%v", v))
+					break
 				}
 
 			}
 			writer.Close()
 			inputData = body.Bytes()
-		}
+		} else
 
 		// Url Encoded
-		if opts.Headers["Content-Type"] == "application/x-www-form-urlencoded" {
+		if opts.Headers["Content-Type"] == "application/x-www-form-urlencoded" ||
+			opts.Headers["Content-Type"] == "application/x-www-form-urlencoded;charset=UTF-8" {
 			values := p_url.Values{}
 			for k, v := range opts.Data.(map[string]any) {
 				values[k] = []string{fmt.Sprintf("%v", v)}
 			}
 			inputData = []byte(values.Encode())
+			fmt.Printf("%v\n", string(inputData))
 		}
 
 		if len(opts.Query) > 0 {
